@@ -67,6 +67,7 @@ bool m100Controller::m100_controller_update()
             tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
 
+// TODO: check the need for a minus sign on velocity y
             velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
             velocity_y   = -m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
             velocity_z   = -m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);

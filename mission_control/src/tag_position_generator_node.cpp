@@ -19,13 +19,14 @@ int main(int argc, char **argv)
     bool landing = false;
     ros::Rate rate(node_rate);
     
-    ros::Publisher tag_positionPub = nh.advertise<geometry_msgs::PointStamped>("droneuse/landing_tag_position",1);
+//    ros::Publisher tag_positionPub = nh.advertise<geometry_msgs::PointStamped>("droneuse/landing_tag_position",1);
+    ros::Publisher tag_positionPub = nh.advertise<geometry_msgs::PointStamped>("droneuse/landing_platform_position",1);
     double dt = 1.0/node_rate;
     
     droneuse_m100*      m100 = new droneuse_m100(nh);
     geometry_msgs::PointStamped tag_position;
-    
-    double vel_x = 1.0;
+	tf::TransformListener* tf_listener = new tf::TransformListener;    
+    double vel_x = 0.5;
     double vel_y = 0.0;
     double vel_z = 0.0;
     
@@ -40,15 +41,27 @@ int main(int argc, char **argv)
 			tag_position.point.x = tag_position.point.x + dt*vel_x;
 			tag_position.point.y = tag_position.point.y + dt*vel_y;
 			tag_position.point.z = tag_position.point.z + dt*vel_z;
-			tag_positionPub.publish(tag_position);
+			try
+			{
+			    ros::Time time_now = ros::Time::now();
+			    tf_listener->waitForTransform("/body_frame", "/world", tag_position.header.stamp, ros::Duration(0.5/node_rate));
+			    tf_listener->transformPoint("/body_frame", tag_position.header.stamp, tag_position, "/world", tag_position);
+			    tag_positionPub.publish(tag_position);
+
+			}
+			catch(tf::TransformException ex)
+			{
+			    ROS_ERROR("%s", ex.what());
+			    return 0;
+			}
 		}
 
-        	if (!landing && m100->get_local_position().z>3.0)
+        	if (!landing && m100->get_local_position().z>1.5)
         	{
             		landing = true;
             		tag_position.header.frame_id = "/world";
 			tag_position.header.stamp = ros::Time::now();
-			tag_position.point.x = m100->get_local_position().x + 1.0;
+			tag_position.point.x = m100->get_local_position().x + 3.0;
 			tag_position.point.y = m100->get_local_position().y;
 			tag_position.point.z = 0.5;
 			tag_positionPub.publish(tag_position);

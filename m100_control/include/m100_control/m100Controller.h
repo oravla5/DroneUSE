@@ -40,37 +40,38 @@ class m100Controller
         dji_sdk::AttitudeControl m100_control_command;
 
         // PID controller parameters
-        double x_maxVelocity    = 10;
-        double y_maxVelocity    = 10;
-        double z_maxVelocity    = 4.0;
+        double x_maxVelocity    = 1;
+        double y_maxVelocity    = 1;
+        double z_maxVelocity    = 0.5;
         
-        //double x_velocity_Kp    = 1.0;
-        //double x_velocity_Kd    = 0.1;
-        //double x_velocity_Ki    = 0.07;
+        double x_velocity_Kp    = 0.5;
+        double x_velocity_Kd    = 0.05;
+        double x_velocity_Ki    = 0.0;
+      
+        double y_velocity_Kp    = 0.5;
+        double y_velocity_Kd    = 0.05;
+        double y_velocity_Ki    = 0.0;
         
-        //double y_velocity_Kp    = 0.5;
-        //double y_velocity_Kd    = 0.05;
-        //double y_velocity_Ki    = 0.0;
+        double z_velocity_Kp    = 0.5;
+        double z_velocity_Kd    = 0.05;
+        double z_velocity_Ki    = 0.0;
         
-        //double z_velocity_Kp    = 1.5;
-        //double z_velocity_Kd    = 0.1;
-        //double z_velocity_Ki    = 0.1;
+	//double Kxy_p 		= 0.35;
+	//double Kxy_d 		= 0.6;
+	//double Kxy_i 		= 0.6;
+        //double x_velocity_Kp    = 1.92*Kxy_p;
+        //double x_velocity_Kd    = 1.80*Kxy_d;
+        //double x_velocity_Ki    = 0.36*Kxy_i;
         
-	double Kxy_p 		= 0.35;
-	double Kxy_d 		= 0.6;
-	double Kxy_i 		= 0.6;
-        double x_velocity_Kp    = 1.92*Kxy_p;
-        double x_velocity_Kd    = 1.80*Kxy_d;
-        double x_velocity_Ki    = 0.36*Kxy_i;
-        
-        double y_velocity_Kp    = 1.92*Kxy_p;
-        double y_velocity_Kd    = 1.80*Kxy_d;
-        double y_velocity_Ki    = 0.36*Kxy_i;
-        
-	double Kz 		= 0.55;
-        double z_velocity_Kp    = 4.0*Kz;
-        double z_velocity_Kd    = 2.0*Kz;
-        double z_velocity_Ki    = 0.0*Kz;
+        //double y_velocity_Kp    = 1.92*Kxy_p;
+        //double y_velocity_Kd    = 1.80*Kxy_d;
+        //double y_velocity_Ki    = 0.36*Kxy_i;
+        //
+	//double Kz 		= 0.55;
+        //double z_velocity_Kp    = 4.0*Kz;
+        //double z_velocity_Kd    = 2.0*Kz;
+        //double z_velocity_Ki    = 0.0*Kz;
+
         //double max_velocity     = 1.0;
 
         double yaw_maxRate      = 30.0;
