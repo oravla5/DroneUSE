@@ -70,8 +70,8 @@ bool m100Controller::m100_controller_update()
 
             velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
             velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
-            velocity_z   = m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
-            velocity_z   = 0;
+            velocity_z   = m100_velocity_z_pid->calculate(1.0/control_rate, -m100_target_position.point.z, 0.0);
+            //velocity_z   = 0;
         }
         catch(tf::TransformException ex)
         {
