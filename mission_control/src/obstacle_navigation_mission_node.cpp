@@ -78,12 +78,11 @@ void publish_global_path()
 
         positions.push_back(position);
 
+        global_trajectory->header.stamp = ros::Time::now();
+        global_trajectory->header.frame_id = "/world";
         for(int i=0; i < 4; i++)
         {
                 global_trajectory->joint_names.push_back("Waypoint");
-                global_trajectory->header.stamp = ros::Time::now();
-                global_trajectory->header.frame_id = "/world";
-
 
                 Transform transform;
                 transform.translation = positions[i];
@@ -101,36 +100,52 @@ void publish_global_path()
 
 }
 
-bool go_next_waypoint()
+int get_closest_waypoint()
 {
-	bool wp_exists = true;	
-	ros::Time time_now = ros::Time::now();
+	int closest_index = -1;
+	double closest_distance = 0.0;
+	double distance_aux = 0.0;	
+	geometry_msgs::PointStamped next_wp;
+	next_wp.header.frame_id = local_path.header.frame_id;
+	next_wp.header.stamp = ros::Time::now();
 
-	for(int i=0; i<local_path.points.size(); i++)
+	if(local_path.points.size() == 0)
+		return closest_index;
+
+	next_wp.point.x = local_path.points[0].transforms[0].translation.x;	
+	next_wp.point.y = local_path.points[0].transforms[0].translation.y;	
+	next_wp.point.z = local_path.points[0].transforms[0].translation.z;	
+	closest_distance = m100->distance_to_position(next_wp);	
+	closest_index = 0;
+
+	for(int i=1; i<local_path.points.size(); i++)
 	{
-		cout << "Avance total" << time_now - local_path.points[i].time_from_start << endl;;
-		cout << "Waypoint n" << i << "Tiempo " << local_path.points[i].time_from_start << endl;
-		ros::Duration wp_time = local_path.points[i].time_from_start;	
-		if(wp_time < (time_now - local_path.header.stamp))
-			local_path.points.erase(local_path.points.begin() + i--);
-	}	
-	if(local_path.points.empty())
-	{
-		cout << "No hay mas trayectoria local" << endl;
-		wp_exists = false;
-	}	
-	else
-	{
-		geometry_msgs::PointStamped next_wp;
-		next_wp.header.frame_id = local_path.header.frame_id;
-		next_wp.header.stamp = time_now;
-		next_wp.point.x = local_path.points[0].transforms[0].translation.x;	
-		next_wp.point.y = local_path.points[0].transforms[0].translation.y;	
-		next_wp.point.z = local_path.points[0].transforms[0].translation.z;	
-		m100->set_target_position(next_wp);
-		//m100->set_target_rotation(local_path.points[i]);
+		next_wp.point.x = local_path.points[i].transforms[0].translation.x;	
+		next_wp.point.y = local_path.points[i].transforms[0].translation.y;	
+		next_wp.point.z = local_path.points[i].transforms[0].translation.z;	
+		distance_aux = m100->distance_to_position(next_wp);	
+		if(distance_aux <= closest_distance)
+		{
+			closest_distance = distance_aux;
+			closest_index = i;
+		}
+		else
+			break;
 	}
-	return wp_exists;
+	if( closest_distance <= 0.3 && (closest_index +1) < local_path.points.size() )
+		closest_index += 1;
+
+	return closest_index;
+}
+geometry_msgs::PointStamped get_wp(int index)
+{
+	geometry_msgs::PointStamped next_wp;
+	next_wp.header.frame_id = local_path.header.frame_id;
+	next_wp.header.stamp = ros::Time::now();
+	next_wp.point.x = local_path.points[index].transforms[0].translation.x;	
+	next_wp.point.y = local_path.points[index].transforms[0].translation.y;	
+	next_wp.point.z = local_path.points[index].transforms[0].translation.z;	
+	return next_wp;
 }
 
 int main(int argc, char **argv)
@@ -164,7 +179,7 @@ int main(int argc, char **argv)
 	//hover for 3 seconds
 	cout << "Empieza hover" << endl;
 	m100->hover();
-       	ros::Duration(5.0).sleep();
+       	ros::Duration(1.5).sleep();
 	
 	trajectory_received = false;
 	while(!trajectory_received)
@@ -178,14 +193,18 @@ int main(int argc, char **argv)
 	}
 
 	//Go to the next waypoint
-	while(ros::ok() && go_next_waypoint())
+	int next_wp = -1;
+	while(ros::ok())
 	{
+		next_wp = get_closest_waypoint();
+		if(next_wp == -1)
+			break;
+		m100->set_target_position(get_wp(next_wp));
 		rate.sleep();
 		ros::spinOnce();
 	}
 
 	cout << "LANDING" << endl;
-
     m100->land();
     m100->disarm();
 

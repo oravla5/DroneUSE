@@ -598,7 +598,7 @@ int main(int argc, char **argv)
 				while(target<=last_wp_inside_id)
 				{	
 					bool existLineOfSight = soft_lineOfSight_checker(theta, local_sub_trajectory->points[middle].transforms[0].translation, local_sub_trajectory->points[target].transforms[0].translation, map_resolution, lofs_margin);
-					ROS_INFO("Checking lineOfSight between %d/%d and %d/%d: %d", middle+1, local_sub_trajectory->points.size(), target+1, local_sub_trajectory->points.size(), existLineOfSight);
+					//ROS_INFO("Checking lineOfSight between %d/%d and %d/%d: %d", middle+1, local_sub_trajectory->points.size(), target+1, local_sub_trajectory->points.size(), existLineOfSight);
 					
 					if(existLineOfSight)
 						ROS_INFO("Line of Sight exists!");
@@ -861,7 +861,7 @@ int main(int argc, char **argv)
 					initial_time = ros::Time::now();
 								
 					// Send it
-					global_sub_trajectory->header.stamp = ros::Time::now();
+					global_sub_trajectory->header.stamp = initial_time;
 					trajectory_pub.publish(global_sub_trajectory);
 				}
 				
