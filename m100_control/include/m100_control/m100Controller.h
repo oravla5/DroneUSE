@@ -60,7 +60,7 @@ class m100Controller
 
         double yaw_maxRate      = 10.0;
 
-        double yaw_rate_Kp      = 1;
+        double yaw_rate_Kp      = 1.0;
         double yaw_rate_Kd      = 0.05;
         double yaw_rate_Ki      = 0.0;
         

@@ -53,13 +53,13 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.3;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
         target_position.point.y = (float)target_position_vector.y();
-        target_position.point.z = (float) apriltag_position_msg.point.z - 0.2; 
+        target_position.point.z = (float) apriltag_position_msg.point.z - 0.1; 
         m100->set_target_position(target_position);
 }
 catch(tf::TransformException ex)
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
-        if ((ros::Time::now() - last_april_time) > ros::Duration(2.5))
+        if ((ros::Time::now() - last_april_time) > ros::Duration(3.0))
         {
             default_gimbal.header.stamp = ros::Time::now();
             gimbal->set_target(default_gimbal);
