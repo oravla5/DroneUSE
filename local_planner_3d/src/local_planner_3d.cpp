@@ -69,7 +69,7 @@ double get_dist(const geometry_msgs::Vector3& r1, const geometry_msgs::Vector3& 
 	vector.x = r1.x - r2.x;
 	vector.y = r1.y - r2.y;
 	vector.z = r1.z - r2.z;
-	return (double) sqrt(vector.x*vector.x + vectory*vector.y + vector.z*vector.z);
+	return (double) sqrt(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
 
 }
 //! Odometry message callback. Simply remap the pose data in the odom_pose var.
@@ -484,9 +484,16 @@ int main(int argc, char **argv)
 			#endif
 			
 			// Get the global subtrajectory (eliminating past time waypoints)
-			if(get_dist(global_sub_trajectory->points[0].transforms[0].translation, odom_pose.translation) <= MIN_WP_DIST)
-				global_sub_trajectory->points.erase(global_sub_trajectory->points.begin());
-		}
+			//if(get_dist(global_sub_trajectory->points[0].transforms[0].translation, odom_pose.translation) <= MIN_WP_DIST)
+			//	global_sub_trajectory->points.erase(global_sub_trajectory->points.begin());
+			bool existOldWp = true;
+			while(existOldWp && global_sub_trajectory->points.size() > 0)
+			{
+				if(global_sub_trajectory->points.front().time_from_start.toSec() <= ros::Time::now().toSec() - initial_time.toSec())
+					global_sub_trajectory->points.erase(global_sub_trajectory->points.begin());
+				else
+					existOldWp = false;
+			}
 			
 			// Debug
 			#ifdef PRINT_GLOBAL_SUB_TRAJECTORY
@@ -854,6 +861,7 @@ int main(int argc, char **argv)
 					initial_time = ros::Time::now();
 								
 					// Send it
+					global_sub_trajectory->header.stamp = ros::Time::now();
 					trajectory_pub.publish(global_sub_trajectory);
 				}
 				

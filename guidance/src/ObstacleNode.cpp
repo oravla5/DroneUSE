@@ -60,7 +60,7 @@ void callback(const sensor_msgs::LaserScanConstPtr& obstacles_distance, const se
 		}
 	}
 	pcl::fromROSMsg(*point_cloud, cloud_obstacles);
-	cloud_obstacles += cloud_wall;
+	//cloud_obstacles += cloud_wall;
 
 	obstacle_pointcloud_pub.publish(cloud_obstacles);
 	return;

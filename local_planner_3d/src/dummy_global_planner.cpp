@@ -27,6 +27,7 @@ int main(int argc, char **argv)
 	rotation.z = 0;
 	rotation.w = 1;	
 
+	Vector3 position;	
 	position.x = 1.0;
 	position.y = 0.0;
 	position.z = 2.0;

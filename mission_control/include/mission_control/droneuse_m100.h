@@ -38,6 +38,7 @@ class droneuse_m100
         droneuse_m100(ros::NodeHandle& nh);
         
         void set_target_position(geometry_msgs::PointStamped target_position);
+	bool hover();
         void set_target_orientation(geometry_msgs::PointStamped target_orientation);
         void disable_m100_position_control();
         void disable_m100_orientation_control();

@@ -5,8 +5,8 @@
 <launch>
 
 #SDK and TF tree
-<node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" />
-<include file="$(find dji_sdk)/launch/sdk_manifold.launch" />
+<!--node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" /-->
+<!--include file="$(find dji_sdk)/launch/sdk_manifold.launch" /-->
 
 #Run guidance node
 <node name="guidanceNode" pkg="guidance" type="guidanceNode" respawn="true" />

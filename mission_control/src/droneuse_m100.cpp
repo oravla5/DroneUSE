@@ -89,6 +89,25 @@ bool droneuse_m100::attitude_control(unsigned char ctrl_flag, float x, float y, 
     return m100_attitude_control_service.call(attitude_control) && attitude_control.response.result;
 }
 
+bool droneuse_m100::hover()
+{
+    // Control Flag Structure: http://download.dji-innovations.com/downloads/dev/OnboardSDK/Onboard_API_introduction_version_1.0.1_en.pdfww
+	disable_m100_position_control();
+	unsigned char ctrl_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::YawLogic::YAW_PALSTANCE |
+                                    DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                                    DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
+
+	dji_sdk::AttitudeControl m100_control_command;
+	m100_control_command.request.flag   = ctrl_flag;
+        m100_control_command.request.x      = float(0.0);
+        m100_control_command.request.y      = float(0.0);
+        m100_control_command.request.z      = float(0.0);
+        m100_control_command.request.yaw    = float(0.0);
+        return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
+}
+
 bool droneuse_m100::get_sdk_control()
 {
 
