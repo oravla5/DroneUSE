@@ -27,26 +27,32 @@ int main(int argc, char **argv)
 	rotation.z = 0;
 	rotation.w = 1;	
 
-	Vector3 position;
-	position.x = 0.0;
-	position.y = 0.0;
-	position.z = 2.0;
-	
-	positions.push_back(position);
-
 	position.x = 1.0;
 	position.y = 0.0;
 	position.z = 2.0;
 
 	positions.push_back(position);
 
-	position.x = 1.5;
+	position.x = 2.0;
 	position.y = 0.0;
 	position.z = 2.0;
 
 	positions.push_back(position);
 
-	for(int i=0; i < 3; i++)
+	position.x = 3.0;
+	position.y = 0.0;
+	position.z = 2.0;
+
+	positions.push_back(position);
+
+
+	position.x = 4.0;
+	position.y = 0.0;
+	position.z = 2.0;
+
+	positions.push_back(position);
+
+	for(int i=0; i < 1; i++)
 	{
 		global_trajectory->joint_names.push_back("Waypoint");
 		global_trajectory->header.stamp = ros::Time::now();
@@ -59,7 +65,7 @@ int main(int argc, char **argv)
 	
 		Waypoint wp;
 		wp.transforms.push_back(transform);	
-		wp.time_from_start = ros::Duration(10*(i+1));
+		//wp.time_from_start = ros::Duration(10*(i+1));
 		
 		global_trajectory->points.push_back(wp); 
 	}
@@ -67,10 +73,11 @@ int main(int argc, char **argv)
 	ros::Time time_init =ros::Time::now();
 	ros::Duration wait_time(10);
 
-	while( ros::ok() )
+	bool sent = false;
+	while( ros::ok() && !sent)
 	{
-		getchar();
 		trajectory_pub.publish(global_trajectory);
+		sent = true;
 		ros::spinOnce();
 	}
 	return 0;

@@ -49,7 +49,7 @@
 
 /// Input pointCloud rate. Used to ser the time of life for the occupancy matrix nodes and to the local planner while sync.
 #define POINTCLOUD_RATE 5.0
-
+#define MIN_WP_DIST 0.4
 /// Local planner states for global planner feedback
 //#define STARTING	euroc_motion_planning_msgs::Status::STARTING
 //#define WAITING 	euroc_motion_planning_msgs::Status::WAITING
@@ -63,6 +63,15 @@ using namespace std;
 using namespace PathPlanners;
 using namespace pcl_conversions;
 
+double get_dist(const geometry_msgs::Vector3& r1, const geometry_msgs::Vector3& r2)
+{
+	geometry_msgs::Vector3 vector;
+	vector.x = r1.x - r2.x;
+	vector.y = r1.y - r2.y;
+	vector.z = r1.z - r2.z;
+	return (double) sqrt(vector.x*vector.x + vectory*vector.y + vector.z*vector.z);
+
+}
 //! Odometry message callback. Simply remap the pose data in the odom_pose var.
 Transform odom_pose;
 void odometryCallback(const nav_msgs::Odometry::ConstPtr& odom_msg)
@@ -189,7 +198,7 @@ int main(int argc, char **argv)
 	//! Read parameters
 	string local_planner_frame = "/ground_frame";
 	string global_planner_frame = "/world";
-	string visual_pointcloud_frame = "/world";
+	string visual_pointcloud_frame = "/guidance_front";
 	double theta_timeout = 0.5;
 	double local_ws_x_max = 0.0;
 	double local_ws_y_max = 0.0;
@@ -422,22 +431,18 @@ int main(int argc, char **argv)
 	
 	/*************************** WHILE CYCLE *************************/
 	ros::Rate rate(POINTCLOUD_RATE);
-	cout << "Antes del while" << endl;
 	while(ros::ok())
 	{	
 		/************************ POINT CLOUD WAITING **********************/
-		cout << "Dentro  del while" << endl;
 		do{
 			// sleep
 			rate.sleep();
 			
 			// Reading odometry, point cloud and/or new global trajectory
 			ros::spinOnce();
-			cout << "Dentro  del do" << endl;
         }while(!pointcloud_received && ros::ok());
 		
 		pointcloud_received = false;
-		cout << "Despues del while del pointcloud" << endl;
 		
 		/******************** GLOBAL TRAJECTORY CHECKING *******************/
 		// Check if a new global trajectory has been received and execute it! (TOTAL PRIORITY)
@@ -449,7 +454,6 @@ int main(int argc, char **argv)
 			local_planner_fail = false;
 			
 			// send the new global trajectory to the trajectory tracker
-			cout << "Se publica la trayectoria" << endl;
 			trajectory_pub.publish(global_trajectory);
 			
 			// init global sub-trajectory to start replanning
@@ -480,18 +484,9 @@ int main(int argc, char **argv)
 			#endif
 			
 			// Get the global subtrajectory (eliminating past time waypoints)
-			bool existOldWp = true;
-			while(existOldWp && global_sub_trajectory->points.size() > 0)
-			{
-				if(global_sub_trajectory->points.front().time_from_start.toSec() <= ros::Time::now().toSec() - initial_time.toSec())
-				{					
-					global_sub_trajectory->points.erase(global_sub_trajectory->points.begin());
-				}
-				else
-				{
-					existOldWp = false;
-				}
-			}
+			if(get_dist(global_sub_trajectory->points[0].transforms[0].translation, odom_pose.translation) <= MIN_WP_DIST)
+				global_sub_trajectory->points.erase(global_sub_trajectory->points.begin());
+		}
 			
 			// Debug
 			#ifdef PRINT_GLOBAL_SUB_TRAJECTORY
