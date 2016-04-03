@@ -15,20 +15,51 @@ typedef enum
     SAR_ZONE_EXPLORATION,       // The UAV explores of the Search & Rescue zone
     NAVIGATE_TO_LANDING_ZONE,   // The UAV returns to the landing zone
     LAND                        // The UAV lands and swithes off motors
-} MissionStates;
+} MissionState;
 
-MissionStates   nextState(const MissionStates &current);
-void            performTask(const MissionStates &current);
-MissionStates   currentState = WAITING;
-DJI::onboardSDK::DJIDrone* drone;
+
+typedef enum
+{
+    GROUND,
+    WAYPOINTS,
+    FOLLOW_ME,
+    FIX_POSITION,
+    MANUAL_CONTROL
+} FlightMode;
+
+
+typedef enum
+{
+    OFF,
+    EXPLORATION,
+    POINT_OF_INTEREST
+} CameraMode;
+
+
+typedef enum
+{
+    OFF,
+    ON
+} GuidanceMode;
+
+
+MissionState                nextState(const MissionState &current);
+void                        performTask(const MissionState &current);
+
+MissionState                currentMissionMode = WAITING;
+FlightMode                  currentFlightMode = GROUND;
+CameraMode                  currentCameraMode = OFF;
+GuidanceMode                currentGuidanceMode = OFF;
+
+DJI::onboardSDK::DJIDrone   *drone;
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "MissionControlNode");
 
     ros::NodeHandle nh;
-    DJI::onboardSDK::DJIDrone* drone = new DJIDrone(nh);
-
+    DJI::onboardSDK::DJIDrone *drone = new DJIDrone(nh);
+    
 
     while(ros::ok())
     {
@@ -81,6 +112,8 @@ void performTask(const MissionStates &current)
         }
         case TAKE_OFF: 
         {
+            drone->takeoff();
+            currentFlightMode = FIX_POSITION;
         }    
         case NAVIGATE_TO_SAR_ZONE: 
         {
