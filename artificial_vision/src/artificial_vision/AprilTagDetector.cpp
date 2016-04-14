@@ -8,38 +8,71 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 
+#include <geometry_msgs/PointStamped.h>
+
 using namespace ros;
 using namespace std;
 using namespace sensor_msgs;
+using namespace AprilTags;
+using namespace geometry_msgs;
 
-
-AprilTagDetector::AprilTagDetector(char *imageTopic, char*infoTopic)
+AprilTagDetector::AprilTagDetector(char *imageTopic, char *infoTopic) : it_(nh_)
 {
 	//Subscription
-	imgSub_.subscribe(nh_, imageTopic, 20);
-	cam_infoSub_.subscribe(nh_infoTopic, 20);
+	imgSub_ = it_.subscribeCamera(imageTopic, 1, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
-	tagPub_ = nh_.advertise<tipo>("tag_position", 1);
+	tagPub_ = nh_.advertise<PointStamped>("tag_position", 1);
 
 	//AprilTag detector initialization
-	tag_detector = new TagDetector(tagCodes16h5);
+	tag_detector_ = new TagDetector(tagCodes16h5);
 
 	return;
 }
 
 AprilTagDetector::~AprilTagDetector()
 {
-	delete tag_detector;
+	delete tag_detector_;
 	return;
 }
 
 void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfoConstPtr& info_msg)
 {
 	//Ros image message to cv format
-	cv::Mat image = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
+	cv::Mat frame = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
+
+	if(frame.empty())
+		return;
 
 	cam_model_.fromCameraInfo(info_msg);
 
-	return 0;
+	vector<TagDetection> tags_detected;
+	vector<Point> tags_position;
+
+	tags_detected = tag_detector_->extractTags(frame);
+
+	Eigen::Matrix4d transform;
+	Eigen::Vector4d origin(0,0,0,1);
+	Eigen::Vector4d tag_vector_pos;
+
+	for(int i=0; i<tags_detected.size(); i++)
+	{
+		if(tags_detected[i].good)
+		{
+			transform = tags_detected[i].getRelativeTransform( 0.25, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
+
+			tag_vector_pos = transform * tag_vector_pos;
+			
+			PointStamped tag_pos;
+			tag_pos.header.stamp = ros::Time::now();
+
+			//Camera system tag coordinates to 3D world coordinates
+			tag_pos.point.x = tag_vector_pos(2);
+			tag_pos.point.y = -1 * tag_vector_pos(0);
+			tag_pos.point.z = -1 * tag_vector_pos(1);
+			
+			tagPub_.publish(tag_pos);
+		}
+	}
+	return;
 }

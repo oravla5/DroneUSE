@@ -16,14 +16,17 @@ class AprilTagDetector
 	image_geometry::PinholeCameraModel	cam_model_;
 
 	image_transport::ImageTransport		it_;
-	image_transport::Subscriber		sub_;
+	image_transport::CameraSubscriber	imgSub_;
 
 	ros::Publisher				tagPub_;
+
+	AprilTags::TagDetector			*tag_detector_;
 	
 	public:
 			AprilTagDetector(char *imageTopic, char* infoTopic);
+			~AprilTagDetector();
 		void	callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
 
-}
+};
 
 #endif

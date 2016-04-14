@@ -142,6 +142,7 @@ aux_source_directory(src/apriltags src1)
 
 ## Declare a C++ executable
 add_executable(apriltag_detector_node src/artificial_vision/AprilTagDetectorNode.cpp
+	src/artificial_vision/AprilTagDetector.cpp
 	${src1}
 	)
 
