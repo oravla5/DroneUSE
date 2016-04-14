@@ -11,17 +11,17 @@ static void Display_Main_Menu(void)
 {
     printf("\r\n");
     printf("+------------- < Main menu > ----------+\n");
-	printf("                    (k)                 ");
-	printf("                     A                  ");	
-	printf("                     |                  ");
-    printf("                     |                  ");
-    printf("                     |                  ");
-    printf(" (h)<------------------------------>(k) ");
-	printf("                     |                  ");
-	printf("                     |                  ");
-    printf("                     |                  ");
-    printf("                     V                  ");
-   	printf("                    (k)                 ");
+	printf("                    (k)                 \n");
+	printf("                     A                  \n");	
+	printf("                     |                  \n");
+    printf("                     |                  \n");
+    printf("                     |                  \n");
+    printf(" (h)<------------------------------>(k) \n");
+	printf("                     |                  \n");
+	printf("                     |                  \n");
+    printf("                     |                  \n");
+    printf("                     V                  \n");
+   	printf("                    (k)                 \n");
     printf("+--------------------------------------+\n");
     printf("input h, j, k and l and then press enter key to move the camera\r\n");
     printf("--------------------------------------\r\n");
@@ -33,6 +33,7 @@ int main(int argc, char **argv)
     int temp32;
     bool valid_flag = false;
     bool err_flag = false;
+    bool exit_flag = true;
     ros::init(argc, argv, "sdk_client");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
         printf("\n Permission Control Acquired\n");
 	
     Display_Main_Menu();
-    while(1)
+    while(exit_flag)
     {
 		ros::spinOnce();
         temp32 = getchar();
@@ -89,6 +90,9 @@ int main(int argc, char **argv)
                 if(drone->gimbal_angle_control(-300, 0, 0, 20, 0))
                     printf("\nGimbal yaw has been decreased 30º");
                 sleep(2);
+                break;
+            case 'q':
+                exit_flag = false;
                 break;
             default:
                 break;

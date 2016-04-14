@@ -139,11 +139,15 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 add_executable(dji_sdk_client src/client.cpp)
+add_executable(dji_sdk_gimbalClient src/gimbalControl_client.cpp)
 target_link_libraries(dji_sdk_client
   ${catkin_LIBRARIES}
 )
+target_link_libraries(dji_sdk_gimbalClient
+  ${catkin_LIBRARIES}
+)
 add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
-
+add_dependencies(dji_sdk_gimbalClient dji_sdk_generate_messages_cpp)
 #############
 ## Install ##
 #############
@@ -160,14 +164,12 @@ add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
 #)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS dji_sdk_client
+install(TARGETS dji_sdk_client 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-catkin_install_python(PROGRAMS script/client.py
-					DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 ## Mark cpp header files for installation
 
 install(DIRECTORY launch
