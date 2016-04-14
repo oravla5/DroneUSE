@@ -14,15 +14,14 @@ class AprilTagDetector
 	ros::NodeHandle				nh_;
 	
 	image_geometry::PinholeCameraModel	cam_model_;
+
 	image_transport::ImageTransport		it_;
 	image_transport::Subscriber		sub_;
 
-	tf::TransformListener			*tf_listener_;
-
-	ros::Publisher				aprilTagPug_;
+	ros::Publisher				tagPub_;
 	
 	public:
-			AprilTagDetector(char *imageTopic, char* infoTopic, char *aprilTag);
+			AprilTagDetector(char *imageTopic, char* infoTopic);
 		void	callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
 
 }
