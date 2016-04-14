@@ -20,7 +20,7 @@ typedef enum
 
 typedef enum
 {
-    GROUND,
+    GROUND
     WAYPOINTS,
     FOLLOW_ME,
     FIX_POSITION,
