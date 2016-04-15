@@ -140,14 +140,20 @@ include_directories(
 # )
 add_executable(dji_sdk_client src/client.cpp)
 add_executable(dji_sdk_gimbalClient src/gimbalControl_client.cpp)
+add_executable(aprilTagFollower src/aprilTagFollower.cpp)
 target_link_libraries(dji_sdk_client
   ${catkin_LIBRARIES}
 )
 target_link_libraries(dji_sdk_gimbalClient
   ${catkin_LIBRARIES}
 )
+target_link_libraries(aprilTagFollower  
+    ${catkin_LIBRARIES}
+)
+
 add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
 add_dependencies(dji_sdk_gimbalClient dji_sdk_generate_messages_cpp)
+add_dependencies(aprilTagFollower dji_sdk_generate_messages_cpp)
 #############
 ## Install ##
 #############
@@ -169,6 +175,12 @@ install(TARGETS dji_sdk_client
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+install(TARGETS aprilTagFollower 
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 ## Mark cpp header files for installation
 
