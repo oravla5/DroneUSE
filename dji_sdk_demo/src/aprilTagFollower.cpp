@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
-    DJIDrone* drone = new DJIDrone(nh);
+    drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
