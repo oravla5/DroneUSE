@@ -22,7 +22,7 @@ AprilTagDetector::AprilTagDetector(char *imageTopic, char *infoTopic) : it_(nh_)
 	imgSub_ = it_.subscribeCamera(imageTopic, 1, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
-	tagPub_ = nh_.advertise<PointStamped>("tag_position", 1);
+	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 1);
 
 	//AprilTag detector initialization
 	tag_detector_ = new TagDetector(tagCodes16h5);
@@ -52,24 +52,20 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	tags_detected = tag_detector_->extractTags(frame);
 
 	Eigen::Matrix4d transform;
-	Eigen::Vector4d origin(0,0,0,1);
-	Eigen::Vector4d tag_vector_pos;
 
 	for(int i=0; i<tags_detected.size(); i++)
 	{
 		if(tags_detected[i].good)
 		{
-			transform = tags_detected[i].getRelativeTransform( 0.25, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
+			transform = tags_detected[i].getRelativeTransform( 0.155, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
 
-			tag_vector_pos = transform * tag_vector_pos;
-			
 			PointStamped tag_pos;
 			tag_pos.header.stamp = ros::Time::now();
 
 			//Camera system tag coordinates to 3D world coordinates
-			tag_pos.point.x = tag_vector_pos(2);
-			tag_pos.point.y = -1 * tag_vector_pos(0);
-			tag_pos.point.z = -1 * tag_vector_pos(1);
+			tag_pos.point.x = transform(2,3);
+			tag_pos.point.y = -1 * transform(0,3);
+			tag_pos.point.z = -1 * transform(1,3);
 			
 			tagPub_.publish(tag_pos);
 		}
