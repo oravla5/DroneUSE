@@ -17,9 +17,12 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
     int     pitch   = atan2(z,x)*180/C_PI*10;
-    int     yaw     = atan2(z,y)*180/C_PI*10;
+    int     yaw     = atan2(y,x)*180/C_PI*10;
     if(drone->gimbal_angle_control(0, pitch, yaw, 2, 1))
-        printf("\n Gimbal Position Refreshed\n");
+    {
+        printf("Gimbal Position Refreshed.\n");
+        printf("Pitch = %d\n Yaw = %d", pitch, yaw);
+    }
 }
 
 int main(int argc, char **argv)
