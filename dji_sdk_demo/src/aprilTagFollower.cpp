@@ -16,10 +16,11 @@ PID*        pidController;
 float       pitch;
 float       yaw;
 
-
+/*
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
 
+	
     int phi = drone->gimbal.pitch;
     int lam = drone->gimbal.yaw;
 
@@ -44,24 +45,27 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     pitch   = atan2(z,r_proy)*180/C_PI*10;
     yaw     = atan2(y,x)*180/C_PI*10;
     printf("Pitch = %f\n Yaw = %f\n ------------------\n", pitch, yaw);
-}
+}*/
 
 int main(int argc, char **argv)
 {
-    int direction;
     pitch   = 0.0;
     yaw     = 0.0;
     ros::init(argc, argv, "aprilTagFollower");
-    ROS_INFO("sdk_service_client_test");
+    ROS_INFO("droneuse_camera_control");
     ros::NodeHandle nh;
     drone = new DJIDrone(nh);
-    pidController = new PID(100.0,-100.0,1.0,0,0);
+    pidController = new PID(200.0,-200.0,10.0,0.0,0.0);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
-    ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    while(ros::ok());
+//    ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
+    while(nh.ok())
     {
-        ros::spinOnce();
+	ros::spinOnce();
+
+	drone->gimbal_angle_control(0,0,0,20,1);
+
+        /*
         float phi = drone->gimbal.pitch;
         float lam = drone->gimbal.yaw;
         int pitch_rate    = pidController->calculate(1.0, pitch, phi);
@@ -69,11 +73,15 @@ int main(int argc, char **argv)
         if(drone->gimbal_speed_control(0, pitch_rate, -yaw_rate))
         {
             printf("\nGimbal Position Refreshed.\n");
+		printf("Pitch = %f\n Yaw = %f\n", phi, lam);
+	        printf("Pitch_rate = %d\n Yaw_rate = %d\n ------------------\n", pitch_rate, -yaw_rate);
         }
         else
             printf("\n Gimbal Position Refreshing failed\n");
-        printf("Pitch_rate = %d\n Yaw_rate = %d\n ------------------\n", pitch_rate, yaw_rate);
+//        printf("Pitch_rate = %d\n Yaw_rate = %d\n ------------------\n", pitch_rate, yaw_rate);
+    }
+	printf("Termina el bucle \n");    
+*/
     }
     return 0;
-
 }
