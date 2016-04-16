@@ -38,11 +38,12 @@ int main(int argc, char **argv)
         printf("\n Permission Control Acquired \n");
     //ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
-    PID* yawControl = new PID(1000.0,-1000.0,30.0,0.0,0.0);
+    PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
+    float uav_yaw = atan2(drone->compass.y, drone->compass.x);
     int pitch_rate = 0;
     int yaw_rate = 0;
     target_pitch = 0.0;
-    target_yaw   = 0.0;   
+    target_yaw   = uav_yaw;   
     int count = 0;
     float gimbal_pitch;
     float gimbal_yaw;
