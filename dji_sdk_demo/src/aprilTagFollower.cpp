@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     {
 	ros::spinOnce();
 
-	drone->gimbal_angle_control(0,0,200,20,0);
+	drone->gimbal_angle_control(0,0,200,20,1);
     sleep(2);
 
         /*
