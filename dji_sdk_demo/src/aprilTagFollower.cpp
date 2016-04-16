@@ -6,10 +6,13 @@
 #include <actionlib/client/terminal_state.h>
 #include <geometry_msgs/PointStamped.h>
 #include <math.h>
+#include <iostream>
+#include <pid.h>
 #define C_PI (double) 3.141592653589793
 
 using namespace DJI::onboardSDK;
-DJIDrone* drone;
+float       tPitch;
+//float       yaw;
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
@@ -17,34 +20,42 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
-    int     pitch   = atan2(z,r_proy)*180/C_PI*10;
-    int     yaw     = -atan2(y,x)*180/C_PI*10;
-    if(drone->gimbal_angle_control(0, pitch, yaw, 10, 1))
-    {
-        printf("\nGimbal Position Refreshed.\n");
-    }
-    else
-        printf("\n Gimbal Position Refreshing failed\n");
-    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
+            tPitch  = atan2(z,r_proy)*180/C_PI;
+
+       // printf("\n Gimbal Position Refreshing failed\n");
+//    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
    // printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, (drone->gimbal.yaw+180)%360);
 }
 
 int main(int argc, char **argv)
 {
-    int direction;
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
-    drone = new DJIDrone(nh);
+    ros::Rate rate(20);
+    DJI* drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    while(ros::ok())
+    PID* pitchControl = new PID(200.0,-200.0,1.0,0.0,0.0);
+    tPitch = 0.0;
+    int count = 0;
+    cout << "\n";
+    while(nh.ok())
     {   
+        count++;
         ros::spinOnce();
-        sleep(2);
-        printf("gimbal pitch = %f\n gimbal yaw = %f\n gimbal roll= %f\n--------------\n", drone->gimbal.pitch, (drone->gimbal.yaw), drone->gimbal.roll);
-
+        gimPitch = drone->gimbal.pitch;
+        int pitch_rate    = pitchControl->calculate(1.0, tPitch, gimPitch);
+        drone->gimbal_speed_contro(0, pitch_rate*10, 0);
+        if((count%20)==0)
+        {
+            cout << "Target Pitch = " << tPitch << "\n";
+            cout << "Gimbal Pitch = " << gimPitch << "\n";
+            cout << "Pitch Rate = " << pitch_rate << "\n";
+            cout << "-----------------------------------";
+        }
+        rate.sleep();
     }
     //ros::spin();
     return 0;
