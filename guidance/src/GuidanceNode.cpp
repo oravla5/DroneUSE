@@ -22,26 +22,7 @@
 #include <geometry_msgs/Vector3Stamped.h> //velocity
 #include <sensor_msgs/LaserScan.h> //obstacle distance & ultrasonic
 
-ros::Publisher cam1_depth_image_pub;
-ros::Publisher cam1_left_image_pub;
-ros::Publisher cam1_right_image_pub;
-
-ros::Publisher cam2_depth_image_pub;
-ros::Publisher cam2_left_image_pub;
-ros::Publisher cam2_right_image_pub;
-
-ros::Publisher cam3_depth_image_pub;
-ros::Publisher cam3_left_image_pub;
-ros::Publisher cam3_right_image_pub;
-
-ros::Publisher cam4_depth_image_pub;
-ros::Publisher cam4_left_image_pub;
-ros::Publisher cam4_right_image_pub;
-
-ros::Publisher cam0_depth_image_pub;
-ros::Publisher cam0_left_image_pub;
-ros::Publisher cam0_right_image_pub;
-
+ros::Publisher depth_image_pub;
 ros::Publisher imu_pub;
 ros::Publisher obstacle_distance_pub;
 ros::Publisher velocity_pub;
@@ -50,6 +31,8 @@ ros::Publisher position_pub;
 
 
 using namespace cv;
+
+int cam_index = 0;
 
 int WIDTH=320;
 int HEIGHT=240;
@@ -96,8 +79,6 @@ int my_callback(int data_type, int data_len, char *content)
     {        
         image_data* data = (image_data*)content;
 
-		for(int cam_index=0; cam_index<CAMERA_PAIR_NUM; cam_index++)
-		{
 		if ( data->m_greyscale_image_left[cam_index] ){
 			memcpy(g_greyscale_image_left.data, data->m_greyscale_image_left[cam_index], IMAGE_SIZE);
 			// publish left greyscale image
@@ -106,26 +87,6 @@ int my_callback(int data_type, int data_len, char *content)
 			left_8.header.frame_id  = "guidance";
 			left_8.header.stamp	= ros::Time::now();
 			left_8.encoding		= sensor_msgs::image_encodings::MONO8;
-			
-			switch(cam_index)
-			{
-				case 0:
-					cam0_left_image_pub.publish(left_8.toImageMsg());	
-					break;
-				case 1:
-					cam1_left_image_pub.publish(left_8.toImageMsg());	
-					break;
-				case 2:
-					cam2_left_image_pub.publish(left_8.toImageMsg());	
-					break;
-				case 3:
-					cam3_left_image_pub.publish(left_8.toImageMsg());	
-					break;
-				case 4:
-					cam4_left_image_pub.publish(left_8.toImageMsg());	
-					break;
-			}
-
 		}
 
 		if ( data->m_greyscale_image_right[cam_index] ){
@@ -136,25 +97,6 @@ int my_callback(int data_type, int data_len, char *content)
 			right_8.header.frame_id  = "guidance";
 			right_8.header.stamp	 = ros::Time::now();
 			right_8.encoding  	 = sensor_msgs::image_encodings::MONO8;
-
-			switch(cam_index)
-			{
-				case 0:
-					cam0_right_image_pub.publish(right_8.toImageMsg());	
-					break;
-				case 1:
-					cam1_right_image_pub.publish(right_8.toImageMsg());	
-					break;
-				case 2:
-					cam2_right_image_pub.publish(right_8.toImageMsg());	
-					break;
-				case 3:
-					cam3_right_image_pub.publish(right_8.toImageMsg());	
-					break;
-				case 4:
-					cam4_right_image_pub.publish(right_8.toImageMsg());	
-					break;
-			}
 		}
 
 		if ( data->m_depth_image[cam_index] ){
@@ -166,26 +108,6 @@ int my_callback(int data_type, int data_len, char *content)
 			depth_16.header.frame_id  = "guidance";
 			depth_16.header.stamp	  = ros::Time::now();
 			depth_16.encoding	  = sensor_msgs::image_encodings::MONO16;
-
-			switch(cam_index)
-			{
-				case 0:
-					cam0_depth_image_pub.publish(depth_16.toImageMsg());	
-					break;
-				case 1:
-					cam1_depth_image_pub.publish(depth_16.toImageMsg());	
-					break;
-				case 2:
-					cam2_depth_image_pub.publish(depth_16.toImageMsg());	
-					break;
-				case 3:
-					cam3_depth_image_pub.publish(depth_16.toImageMsg());	
-					break;
-				case 4:
-					cam4_depth_image_pub.publish(depth_16.toImageMsg());	
-					break;
-			}
-		}
                 }
     }
 
@@ -297,30 +219,12 @@ std::cout<<"Error: "<<(e_sdk_err_code)err_code<<" at "<<__LINE__<<","<<__FILE__<
 
 int main(int argc, char** argv)
 {
+
     /* initialize ros */
     ros::init(argc, argv, "GuidanceNode");
     ros::NodeHandle my_node;
 
-    cam1_depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam1/depth_image",1);
-    cam1_left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam1/left/image_raw",1);
-    cam1_right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam1/right/image_raw",1);
-
-    cam2_depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam2/depth_image",1);
-    cam2_left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam2/left/image_raw",1);
-    cam2_right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam2/right/image_raw",1);
-
-    cam3_depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam3/depth_image",1);
-    cam3_left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam3/left/image_raw",1);
-    cam3_right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam3/right/image_raw",1);
-
-    cam4_depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam4/depth_image",1);
-    cam4_left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam4/left/image_raw",1);
-    cam4_right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam4/right/image_raw",1);
-
-    cam0_depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam0/depth_image",1);
-    cam0_left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam0/left/image_raw",1);
-    cam0_right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/cam0/right/image_raw",1);
-
+    depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/depth_image",1);
     imu_pub  		= my_node.advertise<geometry_msgs::TransformStamped>("/guidance/imu",1);
     velocity_pub  	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/velocity",1);
     obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
@@ -350,35 +254,11 @@ int main(int argc, char** argv)
         std::cout<<cali[i].cu<<"\t"<<cali[i].cv<<"\t"<<cali[i].focal<<"\t"<<cali[i].baseline<<std::endl;
 	}
 	
-	err_code = set_image_frequecy(e_frequecy_5);
+	err_code = set_image_frequecy(e_frequecy_20);
 	RETURN_IF_ERR(err_code);
 
     /* select data */
-    err_code = select_greyscale_image(e_vbus1, true);
-	RETURN_IF_ERR(err_code);
-    err_code = select_greyscale_image(e_vbus1, false);
-	RETURN_IF_ERR(err_code);
-    err_code = select_depth_image(e_vbus1);
-	RETURN_IF_ERR(err_code);
-
-    err_code = select_greyscale_image(e_vbus2, true);
-	RETURN_IF_ERR(err_code);
-    err_code = select_greyscale_image(e_vbus2, false);
-	RETURN_IF_ERR(err_code);
-
-    err_code = select_greyscale_image(e_vbus3, true);
-	RETURN_IF_ERR(err_code);
-    err_code = select_greyscale_image(e_vbus3, false);
-	RETURN_IF_ERR(err_code);
-
-    err_code = select_greyscale_image(e_vbus4, true);
-	RETURN_IF_ERR(err_code);
-    err_code = select_greyscale_image(e_vbus4, false);
-	RETURN_IF_ERR(err_code);
-
-    err_code = select_greyscale_image(e_vbus5, true);
-	RETURN_IF_ERR(err_code);
-    err_code = select_greyscale_image(e_vbus5, false);
+    err_code = select_depth_image(e_vbus5);
 	RETURN_IF_ERR(err_code);
 
     select_imu();
@@ -391,6 +271,7 @@ int main(int argc, char** argv)
     std::cout<<"(width, height)="<<WIDTH<<", "<<HEIGHT<<std::endl;
     err_code = set_sdk_event_handler(my_callback);
     RETURN_IF_ERR(err_code);
+
     err_code = start_transfer();
     RETURN_IF_ERR(err_code);
 	
@@ -408,9 +289,26 @@ int main(int argc, char** argv)
 
 	std::cout << "start_transfer" << std::endl;
 
+
 	while (ros::ok())
 	{
 		ros::spinOnce();
+		if(++cam_index > 4)
+			cam_index = 0;
+		err_code = stop_transfer();
+			RETURN_IF_ERR(err_code);
+    		reset_config();
+
+    		/* select data */
+    		err_code = select_depth_image(e_vbus1);
+			RETURN_IF_ERR(err_code);
+    		select_imu();
+    		select_ultrasonic();
+    		select_obstacle_distance();
+    		select_velocity();
+
+    		err_code = start_transfer();
+    			RETURN_IF_ERR(err_code);
 	}
 
 	/* release data transfer */
