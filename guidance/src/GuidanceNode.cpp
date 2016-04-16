@@ -354,31 +354,40 @@ int main(int argc, char** argv)
 	RETURN_IF_ERR(err_code);
 
     /* select data */
+/*
     err_code = select_greyscale_image(e_vbus1, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(e_vbus1, false);
 	RETURN_IF_ERR(err_code);
-    err_code = select_depth_image(e_vbus1);
+  */  err_code = select_depth_image(e_vbus1);
 	RETURN_IF_ERR(err_code);
 
-    err_code = select_greyscale_image(e_vbus2, true);
+    /*err_code = select_greyscale_image(e_vbus2, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(e_vbus2, false);
 	RETURN_IF_ERR(err_code);
+   */ err_code = select_depth_image(e_vbus2);
+	RETURN_IF_ERR(err_code);
 
-    err_code = select_greyscale_image(e_vbus3, true);
+   /* err_code = select_greyscale_image(e_vbus3, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(e_vbus3, false);
 	RETURN_IF_ERR(err_code);
+    */err_code = select_depth_image(e_vbus3);
+	RETURN_IF_ERR(err_code);
 
-    err_code = select_greyscale_image(e_vbus4, true);
+   /* err_code = select_greyscale_image(e_vbus4, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(e_vbus4, false);
 	RETURN_IF_ERR(err_code);
+   */ err_code = select_depth_image(e_vbus4);
+	RETURN_IF_ERR(err_code);
 
-    err_code = select_greyscale_image(e_vbus5, true);
+    /*err_code = select_greyscale_image(e_vbus5, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(e_vbus5, false);
+	RETURN_IF_ERR(err_code);
+    */err_code = select_depth_image(e_vbus5);
 	RETURN_IF_ERR(err_code);
 
     select_imu();
