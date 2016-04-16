@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     //ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    PID* pitchControl = new PID(900.0,-900.0,15.0,0.0,0.0);
+    PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
     int pitch_rate = 0;
     target_pitch = 0.0;
     int count = 0;
