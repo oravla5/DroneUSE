@@ -19,9 +19,26 @@
 #include <geometry_msgs/Vector3Stamped.h> //velocity
 #include <sensor_msgs/LaserScan.h> //obstacle distance && ultrasonic
 
-ros::Subscriber left_image_sub;
-ros::Subscriber right_image_sub;
-ros::Subscriber depth_image_sub;
+ros::Subscriber cam0_left_image_sub;
+ros::Subscriber cam0_right_image_sub;
+ros::Subscriber cam0_epth_image_sub;
+
+ros::Subscriber cam1_left_image_sub;
+ros::Subscriber cam1_right_image_sub;
+ros::Subscriber cam1_epth_image_sub;
+
+ros::Subscriber cam2_left_image_sub;
+ros::Subscriber cam2_right_image_sub;
+ros::Subscriber cam2_epth_image_sub;
+
+ros::Subscriber cam3_left_image_sub;
+ros::Subscriber cam3_right_image_sub;
+ros::Subscriber cam3_epth_image_sub;
+
+ros::Subscriber cam4_left_image_sub;
+ros::Subscriber cam4_right_image_sub;
+ros::Subscriber cam4_epth_image_sub;
+
 ros::Subscriber imu_sub;
 ros::Subscriber velocity_sub;
 ros::Subscriber obstacle_distance_sub;
