@@ -62,6 +62,9 @@ int main(int argc, char **argv)
     if(drone->gimbal_angle_control(150,150,150,20,1))
         printf("\nGimbal Position Refreshed.\n");
     sleep(20);
+    float phi = drone->gimbal.pitch;
+    float lam = drone->gimbal.yaw;
+    printf("Pitch = %f\n Yaw = %f\n ------------------\n", phi, lam);
     while(nh.ok())
     {
 	ros::spinOnce();
