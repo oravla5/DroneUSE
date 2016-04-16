@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dji_sdk_demo)
+project(mission_control)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   dji_sdk
+  dji_sdk_lib
+  roscpp
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -67,7 +68,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
+#   std_msgs
 # )
 
 ################################################
@@ -101,9 +102,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dji_sdk_demo
-#  CATKIN_DEPENDS dji_sdk roscpp 
-#  DEPENDS dji_sdk
+#  LIBRARIES m100_control
+#  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -114,80 +115,60 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
- 	${catkin_INCLUDE_DIRS}
-    include/pidController
+    ${catkin_INCLUDE_DIRS}
+    include/uavController
 )
 
 ## Declare a C++ library
-# add_library(dji_sdk_demo
-#   src/${PROJECT_NAME}/dji_sdk_demo.cpp
+# add_library(m100_control
+#   src/${PROJECT_NAME}/m100_control.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(dji_sdk_demo ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(m100_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(dji_sdk_demo_node src/dji_sdk_demo_node.cpp)
+# add_executable(m100_control_node src/m100_control_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(dji_sdk_demo_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(m100_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(dji_sdk_demo_node
+# target_link_libraries(m100_control_node
 #   ${catkin_LIBRARIES}
 # )
-add_executable(dji_sdk_client src/client.cpp)
-add_executable(dji_sdk_gimbalClient src/gimbalControl_client.cpp)
-add_executable(aprilTagFollower src/aprilTagFollower.cpp src/pidController/pid.cpp)
-target_link_libraries(dji_sdk_client
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(dji_sdk_gimbalClient
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(aprilTagFollower  
-    ${catkin_LIBRARIES}
-)
 
-add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
-add_dependencies(dji_sdk_gimbalClient dji_sdk_generate_messages_cpp)
-add_dependencies(aprilTagFollower dji_sdk_generate_messages_cpp)
 #############
 ## Install ##
 #############
-
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-#catkin_install_python(PROGRAMS
-#   src/client.py
+# install(PROGRAMS
+#   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+# )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS dji_sdk_client 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS aprilTagFollower 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
+# install(TARGETS m100_control m100_control_node
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-)
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1
@@ -200,7 +181,7 @@ install(DIRECTORY launch
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji_sdk_demo.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_m100_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
