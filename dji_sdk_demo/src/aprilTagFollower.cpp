@@ -7,36 +7,47 @@
 #include <geometry_msgs/PointStamped.h>
 #include <math.h>
 #include <pid.h>
+#include <Eigen/Dense>
 #define C_PI (double) 3.141592653589793
 
 using namespace DJI::onboardSDK;
 DJIDrone*   drone;
 PID*        pidController;
+float       pitch;
+float       yaw;
+
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
+
+    int phi = drone->gimbal.pitch;
+    int lam = drone->gimbal.yaw;
+
+    Eigen::Matrix3d mat_rot;
+    mat_rot << cos(lam)*cos(phi),  -sin(lam),  -cos(lam)*sin(phi),
+               cos(phi)*sin(lam),  cos(lam),   -sin(lam)*sin(phi),
+               sin(phi),           0,          cos(phi);
+    
     float   x       = geom_msgs.point.x;
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
+    Eigen::Vector3d pos_rel(x,y,z);
+    Eigen::Vector3d pos_global;
+    pos_global = mat_rot*pos_rel;
+
+    x = pos_global(0);
+    y = pos_global(1);
+    z = pos_global(2);
+
     float   r_proy  = sqrt(x*x +  y*y);
-    float     pitch   = atan2(z,r_proy)*180/C_PI*10;
-    float     yaw     = atan2(y,x)*180/C_PI*10;
-    int pitch_rate    = pidController->calculate(1.0, pitch, 0.0);
-    int yaw_rate      = pidController->calculate(1.0, yaw, 0.0);
-    if(drone->gimbal_speed_control(0, pitch_rate, yaw_rate))
-    {
-        printf("\nGimbal Position Refreshed.\n");
-    }
-    else
-        printf("\n Gimbal Position Refreshing failed\n");
-    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch_rate, yaw_rate);
-
-
+    pitch   = atan2(z,r_proy)*180/C_PI*10;
+    yaw     = atan2(y,x)*180/C_PI*10;
 }
 
 int main(int argc, char **argv)
 {
     int direction;
+
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
@@ -45,8 +56,22 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-   
-    ros::spin();
+    while(ros::ok());
+    {
+        float phi = drone->gimbal.pitch;
+        float lam = drone->gimbal.yaw;
+        int pitch_rate    = pidController->calculate(1.0, pitch, phi);
+        int yaw_rate      = pidController->calculate(1.0, yaw, lam);
+        if(drone->gimbal_speed_control(0, pitch_rate, -yaw_rate))
+        {
+            printf("\nGimbal Position Refreshed.\n");
+        }
+        else
+            printf("\n Gimbal Position Refreshing failed\n");
+        printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch_rate, yaw_rate);
+        ros::spinOnce();
+
+    }
     return 0;
 
 }
