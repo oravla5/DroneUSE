@@ -62,11 +62,12 @@ int main(int argc, char **argv)
             std::cout << "Target Pitch = " << target_pitch << "\n";
             std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             std::cout << "Pitch Rate = " << pitch_rate << "\n";
-            std::cout << "-----------------------------------\n";
+            std::cout << "----------------------------------------\n";
             std::cout << "Target Yaw = " << target_yaw << "\n";
             std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
             std::cout << "Yaw Rate = " << yaw_rate << "\n";
-            std::cout << "-----------------------------------\n";
+            std::cout << "x compass = " << drone->compass.x << "y compass = " << drone->compass.y;
+            std::cout << "----------------------------------------\n";
         }
         rate.sleep();
     }
