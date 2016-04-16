@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
-        printf("\n Permission Control Acquired\n");
+        printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
    
     ros::spin();
