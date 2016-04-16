@@ -5,6 +5,8 @@ project(mission_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dji_sdk
+  dji_sdk_lib
   roscpp
   std_msgs
 )
@@ -101,7 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mission_control
-#  CATKIN_DEPENDS roscpp std_msgs
+#  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -119,7 +121,9 @@ include_directories(
 ## Declare a C++ library
 # add_library(mission_control
 #   src/${PROJECT_NAME}/mission_control.cpp
-# )
+    ${catkin_INCLUDE_DIRS}
+)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
