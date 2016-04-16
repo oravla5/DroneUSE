@@ -33,27 +33,28 @@ int main(int argc, char **argv)
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
     ros::Rate rate(20);
-    DJI* drone = new DJIDrone(nh);
+    DJIDrone* drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
     PID* pitchControl = new PID(200.0,-200.0,1.0,0.0,0.0);
     tPitch = 0.0;
     int count = 0;
-    cout << "\n";
+    float gimPitch;
+    std::cout << "\n";
     while(nh.ok())
     {   
         count++;
         ros::spinOnce();
         gimPitch = drone->gimbal.pitch;
         int pitch_rate    = pitchControl->calculate(1.0, tPitch, gimPitch);
-        drone->gimbal_speed_contro(0, pitch_rate*10, 0);
+        drone->gimbal_speed_control(0, pitch_rate*10, 0);
         if((count%20)==0)
         {
-            cout << "Target Pitch = " << tPitch << "\n";
-            cout << "Gimbal Pitch = " << gimPitch << "\n";
-            cout << "Pitch Rate = " << pitch_rate << "\n";
-            cout << "-----------------------------------";
+            std::cout << "Target Pitch = " << tPitch << "\n";
+            std::cout << "Gimbal Pitch = " << gimPitch << "\n";
+            std::cout << "Pitch Rate = " << pitch_rate << "\n";
+            std::cout << "-----------------------------------";
         }
         rate.sleep();
     }
