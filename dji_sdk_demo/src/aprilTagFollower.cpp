@@ -39,6 +39,9 @@ int main(int argc, char **argv)
     //ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
     PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
+    int compassX = drone->compass.x;
+    int compassY = drone->compass.y;
+    std::cout << compassX << "\n";
     float uav_yaw = atan2(drone->compass.y, drone->compass.x);
     int pitch_rate = 0;
     int yaw_rate = 0;
@@ -66,7 +69,7 @@ int main(int argc, char **argv)
             std::cout << "Target Yaw = " << target_yaw << "\n";
             std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
             std::cout << "Yaw Rate = " << yaw_rate << "\n";
-            std::cout << "x compass = " << drone->compass.x << "y compass = " << drone->compass.y;
+            std::cout << "x compass = " << compassX << "y compass = " << compassY;
             std::cout << "----------------------------------------\n";
         }
         rate.sleep();
