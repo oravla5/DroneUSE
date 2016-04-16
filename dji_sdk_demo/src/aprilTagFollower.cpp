@@ -11,22 +11,22 @@
 #define C_PI (double) 3.141592653589793
 
 using namespace DJI::onboardSDK;
-float       tPitch;
+float       target_pitch;
 //float       yaw;
-
+/*
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
     float   x       = geom_msgs.point.x;
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
-            tPitch  = atan2(z,r_proy)*180/C_PI;
+            target_pitch  = atan2(z,r_proy)*180/C_PI;
 
        // printf("\n Gimbal Position Refreshing failed\n");
 //    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
    // printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, (drone->gimbal.yaw+180)%360);
 }
-
+*/
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "aprilTagFollower");
@@ -37,22 +37,23 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    PID* pitchControl = new PID(200.0,-200.0,1.0,0.0,0.0);
-    tPitch = 0.0;
+    PID* pitchControl = new PID(200.0,-200.0,10.0,0.0,0.0);
+    int pitch_rate = 0;
+    target_pitch = 0.0;
     int count = 0;
-    float gimPitch;
+    float gimbal_pitch;
     std::cout << "\n";
     while(nh.ok())
     {   
         count++;
         ros::spinOnce();
-        gimPitch = drone->gimbal.pitch;
-        int pitch_rate    = pitchControl->calculate(1.0, tPitch, gimPitch);
-        drone->gimbal_speed_control(0, pitch_rate*10, 0);
+        gimbal_pitch = drone->gimbal.pitch;
+        pitch_rate    = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
+        drone->gimbal_speed_control(0, pitch_rate, 0);
         if((count%20)==0)
         {
-            std::cout << "Target Pitch = " << tPitch << "\n";
-            std::cout << "Gimbal Pitch = " << gimPitch << "\n";
+            std::cout << "Target Pitch = " << target_pitch << "\n";
+            std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             std::cout << "Pitch Rate = " << pitch_rate << "\n";
             std::cout << "-----------------------------------";
         }
