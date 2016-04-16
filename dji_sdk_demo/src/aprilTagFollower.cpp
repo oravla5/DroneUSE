@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
 //    ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    if(drone->gimbal_angle_control(100,100,100,20,1))
+    if(drone->gimbal_angle_control(150,150,150,20,1))
         printf("\nGimbal Position Refreshed.\n");
     sleep(20);
     while(nh.ok())
