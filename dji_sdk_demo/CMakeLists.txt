@@ -11,7 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package( PkgConfig REQUIRED)
+pkg_check_modules( EIGEN REQUIRED eigen3)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -115,6 +116,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
  	${catkin_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIRS}
     include/pidController
 )
 
@@ -150,6 +152,7 @@ target_link_libraries(dji_sdk_gimbalClient
 )
 target_link_libraries(aprilTagFollower  
     ${catkin_LIBRARIES}
+    ${EIGEN_LIBRARIES}
 )
 
 add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
