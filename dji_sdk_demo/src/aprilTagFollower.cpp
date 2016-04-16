@@ -26,7 +26,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     else
         printf("\n Gimbal Position Refreshing failed\n");
     printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
-    printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, (drone->gimbal.yaw+180)%360);
+   // printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, (drone->gimbal.yaw+180)%360);
 }
 
 int main(int argc, char **argv)
