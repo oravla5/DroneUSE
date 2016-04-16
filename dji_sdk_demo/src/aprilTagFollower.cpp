@@ -26,7 +26,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     else
         printf("\n Gimbal Position Refreshing failed\n");
     printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
-    printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, drone->gimbal.yaw);
+    printf("gimbal pitch = %f\n gimbal yaw = %f\n --------------\n", drone->gimbal.pitch, (drone->gimbal.yaw+180)%360);
 }
 
 int main(int argc, char **argv)
@@ -39,8 +39,14 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-   
-    ros::spin();
+    while(ros::ok())
+    {   
+        ros::spinOnce();
+        sleep(2);
+        printf("gimbal pitch = %f\n gimbal yaw = %f\n gimbal roll= %f\n--------------\n", drone->gimbal.pitch, (drone->gimbal.yaw), drone->gimbal.roll);
+
+    }
+    //ros::spin();
     return 0;
 
 }
