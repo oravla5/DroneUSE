@@ -48,8 +48,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 int main(int argc, char **argv)
 {
     int direction;
-    pitch   = 0;
-    yaw     = 0;
+    pitch   = 0.0;
+    yaw     = 0.0;
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
