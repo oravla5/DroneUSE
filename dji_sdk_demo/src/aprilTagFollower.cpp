@@ -12,6 +12,8 @@
 using namespace DJI::onboardSDK;
 DJIDrone*   drone;
 PID*        pidController;
+float pitch;
+float yaw;
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
@@ -19,8 +21,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
-    float     pitch   = atan2(z,r_proy)*180/C_PI*10;
-    float     yaw     = atan2(y,x)*180/C_PI*10;
+    pitch   = atan2(z,r_proy)*180/C_PI*10;
+    yaw     = -atan2(y,x)*180/C_PI*10;
     int pitch_rate    = pidController->calculate(1.0, pitch, 0.0);
     int yaw_rate      = pidController->calculate(1.0, yaw, 0.0);
     if(drone->gimbal_speed_control(0, pitch_rate, yaw_rate))
@@ -41,7 +43,7 @@ int main(int argc, char **argv)
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
     drone = new DJIDrone(nh);
-    pidController = new PID(900.0,-900.0,10.0,0,0);
+    pidController = new PID(100.0,-100.0,1.0,0,0);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
