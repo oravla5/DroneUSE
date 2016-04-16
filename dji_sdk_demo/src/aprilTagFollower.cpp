@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 //    ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
     if(drone->gimbal_angle_control(150,150,150,20,1))
         printf("\nGimbal Position Refreshed.\n");
-    sleep(20);
+    sleep(5);
     float phi = drone->gimbal.pitch;
     float lam = drone->gimbal.yaw;
     printf("Pitch = %f\n Yaw = %f\n ------------------\n", phi, lam);
