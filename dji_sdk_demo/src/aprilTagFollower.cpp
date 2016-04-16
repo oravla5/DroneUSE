@@ -12,7 +12,7 @@
 
 using namespace DJI::onboardSDK;
 float       target_pitch;
-//float       yaw;
+float       target_yaw;
 /*
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
@@ -38,23 +38,33 @@ int main(int argc, char **argv)
         printf("\n Permission Control Acquired \n");
     //ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
+    PID* yawControl = new PID(1000.0,-1000.0,30.0,0.0,0.0);
     int pitch_rate = 0;
+    int yaw_rate = 0;
     target_pitch = 0.0;
+    target_yaw   = 0.0;   
     int count = 0;
     float gimbal_pitch;
+    float gimbal_yaw;
     std::cout << "\n";
     while(nh.ok())
     {   
         count++;
         ros::spinOnce();
         gimbal_pitch = drone->gimbal.pitch;
+        gimbal_yaw = drone->gimbal.yaw;
         pitch_rate    = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
-        drone->gimbal_speed_control(0, pitch_rate, 0);
+        yaw_rate    = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
+        drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
         if((count%20)==0)
         {
             std::cout << "Target Pitch = " << target_pitch << "\n";
             std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             std::cout << "Pitch Rate = " << pitch_rate << "\n";
+            std::cout << "-----------------------------------\n";
+            std::cout << "Target Yaw = " << target_yaw << "\n";
+            std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
+            std::cout << "Yaw Rate = " << yaw_rate << "\n";
             std::cout << "-----------------------------------\n";
         }
         rate.sleep();
