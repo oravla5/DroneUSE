@@ -125,9 +125,22 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "GuidanceNodeTest");
     ros::NodeHandle my_node;
 
-    left_image_sub        = my_node.subscribe("/guidance/left_image",  10, left_image_callback);
-    right_image_sub       = my_node.subscribe("/guidance/right_image", 10, right_image_callback);
-    depth_image_sub       = my_node.subscribe("/guidance/depth_image", 10, depth_image_callback);
+    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
+    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+
+    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
+    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+
+    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
+    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+
+    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
+    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+
+    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
+    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+
+    //depth_image_sub       = my_node.subscribe("/guidance/depth_image", 10, depth_image_callback);
     imu_sub               = my_node.subscribe("/guidance/imu", 1, imu_callback);
     velocity_sub          = my_node.subscribe("/guidance/velocity", 1, velocity_callback);
     obstacle_distance_sub = my_node.subscribe("/guidance/obstacle_distance", 1, obstacle_distance_callback);
