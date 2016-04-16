@@ -12,7 +12,7 @@
 
 using namespace DJI::onboardSDK;
 DJIDrone*   drone;
-PID*        pidController;
+//PID*        pidController;
 float       pitch;
 float       yaw;
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     ROS_INFO("droneuse_camera_control");
     ros::NodeHandle nh;
     drone = new DJIDrone(nh);
-    pidController = new PID(200.0,-200.0,10.0,0.0,0.0);
+    //pidController = new PID(200.0,-200.0,10.0,0.0,0.0);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
 //    ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
@@ -63,7 +63,8 @@ int main(int argc, char **argv)
     {
 	ros::spinOnce();
 
-	drone->gimbal_angle_control(0,0,0,20,1);
+	drone->gimbal_angle_control(0,0,200,20,0);
+    sleep(2);
 
         /*
         float phi = drone->gimbal.pitch;
