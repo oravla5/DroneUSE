@@ -128,17 +128,17 @@ int main(int argc, char** argv)
     cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
     cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
 
-    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
-    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+    cam1_left_image_sub        = my_node.subscribe("/guidance/cam1/left/image_raw",  10, cam1_left_image_callback);
+    cam1_right_image_sub       = my_node.subscribe("/guidance/cam1/right/image_raw", 10, cam1_right_image_callback);
 
-    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
-    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+    cam2_left_image_sub        = my_node.subscribe("/guidance/cam2/left/image_raw",  10, cam2_left_image_callback);
+    cam2_right_image_sub       = my_node.subscribe("/guidance/cam2/right/image_raw", 10, cam2_right_image_callback);
 
-    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
-    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+    cam3_left_image_sub        = my_node.subscribe("/guidance/cam3/left/image_raw",  10, cam3_left_image_callback);
+    cam3_right_image_sub       = my_node.subscribe("/guidance/cam3/right/image_raw", 10, cam3_right_image_callback);
 
-    cam0_left_image_sub        = my_node.subscribe("/guidance/cam0/left/image_raw",  10, cam0_left_image_callback);
-    cam0_right_image_sub       = my_node.subscribe("/guidance/cam0/right/image_raw", 10, cam0_right_image_callback);
+    cam4_left_image_sub        = my_node.subscribe("/guidance/cam4/left/image_raw",  10, cam4_left_image_callback);
+    cam4_right_image_sub       = my_node.subscribe("/guidance/cam4/right/image_raw", 10, cam4_right_image_callback);
 
     //depth_image_sub       = my_node.subscribe("/guidance/depth_image", 10, depth_image_callback);
     imu_sub               = my_node.subscribe("/guidance/imu", 1, imu_callback);
