@@ -6,10 +6,12 @@
 #include <actionlib/client/terminal_state.h>
 #include <geometry_msgs/PointStamped.h>
 #include <math.h>
+#include <pid.h>
 #define C_PI (double) 3.141592653589793
 
 using namespace DJI::onboardSDK;
-DJIDrone* drone;
+DJIDrone*   drone;
+PID*        pidController;
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
@@ -17,15 +19,19 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   y       = geom_msgs.point.y;
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
-    int     pitch   = atan2(z,r_proy)*180/C_PI*10;
-    int     yaw     = -atan2(y,x)*180/C_PI*10;
-    if(drone->gimbal_angle_control(0, pitch, yaw, 10, 1))
+    float     pitch   = atan2(z,r_proy)*180/C_PI*10;
+    float     yaw     = atan2(y,x)*180/C_PI*10;
+    int pitch_rate    = pidController->calculate(1.0, pitch, 0.0);
+    int yaw_rate      = pidController->calculate(1.0, yaw, 0.0);
+    if(drone->gimbal_speed_control(0, pitch_rate, yaw_rate))
     {
         printf("\nGimbal Position Refreshed.\n");
     }
     else
         printf("\n Gimbal Position Refreshing failed\n");
-    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch, yaw);
+    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch_rate, yaw_rate);
+
+
 }
 
 int main(int argc, char **argv)
@@ -35,6 +41,7 @@ int main(int argc, char **argv)
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
     drone = new DJIDrone(nh);
+    pidController = new PID(900.0,-900.0,10.0,0,0);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired\n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
