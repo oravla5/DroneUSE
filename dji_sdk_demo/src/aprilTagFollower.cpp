@@ -51,7 +51,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     rel_pitch   = atan2(z,r_proy)*180/C_PI;
     rel_yaw     = atan2(y,x)*180/C_PI;
 
-    target_yaw      =  rel_yaw + attitude_yaw;
+    target_yaw      =  -rel_yaw + attitude_yaw;
     //target_pitch    =  rel_pitch  + attitude_pitch;
     target_pitch = 0;
 }
