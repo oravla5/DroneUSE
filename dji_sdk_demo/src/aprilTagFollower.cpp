@@ -114,9 +114,9 @@ int main(int argc, char **argv)
             //std::cout << "Pitch Rate = " << pitch_rate << "\n";
             std::cout << "Target Yaw = " << target_yaw << "\n";
             //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
-            //std::cout << "Yaw Rate = " << yaw_rate << "\n";
+            std::cout << "Yaw Rate = " << yaw_rate << "\n";
             std::cout << "--------------------------\n";
-            std::cout << "Quaternions: \n";
+            //std::cout << "Quaternions: \n";
             //std::cout << "q0 = " << q0 << "\n";
             //std::cout << "q1 = " << q1 << "\n";
             //std::cout << "q2 = " << q2 << "\n";
