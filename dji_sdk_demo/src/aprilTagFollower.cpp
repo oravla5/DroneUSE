@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     target_yaw = attitude_yaw;
     target_pitch = 0;
     
-    drone->gimbal_angle_control(0, target_pitch, target_yaw, 10, 1);
+    drone->gimbal_angle_control(0, target_pitch, target_yaw, 10.0, 1);
 
     sleep(5);
 
@@ -113,8 +113,8 @@ int main(int argc, char **argv)
         gimbal_pitch    = drone->gimbal.pitch;
         gimbal_yaw      = drone->gimbal.yaw;
 
-        pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_yaw);
-        yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_pitch);
+        pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
+        yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
 
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
 
