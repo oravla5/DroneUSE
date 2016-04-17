@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     //ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
-    ros::Subscriber compass_subscriber = nh.subscribe("dji_sdk/compass",10, compass_subscriber_callback);
+    //ros::Subscriber compass_subscriber = nh.subscribe("dji_sdk/compass",10, compass_subscriber_callback);
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
     PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
     int compassX = drone->compass.x;

@@ -9,11 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   dji_sdk_lib
   roscpp
   std_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -121,8 +123,8 @@ include_directories(
 ## Declare a C++ library
 # add_library(mission_control
 #   src/${PROJECT_NAME}/mission_control.cpp
-    ${catkin_INCLUDE_DIRS}
-)
+#    ${catkin_INCLUDE_DIRS}
+#)
 
 
 ## Add cmake target dependencies of the library
@@ -131,16 +133,16 @@ include_directories(
 # add_dependencies(mission_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(mission_control_node src/mission_control_node.cpp)
+add_executable(flightTest_node src/flightTest_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(mission_control_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(flightTest_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
