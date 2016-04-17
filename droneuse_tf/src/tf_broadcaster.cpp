@@ -36,6 +36,7 @@ int main(int argc, char** argv){
   ros::NodeHandle nh;
   ros::Subscriber local_position = nh.subscribe("/dji_sdk/local_position", 10, &localPosition_callback);
   ros::Subscriber attitude_quaternion = nh.subscribe("/dji_sdk/attitude_quaternion", 10, &attitudeQuaternion_callback);
+  ros::Subscriber gimbal  = nh.subscribe("/dji_sdk/gimbal", 10, &attitudeGimbal_callback);
   ros::spin();
   return 0;
 };
