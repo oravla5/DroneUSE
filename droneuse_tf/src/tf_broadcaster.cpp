@@ -21,6 +21,16 @@ void attitudeQuaternion_callback(const dji_sdk::AttitudeQuaternion& msg){
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "m100_attitude"));
 }
 
+void attitudeGimbal_callback(const dji_sdk::Gimbal& msg){
+  static tf::TransformBroadcaster br;
+  tf::Transform transform;
+  transform.setOrigin( tf::Vector3(0.2, 0, 0.2) );
+  tf::Quaternion q;
+  q.setRPY(msg.roll, msg.pith, msg.yaw)
+  transform.setRotation(q);
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "gimbal"));
+}
+
 int main(int argc, char** argv){
   ros::init(argc, argv, "tf_broadcaster");
   ros::NodeHandle nh;
