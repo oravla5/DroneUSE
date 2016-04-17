@@ -45,7 +45,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    target_pitch    = atan2(z,r_proy)*180/C_PI;
+//    target_pitch    = atan2(z,r_proy)*180/C_PI;
     target_yaw      = atan2(y,x)*180/C_PI + attitude_yaw;
 }
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
 
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
-    PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
+    PID* yawControl = new PID(1000.0,-1000.0,10.0,0.0,0.0);
     
     int pitch_rate = 0;
     int yaw_rate = 0;
