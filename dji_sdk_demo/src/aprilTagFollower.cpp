@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
-    ros::Rate rate(20);
+    ros::Rate rate(10);
     drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
