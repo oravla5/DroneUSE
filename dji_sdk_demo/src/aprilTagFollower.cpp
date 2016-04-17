@@ -16,17 +16,17 @@ float       target_yaw;
 
 float getRoll(float q0, float q1, float q2, float q3)
 {
-  return atan2( 2*(q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2) );
+  return atan2( 2*(q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2) )*180/C_PI;
 }
 
 float getPitch(float q0, float q1, float q2, float q3)
 {
-  return asin( 2*(q0*q2 - q3*q1) );
+  return asin( 2*(q0*q2 - q3*q1) )*180/C_PI;
 }
 
 float getYaw(float q0, float q1, float q2, float q3)
 {
-  return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3));
+  return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3))*180/C_PI;
 }
 
 
@@ -109,9 +109,9 @@ int main(int argc, char **argv)
             std::cout << "q2 = " << q2 << "\n";
             std::cout << "q3 = " << q3 << "\n";
             std::cout << "Euler Angles:" << q3 << "\n";
-            std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)  *180/C_PI << "\n";
-            std::cout << "Pitch = " << getPitch(q0,q1,q2,q3)*180/C_PI << "\n";
-            std::cout << "Roll = "  << getRoll(q0,q1,q2,q3) *180/C_PI << "\n";
+            std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
+            std::cout << "Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
+            std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
             std::cout << "*----*--------------*-----*\n";
 
 
