@@ -26,7 +26,7 @@ void attitudeGimbal_callback(const dji_sdk::Gimbal& msg){
   tf::Transform transform;
   transform.setOrigin( tf::Vector3(0.2, 0, 0.2) );
   tf::Quaternion q;
-  q.setRPY(msg.roll, msg.pith, msg.yaw)
+  q.setRPY(msg.roll, msg.pitch, msg.yaw);
   transform.setRotation(q);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "gimbal"));
 }
