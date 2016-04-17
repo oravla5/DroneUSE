@@ -52,7 +52,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     rel_yaw     = -atan2(y,x)*180/C_PI;
 
     target_yaw      =  rel_yaw + attitude_yaw;
-    target_pitch    =  rel_pitch  + attitude_pitch;
+    //target_pitch    =  rel_pitch  + attitude_pitch;
+    target_pitch = 0;
 }
 
 /*
@@ -124,10 +125,11 @@ int main(int argc, char **argv)
         {
             std::cout << "Rel yaw = "       << rel_yaw      << '\n';
             std::cout << "Rel pitch = "     << rel_pitch    << '\n';
-            //std::cout << "Target Yaw = "    << target_yaw   << "\n";
+            std::cout << "Target Yaw = "    << target_yaw   << "\n";
+            std::cout << "Target Pitch = " << target_pitch << "\n";
             std::cout << "Gimbal Yaw = "    << gimbal_yaw   << "\n";
+            std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             //std::cout << "Yaw Rate = "      << yaw_rate     << "\n";
-            //std::cout << "Target Pitch = " << target_pitch << "\n";
             //std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             //std::cout << "Pitch Rate = " << pitch_rate << "\n";
             //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
@@ -139,8 +141,8 @@ int main(int argc, char **argv)
             //std::cout << "q2 = " << q2 << "\n";
             //std::cout << "q3 = " << q3 << "\n";
             //std::cout << "Euler Angles:" << q3 << "\n";
-            std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
-            std::cout << "Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
+            std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
+            std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
             //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
             std::cout << "*----*--------------*-----*\n";
         }
