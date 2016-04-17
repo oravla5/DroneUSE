@@ -14,6 +14,7 @@ using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
 float       rel_yaw;
+float       rel_pitch;
 DJIDrone* drone;
 
 float getRoll(float q0, float q1, float q2, float q3)
