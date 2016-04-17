@@ -16,7 +16,7 @@ void attitudeQuaternion_callback(const dji_sdk::AttitudeQuaternion& msg){
   static tf::TransformBroadcaster br;
   tf::Transform transform;
   transform.setOrigin( tf::Vector3(0, 0, 0) );
-  tf::Quaternion q(msg.q0, msg.q1, msg.q2, msg.q3);
+  tf::Quaternion q(msg.q1, msg.q2, msg.q3, msg.q0);
   transform.setRotation(q);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "m100_attitude"));
 }
