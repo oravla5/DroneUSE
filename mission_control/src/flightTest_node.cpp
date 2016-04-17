@@ -118,7 +118,7 @@ void performTask()
                     init_flag = true;
                 }
             }
-
+            /*
             home_wp.latitude = drone->global_position.latitude;
             home_wp.longitude = drone->global_position.longitude;
             home_wp.altitude = flying_height;
@@ -127,21 +127,30 @@ void performTask()
             home_wp.target_gimbal_pitch = 0;
             home_wp.turn_mode = 0;
             home_wp.has_action = 0;
+            */
             break;
         }
         case TAKEOFF:
         {
+            cout << "Arming Drone\n";
             drone->drone_arm();
+            cout << "Taking off\n";
             drone->takeoff();
             drone->local_position_navigation_send_request(0,0,flying_height);
             break;
         }
         case WAYPOINT_NAV:
         {
+            cout << "Going to waypoint... ";
             drone->local_position_navigation_send_request(50,30,flying_height);
+            cout << "Waypoint Reached\n";
         }
         case RETURN_HOME:
         {
+            cout << "Returning home... ";
+            drone->local_position_navigation_send_request(-50,-30,flying_height);
+            cout << "Home point reached\n";
+            /*
             waypoint_task.velocity_range = 10;
             waypoint_task.idle_velocity = 3;
             waypoint_task.action_on_finish = 0;
@@ -153,15 +162,19 @@ void performTask()
             waypoint_task.mission_waypoint.push_back(home_wp);
             drone->mission_waypoint_upload(waypoint_task);
             drone->mission_start();
+            */
         }
         case LAND:
         {
+            cout << "Landing... ";
             drone->landing();
+            cout << "Ground\n";
             break;
         }
         case FINISHED:
         {
             drone->drone_disarm();
+            cout << "Disarmed\n";
         }
         default:
       {
