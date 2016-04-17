@@ -19,8 +19,8 @@ typedef enum
     FINISHED
 } States;
 
-States nextState(const States &current);
-void performTask(const States &current);
+States nextState();
+void performTask();
 DJIDrone* drone;
 States currentState = INIT_MISSION;
 bool init_flag = false;
@@ -40,8 +40,8 @@ int main(int argc, char **argv)
     {
       /// Execute state machine.
         ros::spinOnce();
-        performTask(currentState);
-        currentState = nextState(currentState);
+        performTask();
+        currentState = nextState();
         rate.sleep();
     }
 
@@ -51,9 +51,9 @@ int main(int argc, char **argv)
 }
 
 
-States nextState(const States &current)
+States nextState()
 {
-    switch(current)
+    switch(currentState)
     {
         case INIT_MISSION:
         {
@@ -97,9 +97,9 @@ States nextState(const States &current)
 
 
 
-void performTask(const States &current)
+void performTask()
 {
-   switch(current)
+   switch(currentState)
    {
         case INIT_MISSION: 
         {
@@ -110,7 +110,10 @@ void performTask(const States &current)
                 cin >> keyboard_input;
                 cout << "\n";
                 if(keyboard_input == 'i')
+                {
+                    cout << "Estamos aqui\n";
                     init_flag = true;
+                }
             }
 
             home_wp.latitude = drone->global_position.latitude;
