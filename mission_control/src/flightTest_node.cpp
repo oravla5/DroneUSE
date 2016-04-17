@@ -133,7 +133,7 @@ void performTask()
         case TAKEOFF:
         {
             cout << "Arming Drone\n";
-            drone->drone_arm();
+            //drone->drone_arm();
             cout << "Taking off\n";
             drone->takeoff();
             drone->local_position_navigation_send_request(0,0,flying_height);
@@ -173,7 +173,7 @@ void performTask()
         }
         case FINISHED:
         {
-            drone->drone_disarm();
+            //drone->drone_disarm();
             cout << "Disarmed\n";
         }
         default:
