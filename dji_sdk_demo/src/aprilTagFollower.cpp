@@ -13,6 +13,23 @@
 using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
+
+float getPitch(float q0, float q1, float q2, float q3)
+{
+  return atan2( 2*(q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2) );
+}
+
+float getYaw(float q0, float q1, float q2, float q3)
+{
+  return asin( 2*(q0*q2 - q3*q1) );
+}
+
+float getRoll(float q0, float q1, float q2, float q3)
+{
+  return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3));
+}
+
+
 /*
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
@@ -32,6 +49,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 void compass_subscriber_callback(dji_sdk::Compass compass)
 {}
 */
+
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "aprilTagFollower");
@@ -47,6 +66,12 @@ int main(int argc, char **argv)
     PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
     int compassX = drone->compass.x;
     int compassY = drone->compass.y;
+    
+    float q0 = drone->attiude_quaternion.q0;
+    float q1 = drone->attiude_quaternion.q1;
+    float q2 = drone->attiude_quaternion.q2;
+    float q3 = drone->attiude_quaternion.q3;
+
     std::cout << compassX << "\n";
     float uav_yaw = atan2(drone->compass.y, drone->compass.x);
     int pitch_rate = 0;
@@ -61,13 +86,23 @@ int main(int argc, char **argv)
     {   
         count++;
         ros::spinOnce();
+
         gimbal_pitch = drone->gimbal.pitch;
         gimbal_yaw = drone->gimbal.yaw;
+
         pitch_rate    = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
         yaw_rate    = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
+
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
+
+        q0 = drone->attiude_quaternion.q0;
+        q1 = drone->attiude_quaternion.q1;
+        q2 = drone->attiude_quaternion.q2;
+        q3 = drone->attiude_quaternion.q3;
+
         if((count%20)==0)
         {
+            /*
             std::cout << "Target Pitch = " << target_pitch << "\n";
             std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             std::cout << "Pitch Rate = " << pitch_rate << "\n";
@@ -77,6 +112,20 @@ int main(int argc, char **argv)
             std::cout << "Yaw Rate = " << yaw_rate << "\n";
             std::cout << "x compass = " << compassX << "y compass = " << compassY;
             std::cout << "----------------------------------------\n";
+            */
+
+            std::cout << "Quaternions: \n";
+            std::cout << "q0 = " << q0 << "\n";
+            std::cout << "q1 = " << q1 << "\n";
+            std::cout << "q2 = " << q2 << "\n";
+            std::cout << "q3 = " << q3 << "\n";
+            std::cout << "Euler Angles:" << q3 << "\n";
+            std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)  *180/C_PI << "\n";
+            std::cout << "Pitch = " << getPitch(q0,q1,q2,q3)*180/C_PI << "\n";
+            std::cout << "Roll = "  << getRoll(q0,q1,q2,q3) *180/C_PI << "\n";
+            std::cout << "-----------------------\n";
+
+
         }
         rate.sleep();
     }
