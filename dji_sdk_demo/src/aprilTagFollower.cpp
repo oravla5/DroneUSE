@@ -49,10 +49,10 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   r_proy  = sqrt(x*x +  y*y);
 
     rel_pitch   = atan2(z,r_proy)*180/C_PI;
-    rel_yaw     = atan2(y,x)*180/C_PI;
+    rel_yaw     = -atan2(y,x)*180/C_PI;
 
-    target_yaw      =  -rel_yaw + attitude_yaw;
-    target_pitch    =  rel_pitch  + attitude_pitch;
+    //target_yaw      =  rel_yaw + attitude_yaw;
+    //target_pitch    =  rel_pitch  + attitude_pitch;
 }
 
 /*
@@ -108,6 +108,9 @@ int main(int argc, char **argv)
 
         attitude_yaw      = getYaw(q0,q1,q2,q3);
         attitude_pitch    = getPitch(q0,q1,q2,q3);
+        
+        target_yaw = attitude_yaw;
+        target_pitch = attitude_pitch;
 
         gimbal_pitch    = drone->gimbal.pitch;
         gimbal_yaw      = drone->gimbal.yaw;
