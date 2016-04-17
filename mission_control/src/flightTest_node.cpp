@@ -19,13 +19,12 @@ typedef enum
     FINISHED
 } States;
 
-States nextState();
-void performTask();
+States nextState(const States &current);
+void performTask(const States &current);
 DJIDrone* drone;
-States currentState = INIT_MISSION;
 bool init_flag = false;
-dji_sdk::MissionWaypoint home_wp;
-dji_sdk::MissionWaypointTask waypoint_task;
+//dji_sdk::MissionWaypoint home_wp;
+//dji_sdk::MissionWaypointTask waypoint_task;
 float flying_height = 7.0;
 
 int main(int argc, char **argv)
@@ -33,7 +32,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "mission_control_node");
     ros::NodeHandle nh;
     ros::Rate rate(20);
-
+    States currentState = INIT_MISSION;
     drone = new DJIDrone(nh);
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
@@ -43,8 +42,8 @@ int main(int argc, char **argv)
     {
       /// Execute state machine.
         ros::spinOnce();
-        performTask();
-        currentState = nextState();
+        performTask(currentState);
+        currentState = nextState(currentState);
         rate.sleep();
     }
 
@@ -54,9 +53,9 @@ int main(int argc, char **argv)
 }
 
 
-States nextState()
+States nextState(const States &current)
 {
-    switch(currentState)
+    switch(current)
     {
         case INIT_MISSION:
         {
@@ -100,9 +99,9 @@ States nextState()
 
 
 
-void performTask()
+void performTask(const States &current)
 {
-   switch(currentState)
+   switch(current)
    {
         case INIT_MISSION: 
         {
@@ -135,7 +134,7 @@ void performTask()
         {
             ROS_INFO("TAKEOFF");
             cout << "Arming Drone\n";
-            //drone->drone_arm();
+            drone->drone_arm();
             cout << "Taking off\n";
             drone->takeoff();
             drone->local_position_navigation_send_request(0,0,flying_height);
@@ -170,6 +169,7 @@ void performTask()
         }
         case LAND:
         {
+            ROS_INFO("LAND");
             cout << "Landing... ";
             drone->landing();
             cout << "Ground\n";
@@ -177,7 +177,8 @@ void performTask()
         }
         case FINISHED:
         {
-            //drone->drone_disarm();
+            ROS_INFO("FINISHED");
+            drone->drone_disarm();
             cout << "Disarmed\n";
         }
         default:
