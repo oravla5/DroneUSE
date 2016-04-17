@@ -70,7 +70,6 @@ int main(int argc, char **argv)
     float q2 = drone->attitude_quaternion.q2;
     float q3 = drone->attitude_quaternion.q3;
 
-    std::cout << compassX << "\n";
     int pitch_rate = 0;
     int yaw_rate = 0;
     int count = 0;
@@ -84,7 +83,7 @@ int main(int argc, char **argv)
         q2 = drone->attitude_quaternion.q2;
         q3 = drone->attitude_quaternion.q3;
 
-        target_pitch = getPitch(q0,q1,q2,q3)
+        target_pitch = getPitch(q0,q1,q2,q3);
         target_yaw   = getYaw(q0,q1,q2,q3);   
 
         gimbal_pitch = drone->gimbal.pitch;
