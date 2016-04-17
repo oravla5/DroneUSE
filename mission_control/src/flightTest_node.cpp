@@ -106,6 +106,7 @@ void performTask()
    {
         case INIT_MISSION: 
         {
+            ROS_INFO("INIT_MISSION");
             if(!init_flag)
             {
                 char keyboard_input;
@@ -132,6 +133,7 @@ void performTask()
         }
         case TAKEOFF:
         {
+            ROS_INFO("TAKEOFF");
             cout << "Arming Drone\n";
             //drone->drone_arm();
             cout << "Taking off\n";
@@ -141,12 +143,14 @@ void performTask()
         }
         case WAYPOINT_NAV:
         {
+            ROS_INFO("WAYPOINT_NAV");
             cout << "Going to waypoint... ";
             drone->local_position_navigation_send_request(50,30,flying_height);
             cout << "Waypoint Reached\n";
         }
         case RETURN_HOME:
         {
+            ROS_INFO("RETURN_HOME");
             cout << "Returning home... ";
             drone->local_position_navigation_send_request(-50,-30,flying_height);
             cout << "Home point reached\n";
