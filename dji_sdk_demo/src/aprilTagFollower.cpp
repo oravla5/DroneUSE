@@ -35,13 +35,8 @@ float getYaw(float q0, float q1, float q2, float q3)
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
-    float q0 = drone->attitude_quaternion.q0;
-    float q1 = drone->attitude_quaternion.q1;
-    float q2 = drone->attitude_quaternion.q2;
-    float q3 = drone->attitude_quaternion.q3;
-
-    float attitude_yaw      = getYaw(q0,q1,q2,q3);
-    float attitude_pitch    = getPitch(q0,q1,q2,q3);
+    gimbal_pitch    = drone->gimbal.pitch;
+    gimbal_yaw      = drone->gimbal.yaw;
 
     float   x       = geom_msgs.point.x;
     float   y       = geom_msgs.point.y;
@@ -51,7 +46,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     rel_pitch   = atan2(z,r_proy)*180/C_PI;
     rel_yaw     = -atan2(y,x)*180/C_PI;
 
-    target_yaw      =  rel_yaw + attitude_yaw;
+    target_yaw      =  rel_yaw + gimbal_yaw;
     //target_pitch    =  rel_pitch  + attitude_pitch;
     target_pitch = 0;
 }
@@ -92,20 +87,12 @@ int main(int argc, char **argv)
     target_yaw = attitude_yaw;
     target_pitch = 0;
     
-    drone->gimbal_angle_control(0, (int)target_pitch, (int)target_yaw, 20.0, 1);
+    drone->gimbal_angle_control(0, (int)target_pitch*10, (int)target_yaw*10, 20.0, 1);
 
     sleep(5);
 
     while(nh.ok())
     {   
-        q0 = drone->attitude_quaternion.q0;
-        q1 = drone->attitude_quaternion.q1;
-        q2 = drone->attitude_quaternion.q2;
-        q3 = drone->attitude_quaternion.q3;
-
-        attitude_yaw      = getYaw(q0,q1,q2,q3);
-        attitude_pitch    = getPitch(q0,q1,q2,q3);
-        
         //target_yaw = attitude_yaw;
         //target_pitch = attitude_pitch;
 
