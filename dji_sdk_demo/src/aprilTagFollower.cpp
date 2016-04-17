@@ -48,8 +48,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   z       = geom_msgs.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    rel_pitch    = atan2(z,r_proy)*180/C_PI;
-    rel_yaw   = atan2(y,x)*180/C_PI;
+    rel_pitch   = atan2(z,r_proy)*180/C_PI;
+    rel_yaw     = atan2(y,x)*180/C_PI;
 
     target_yaw      =  rel_yaw + attitude_yaw;
     //target_pitch    =  rel_pitch  + attitude_pitch;
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     target_yaw = attitude_yaw;
     target_pitch = 0;
     
-    drone->gimbal_angle_control(0, target_pitch, target_yaw, 10.0, 1);
+    drone->gimbal_angle_control(0, (int)target_pitch, (int)target_yaw, 20.0, 1);
 
     sleep(5);
 
@@ -120,15 +120,15 @@ int main(int argc, char **argv)
 
         if((count%20)==0)
         {
-            std::cout << "--\n";
-            std::cout << "rel yaw = " << rel_yaw << '\n';
-            std::cout << "--\n";
-            std::cout << "Target Pitch = " << target_pitch << "\n";
+            std::cout << "Rel yaw = "       << rel_yaw      << '\n';
+            std::cout << "Target Yaw = "    << target_yaw   << "\n";
+            std::cout << "Gimbal Yaw = "    << gimbal_yaw   << "\n";
+            std::cout << "Yaw Rate = "      << yaw_rate     << "\n";
+            //std::cout << "Target Pitch = " << target_pitch << "\n";
             //std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             //std::cout << "Pitch Rate = " << pitch_rate << "\n";
-            std::cout << "Target Yaw = " << target_yaw << "\n";
             //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
-            std::cout << "Yaw Rate = " << yaw_rate << "\n";
+            //std::cout << "Yaw Rate = " << yaw_rate << "\n";
             std::cout << "--------------------------\n";
             //std::cout << "Quaternions: \n";
             //std::cout << "q0 = " << q0 << "\n";
