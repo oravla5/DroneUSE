@@ -1,4 +1,5 @@
 #include <dji_sdk/dji_sdk_node.h>
+#include <stdio.h>
 #include <functional>
 
 //----------------------------------------------------------
@@ -160,6 +161,7 @@ void DJISDKNode::broadcast_callback()
         compass.x = bc_data.mag.x;
         compass.y = bc_data.mag.y;
         compass.z = bc_data.mag.z;
+        printf("Magnet Data %d, %d, %d",bc_data.mag.x,bc_data.mag.y,bc_data.mag.z)
         compass_publisher.publish(compass);
     }
 
