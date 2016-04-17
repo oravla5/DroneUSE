@@ -35,6 +35,9 @@ int main(int argc, char **argv)
     ros::Rate rate(20);
 
     drone = new DJIDrone(nh);
+    if(drone->request_sdk_permission_control())
+        printf("\n Permission Control Acquired \n");
+
 
     while(ros::ok())
     {
