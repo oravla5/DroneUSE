@@ -14,17 +14,17 @@ using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
 
-float getPitch(float q0, float q1, float q2, float q3)
+float getRoll(float q0, float q1, float q2, float q3)
 {
   return atan2( 2*(q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2) );
 }
 
-float getYaw(float q0, float q1, float q2, float q3)
+float getPitch(float q0, float q1, float q2, float q3)
 {
   return asin( 2*(q0*q2 - q3*q1) );
 }
 
-float getRoll(float q0, float q1, float q2, float q3)
+float getYaw(float q0, float q1, float q2, float q3)
 {
   return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3));
 }
@@ -64,8 +64,6 @@ int main(int argc, char **argv)
     //ros::Subscriber compass_subscriber = nh.subscribe("dji_sdk/compass",10, compass_subscriber_callback);
     PID* pitchControl = new PID(1500.0,-1500.0,30.0,0.0,0.0);
     PID* yawControl = new PID(1000.0,-1000.0,50.0,0.0,0.0);
-    int compassX = drone->compass.x;
-    int compassY = drone->compass.y;
     
     float q0 = drone->attitude_quaternion.q0;
     float q1 = drone->attitude_quaternion.q1;
@@ -73,19 +71,21 @@ int main(int argc, char **argv)
     float q3 = drone->attitude_quaternion.q3;
 
     std::cout << compassX << "\n";
-    float uav_yaw = atan2(drone->compass.y, drone->compass.x);
     int pitch_rate = 0;
     int yaw_rate = 0;
-    target_pitch = 0.0;
-    target_yaw   = uav_yaw;   
     int count = 0;
     float gimbal_pitch;
     float gimbal_yaw;
     std::cout << "\n";
     while(nh.ok())
     {   
-        count++;
-        ros::spinOnce();
+        q0 = drone->attitude_quaternion.q0;
+        q1 = drone->attitude_quaternion.q1;
+        q2 = drone->attitude_quaternion.q2;
+        q3 = drone->attitude_quaternion.q3;
+
+        target_pitch = getPitch(q0,q1,q2,q3)
+        target_yaw   = getYaw(q0,q1,q2,q3);   
 
         gimbal_pitch = drone->gimbal.pitch;
         gimbal_yaw = drone->gimbal.yaw;
@@ -95,24 +95,15 @@ int main(int argc, char **argv)
 
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
 
-        q0 = drone->attitude_quaternion.q0;
-        q1 = drone->attitude_quaternion.q1;
-        q2 = drone->attitude_quaternion.q2;
-        q3 = drone->attitude_quaternion.q3;
-
         if((count%20)==0)
         {
-            /*
             std::cout << "Target Pitch = " << target_pitch << "\n";
             std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
             std::cout << "Pitch Rate = " << pitch_rate << "\n";
-            std::cout << "----------------------------------------\n";
             std::cout << "Target Yaw = " << target_yaw << "\n";
             std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
             std::cout << "Yaw Rate = " << yaw_rate << "\n";
-            std::cout << "x compass = " << compassX << "y compass = " << compassY;
-            std::cout << "----------------------------------------\n";
-            */
+            std::cout << "--------------------------\n";
 
             std::cout << "Quaternions: \n";
             std::cout << "q0 = " << q0 << "\n";
@@ -123,10 +114,13 @@ int main(int argc, char **argv)
             std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)  *180/C_PI << "\n";
             std::cout << "Pitch = " << getPitch(q0,q1,q2,q3)*180/C_PI << "\n";
             std::cout << "Roll = "  << getRoll(q0,q1,q2,q3) *180/C_PI << "\n";
-            std::cout << "-----------------------\n";
+            std::cout << "*----*--------------*-----*\n";
 
 
         }
+
+        ros::spinOnce();
+        count++;
         rate.sleep();
     }
     //ros::spin();
