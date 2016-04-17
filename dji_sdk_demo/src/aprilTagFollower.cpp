@@ -104,7 +104,7 @@ int main(int argc, char **argv)
         pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
         yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
 
-        if(abs(rel_yaw) > 5)
+        if(abs(rel_yaw) < 5)
         { 
             yaw_rate = 0;
         }
