@@ -103,12 +103,15 @@ void performTask(const States &current)
    {
         case INIT_MISSION: 
         {
-            int keyboard_input;
-            cout << "\n Input i to start mission: ";
-            cin >> keyboard_input;
-            cout << "\n";
-            if(keyboard_input == 'i')
-                init_flag = true;
+            if(!init_flag)
+            {
+                char keyboard_input;
+                cout << "\n Input i to start mission: ";
+                cin >> keyboard_input;
+                cout << "\n";
+                if(keyboard_input == 'i')
+                    init_flag = true;
+            }
 
             home_wp.latitude = drone->global_position.latitude;
             home_wp.longitude = drone->global_position.longitude;
