@@ -4,16 +4,18 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <image_transport/image_transport.h>
-#include <image_geometry/pinhole_camera_model.h>
 
 #include <ros/ros.h>
 #include "TagDetector.h"
 
+struct trackedTag_{
+	AprilTags::TagDetector *tag;
+	int frames_num;
+} trackedTag;
+
 class AprilTagDetector
 {
 	ros::NodeHandle				nh_;
-	
-	image_geometry::PinholeCameraModel	cam_model_;
 
 	image_transport::ImageTransport		it_;
 	image_transport::CameraSubscriber	imgSub_;
@@ -21,12 +23,18 @@ class AprilTagDetector
 	ros::Publisher				tagPub_;
 
 	AprilTags::TagDetector			*tag_detector_;
-	
+	std::vector<trackedTag>			tracked_tags_;	
+
+	const int				MIN_FRAME_NUM_;
+	const float				MIN_TAG_DIST_;
+
+	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
+	float	getTagDistance(const AprilTags::TagDetection&, const AprilTgas::TagDetection&);
+
 	public:
-			AprilTagDetector(char *imageTopic, char* infoTopic);
+			AprilTagDetector();
 			~AprilTagDetector();
 		void	callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
-
 };
 
 #endif
