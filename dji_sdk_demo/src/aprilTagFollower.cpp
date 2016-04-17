@@ -51,7 +51,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     rel_yaw   = atan2(y,x)*180/C_PI;
 
     target_yaw      =  rel_yaw;
-    target_pitch    = rel_pitch;
+    //target_pitch    = rel_pitch;
 }
 
 /*
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
         pitch_rate      = pitchControl->calculate(1.0, target_pitch, 0);
         yaw_rate        = yawControl->calculate(1.0, target_yaw, 0);
 
-        drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
+        drone->gimbal_speed_control(0, pitch_rate, -yaw_rate);
 
         if((count%20)==0)
         {
