@@ -17,6 +17,8 @@ void DJISDKNode::transparent_transmission_callback(uint8_t *buf, uint8_t len)
 void DJISDKNode::broadcast_callback()
 {
     DJI::onboardSDK::BroadcastData bc_data = rosAdapter->coreAPI->getBroadcastData();
+    printf("Magnet Data %d, %d, %d",bc_data.mag.x,bc_data.mag.y,bc_data.mag.z);
+ 
     unsigned short msg_flags = bc_data.dataFlag;
 
     static int frame_id = 0;
