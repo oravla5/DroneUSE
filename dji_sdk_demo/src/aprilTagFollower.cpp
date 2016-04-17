@@ -13,6 +13,7 @@
 using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
+float       rel_yaw;
 DJIDrone* drone;
 
 float getRoll(float q0, float q1, float q2, float q3)
@@ -46,7 +47,9 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   r_proy  = sqrt(x*x +  y*y);
 
 //    target_pitch    = atan2(z,r_proy)*180/C_PI;
-    target_yaw      = atan2(y,x)*180/C_PI + attitude_yaw;
+    rel_yaw   = atan2(y,x)*180/C_PI;
+
+    target_yaw      =  attitude_yaw;
 }
 
 /*
@@ -101,22 +104,25 @@ int main(int argc, char **argv)
 
         if((count%20)==0)
         {
+            std::cout << "--\n";
+            std::cout << "rel yaw = " << rel_yaw << '\n';
+            std::cout << "--\n";
             std::cout << "Target Pitch = " << target_pitch << "\n";
-            std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
-            std::cout << "Pitch Rate = " << pitch_rate << "\n";
+            //std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
+            //std::cout << "Pitch Rate = " << pitch_rate << "\n";
             std::cout << "Target Yaw = " << target_yaw << "\n";
-            std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
-            std::cout << "Yaw Rate = " << yaw_rate << "\n";
+            //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
+            //std::cout << "Yaw Rate = " << yaw_rate << "\n";
             std::cout << "--------------------------\n";
             std::cout << "Quaternions: \n";
-            std::cout << "q0 = " << q0 << "\n";
-            std::cout << "q1 = " << q1 << "\n";
-            std::cout << "q2 = " << q2 << "\n";
-            std::cout << "q3 = " << q3 << "\n";
-            std::cout << "Euler Angles:" << q3 << "\n";
+            //std::cout << "q0 = " << q0 << "\n";
+            //std::cout << "q1 = " << q1 << "\n";
+            //std::cout << "q2 = " << q2 << "\n";
+            //std::cout << "q3 = " << q3 << "\n";
+            //std::cout << "Euler Angles:" << q3 << "\n";
             std::cout << "Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
             std::cout << "Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
-            std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
+            //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
             std::cout << "*----*--------------*-----*\n";
         }
 
