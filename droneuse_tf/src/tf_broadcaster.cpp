@@ -1,11 +1,13 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <dji_sdk/dji_drone.h>
+#define C_PI (double) 3.141592653589793
 
 void localPosition_callback(const dji_sdk::LocalPosition& msg){
   static tf::TransformBroadcaster br;
   tf::Transform transform;
-  transform.setOrigin( tf::Vector3(msg.x, msg.y, msg.z) );
+  //transform.setOrigin( tf::Vector3(msg.x, msg.y, -msg.z) );
+  transform.setOrigin( tf::Vector3(2, 2, -2) );
   tf::Quaternion q;
   q.setRPY(0, 0, 0);
   transform.setRotation(q);
@@ -26,7 +28,7 @@ void attitudeGimbal_callback(const dji_sdk::Gimbal& msg){
   tf::Transform transform;
   transform.setOrigin( tf::Vector3(0.2, 0, 0.2) );
   tf::Quaternion q;
-  q.setRPY(msg.roll, msg.pitch, msg.yaw);
+  q.setRPY(msg.roll/180*C_PI, msg.pitch/180*C_PI, msg.yaw/180*C_PI);
   transform.setRotation(q);
   br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "gimbal"));
 }
