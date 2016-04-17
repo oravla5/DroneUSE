@@ -89,20 +89,32 @@ int main(int argc, char **argv)
     float q3 = drone->attitude_quaternion.q3;
 
     float attitude_yaw      = getYaw(q0,q1,q2,q3);
+    float attitude_pitch    = getPitch(q0,q1,q2,q3);
+
     target_yaw = attitude_yaw;
     target_pitch = 0;
+    
+    drone->gimbal_angle_control(0, target_pitch, target_yaw, 10, 1);
 
     sleep(5);
 
     while(nh.ok())
     {   
+        q0 = drone->attitude_quaternion.q0;
+        q1 = drone->attitude_quaternion.q1;
+        q2 = drone->attitude_quaternion.q2;
+        q3 = drone->attitude_quaternion.q3;
+
+        attitude_yaw      = getYaw(q0,q1,q2,q3);
+        attitude_pitch    = getPitch(q0,q1,q2,q3);
+
         gimbal_pitch    = drone->gimbal.pitch;
         gimbal_yaw      = drone->gimbal.yaw;
 
-        pitch_rate      = pitchControl->calculate(1.0, target_pitch, 0);
-        yaw_rate        = yawControl->calculate(1.0, target_yaw, 0);
+        pitch_rate      = pitchControl->calculate(1.0, target_pitch + attitude_pitch, attitude_pitch);
+        yaw_rate        = yawControl->calculate(1.0, target_yaw + attitude_yaw, attitude_yaw);
 
-        drone->gimbal_speed_control(0, pitch_rate, -yaw_rate);
+        drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
 
         if((count%20)==0)
         {
