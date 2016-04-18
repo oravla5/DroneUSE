@@ -49,9 +49,10 @@ int main(int argc, char** argv){
 
   tf::Transform tf_world_groundFrame;
   tf::Transform tf_groundFrame_bodyFrame;
-  tf::Transform tf_bodyFrame_gimbalNED;
+  tf::Transform tf_bodyFrame_gimbalHorizon;
+  tf::Transform tf_gimbalNED_gimbalHorizon;
+  tf::Transform tf_gimbalHorizon_gimbal;
   tf::Transform tf_groundFrame_gimbalNED;
-  tf::Transform tf_gimbalNED_gimbal;
 
   tf::Quaternion q;
   while(nh.ok())
@@ -87,16 +88,21 @@ int main(int argc, char** argv){
       // ---------------------------------------------------------
 
       //q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, drone->gimbal.yaw/180*C_PI);
+      q.setRPY(0, 0, 0);
+      tf_groundFrame_gimbalNED.setRotation(q);
+      tf_bodyFrame_gimbalHorizon.setOrigin(tf::Vector3(0.2, 0, 0.2));
+      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalHorizon, ros::Time::now(), "body_frame", "gimbal_NED"));
+
       q.setRPY(0, 0, drone->gimbal.yaw/180*C_PI);
       tf_groundFrame_gimbalNED.setRotation(q);
-      tf_bodyFrame_gimbalNED = tf_groundFrame_gimbalNED*tf_groundFrame_bodyFrame.inverse();
-      tf_bodyFrame_gimbalNED.setOrigin(tf::Vector3(2, 0, 2));
-      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalNED, ros::Time::now(), "body_frame", "gimbal_horizon"));
+      tf_bodyFrame_gimbalHorizon = tf_groundFrame_gimbalHorizon*tf_groundFrame_bodyFrame.inverse();
+      tf_bodyFrame_gimbalHorizon.setOrigin(tf::Vector3(0, 0, 0));
+      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalHorizon, ros::Time::now(), "gimbal_NED", "gimbal_horizon"));
 
       q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, 0);
-      tf_gimbalNED_gimbal.setRotation(q);  
-      tf_gimbalNED_gimbal.setOrigin(tf::Vector3(0, 0, 0));
-      br.sendTransform(tf::StampedTransform(tf_gimbalNED_gimbal, ros::Time::now(), "gimbal_horizon", "gimbal"));
+      tf_gimbalHorizon_gimbal.setRotation(q);  
+      tf_gimbalHorizon_gimbal.setOrigin(tf::Vector3(0, 0, 0));
+      br.sendTransform(tf::StampedTransform(tf_gimbalHorizon_gimbal, ros::Time::now(), "gimbal_horizon", "gimbal"));
 
       ros::spinOnce();
       rate.sleep();

@@ -36,15 +36,16 @@ float getYaw(float q0, float q1, float q2, float q3)
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
     geometry_msgs::PointStamped geom_msgs_transformed;
-    listener->transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
+    listener->transformPoint("/gimbal_horizon", geom_msgs, geom_msgs_transformed);
 
     float   x       = geom_msgs_transformed.point.x;
     float   y       = geom_msgs_transformed.point.y;
     float   z       = geom_msgs_transformed.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    target_pitch   = atan2(-z,r_proy)*180/C_PI;
+    //target_pitch   = atan2(-z,r_proy)*180/C_PI;
     target_yaw     = atan2(y,x)*180/C_PI;
+    target_pitch 	= 0;
 
 }
 
