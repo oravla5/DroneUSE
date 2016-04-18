@@ -77,5 +77,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		}
 	}
     cv::imshow("frame", frame);
+    cv::waitKey(1);
 	return;
 }
