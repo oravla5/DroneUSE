@@ -108,24 +108,16 @@ int main(int argc, char **argv)
         pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
         yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
 
-        if(abs(rel_yaw) < 1)
-        { 
-            yaw_rate = 0;
-        }
 
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
 
-        std::cout << "Rel yaw = "       << rel_yaw      << '\n';
-        std::cout << "Rel pitch = "     << rel_pitch    << '\n';
         std::cout << "Target Yaw = "    << target_yaw   << "\n";
-        std::cout << "Target Pitch = " << target_pitch << "\n";
         std::cout << "Gimbal Yaw = "    << gimbal_yaw   << "\n";
+        std::cout << "Yaw Rate = " << yaw_rate << "\n";
+        std::cout << "----\n";
+        std::cout << "Target Pitch = " << target_pitch << "\n";
         std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
-        //std::cout << "Yaw Rate = "      << yaw_rate     << "\n";
-        //std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
-        //std::cout << "Pitch Rate = " << pitch_rate << "\n";
-        //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
-        //std::cout << "Yaw Rate = " << yaw_rate << "\n";
+        std::cout << "Pitch Rate = " << pitch_rate << "\n";
         std::cout << "--------------------------\n";
         //std::cout << "Quaternions: \n";
         //std::cout << "q0 = " << q0 << "\n";
@@ -136,7 +128,6 @@ int main(int argc, char **argv)
         //std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
         //std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
         //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
-        std::cout << "*----*--------------*-----*\n";
 
         ros::spinOnce();
         rate.sleep();
