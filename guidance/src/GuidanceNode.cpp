@@ -34,7 +34,7 @@ ros::Publisher position_pub;
 
 using namespace cv;
 
-e_vbus_index cam_index = e_vbus5;
+e_vbus_index cam_index = e_vbus1;
 
 int WIDTH=320;
 int HEIGHT=240;
@@ -86,7 +86,24 @@ int my_callback(int data_type, int data_len, char *content)
 			// publish left greyscale image
 			cv_bridge::CvImage left_8;
 			g_greyscale_image_left.copyTo(left_8.image);
-			left_8.header.frame_id  = "guidance";
+			switch((int) cam_index)
+			{
+				case 0:
+					left_8.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					left_8.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					left_8.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					left_8.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					left_8.header.frame_id  = "guidance_left";
+					break;
+			}	
 			left_8.header.stamp	= ros::Time::now();
 			left_8.encoding		= sensor_msgs::image_encodings::MONO8;
 			left_image_pub.publish(left_8.toImageMsg());
@@ -97,7 +114,24 @@ int my_callback(int data_type, int data_len, char *content)
 			// publish right greyscale image
 			cv_bridge::CvImage right_8;
 			g_greyscale_image_right.copyTo(right_8.image);
-			right_8.header.frame_id  = "guidance";
+			switch((int) cam_index)
+			{
+				case 0:
+					right_8.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					right_8.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					right_8.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					right_8.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					right_8.header.frame_id  = "guidance_left";
+					break;
+			}	
 			right_8.header.stamp	 = ros::Time::now();
 			right_8.encoding  	 = sensor_msgs::image_encodings::MONO8;
 			right_image_pub.publish(right_8.toImageMsg());
@@ -109,7 +143,24 @@ int my_callback(int data_type, int data_len, char *content)
 			//publish depth image
 			cv_bridge::CvImage depth_16;
 			g_depth.copyTo(depth_16.image);
-			depth_16.header.frame_id  = "guidance";
+			switch((int) cam_index)
+			{
+				case 0:
+					depth_16.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					depth_16.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					depth_16.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					depth_16.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					depth_16.header.frame_id  = "guidance_left";
+					break;
+			}	
 			depth_16.header.stamp	  = ros::Time::now();
 			depth_16.encoding	  = sensor_msgs::image_encodings::MONO16;
 			depth_image_pub.publish(depth_16.toImageMsg());
@@ -262,15 +313,15 @@ int main(int argc, char** argv)
         std::cout<<cali[i].cu<<"\t"<<cali[i].cv<<"\t"<<cali[i].focal<<"\t"<<cali[i].baseline<<std::endl;
 	}
 	
-	err_code = set_image_frequecy(e_frequecy_20);
+	err_code = set_image_frequecy(e_frequecy_5);
 	RETURN_IF_ERR(err_code);
 
     /* select data */
-    err_code = select_greyscale_image(cam_index, true);
+ /*   err_code = select_greyscale_image(cam_index, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(cam_index, false);
 	RETURN_IF_ERR(err_code);
-    err_code = select_depth_image(cam_index);
+   */ err_code = select_depth_image(cam_index);
 	RETURN_IF_ERR(err_code);
 
     select_imu();
@@ -302,10 +353,14 @@ int main(int argc, char** argv)
 	std::cout << "start_transfer" << std::endl;
 
 
+	ros::Rate loop_rate(0.5);
 	while (ros::ok())
 	{
+		loop_rate.sleep();
 		ros::spinOnce();
-		/*if((cam_index + 1) > 4)
+
+		cam_index = static_cast<e_vbus_index>(cam_index + 1); 
+		if(cam_index > 4)
 			cam_index = e_vbus5;
 		err_code = stop_transfer();
 			RETURN_IF_ERR(err_code);
@@ -313,18 +368,18 @@ int main(int argc, char** argv)
     		
     		err_code = select_depth_image(cam_index);
 			RETURN_IF_ERR(err_code);
-    		err_code = select_greyscale_image(cam_index, true);
+/*    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
     		err_code = select_greyscale_image(cam_index, false);
 			RETURN_IF_ERR(err_code);
+*/
     		select_imu();
     		select_ultrasonic();
     		select_obstacle_distance();
     		select_velocity();
-
     		err_code = start_transfer();
     			RETURN_IF_ERR(err_code);
-	*/}
+	}
 
 	/* release data transfer */
 	err_code = stop_transfer();
