@@ -134,6 +134,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(flightTest_node src/flightTest_node.cpp)
+add_executable(flightTestVelocity_node src/flightTest_velocityControl.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -141,6 +142,9 @@ add_executable(flightTest_node src/flightTest_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flightTest_node
+   ${catkin_LIBRARIES}
+)
+target_link_libraries(flightTestVelocity_node
    ${catkin_LIBRARIES}
 )
 
