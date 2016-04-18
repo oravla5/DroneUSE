@@ -82,7 +82,7 @@ States nextState(const States &current)
         }
         case TAKEOFF:
         {
-            if(drone->flight_status == 3)
+            if(drone->local_position.z < 1)
                 return TAKEOFF;
             else
                 return WAYPOINT_NAV;
