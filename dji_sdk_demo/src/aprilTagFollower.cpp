@@ -20,7 +20,7 @@ float       rel_pitch;
 float       gimbal_yaw;
 float       gimbal_pitch;
 DJIDrone* drone;
-tf::TransformListener listener;
+tf::TransformListener* listener;
 
 float getRoll(float q0, float q1, float q2, float q3)
 {
@@ -43,7 +43,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     gimbal_yaw      = drone->gimbal.yaw;
 
     geometry_msgs::PointStamped geom_msgs_transformed;
-    listener.transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
+    listener->transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
 
     float   x       = geom_msgs_transformed.point.x;
     float   y       = geom_msgs_transformed.point.y;
@@ -68,6 +68,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::Rate rate(10);
     drone = new DJIDrone(nh);
+    listener = new tf::TransformListener;
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
