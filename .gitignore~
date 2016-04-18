@@ -8,6 +8,11 @@
 *.gch
 *.pch
 
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
 # Fortran module files
 *.mod
 
@@ -21,9 +26,3 @@
 *.exe
 *.out
 *.app
-
-<<<<<<< HEAD
-/CMakeLists.txt.user
-=======
-*.swp
->>>>>>> a1215880d3869d6542b8e449b429ffceb2276e2b
