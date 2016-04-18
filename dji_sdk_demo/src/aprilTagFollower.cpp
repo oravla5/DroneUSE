@@ -45,9 +45,9 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     geometry_msgs::PointStamped geo_msgs_transformed;
     listener.transformPoint("/camera_ground", goem_msgs, geo_msgs_transformed);
 
-    float   x       = geom_msgs.transformed.point.x;
-    float   y       = geom_msgs.transformed.point.y;
-    float   z       = geom_msgs.transformed.point.z;
+    float   x       = geom_msgs_transformed.point.x;
+    float   y       = geom_msgs_transformed.point.y;
+    float   z       = geom_msgs_transformed.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
     //target_pitch   = atan2(z,r_proy)*180/C_PI;
