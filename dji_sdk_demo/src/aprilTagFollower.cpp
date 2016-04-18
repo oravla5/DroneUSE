@@ -20,6 +20,7 @@ float       rel_pitch;
 float       gimbal_yaw;
 float       gimbal_pitch;
 DJIDrone* drone;
+tf::TransformListener listener;
 
 float getRoll(float q0, float q1, float q2, float q3)
 {
@@ -41,7 +42,6 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     gimbal_pitch    = drone->gimbal.pitch;
     gimbal_yaw      = drone->gimbal.yaw;
 
-    tf::TransformListener listener;
     geometry_msgs::PointStamped geom_msgs_transformed;
     listener.transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
 
