@@ -142,11 +142,11 @@ void performTask(const States &current)
 
         case WAYPOINT_NAV :
             home_position.z = drone->local_position.z;
-            drone->local_position_navigation_send_request(target_position.x,target_position.y,target_position.z);
+            drone->local_position_control(target_position.x,target_position.y,target_position.z,0);
             break;
 
         case RETURN_HOME :
-            drone->local_position_navigation_send_request(home_position.x,home_position.y,home_position.z);
+            drone->local_position_control(home_position.x,home_position.y,home_position.z,0);
             break;
 
         case LAND :
