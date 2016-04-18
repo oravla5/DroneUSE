@@ -40,7 +40,10 @@ AprilTagDetector::~AprilTagDetector()
 void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfoConstPtr& info_msg)
 {
 	//Ros image message to cv format
-	cv::Mat frame = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
+	cv::Mat frame_original = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
+    cv::Mat frame;
+
+    cv::resize(frame_original, frame, cv::Size(), 0.5, 0.5);
 
 	if(frame.empty())
 		return;
@@ -60,6 +63,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		{
 			transform = tags_detected[i].getRelativeTransform( 0.155, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
 
+            tags_detected[i].draw(frame);
 			PointStamped tag_pos;
 			tag_pos.header.stamp = image_msg->header.stamp;
 			tag_pos.header.frame_id = "/camera";
@@ -72,5 +76,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			tagPub_.publish(tag_pos);
 		}
 	}
+    cv::imshow("frame", frame);
 	return;
 }
