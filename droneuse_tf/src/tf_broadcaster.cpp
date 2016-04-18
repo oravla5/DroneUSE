@@ -48,9 +48,10 @@ int main(int argc, char** argv){
   tf::TransformBroadcaster br;
 
   tf::Transform tf_world_groundFrame;
-  tf::Transform tf_groudFrame_bodyFrame;
-  tf::Transform tf_bodyFrame_gimbal;
-  tf::Transform tf_groundFrame_gimbal;
+  tf::Transform tf_groundFrame_bodyFrame;
+  tf::Transform tf_bodyFrame_gimbalNED;
+  tf::Transform tf_groundFrame_gimbalNED;
+  tf::Transform tf_gimbalNED_gimbal;
 
   tf::Quaternion q;
   while(nh.ok())
@@ -63,10 +64,10 @@ int main(int argc, char** argv){
       // ---------------------------------------------------------
 
       //transform.setOrigin(tf::Vector3(drone->local_position.x, drone->local_position.y, drone->local_position.z));
-      tf_world_groundFrame.setOrigin(tf::Vector3(2, 2, 2));
+      tf_world_groundFrame.setOrigin(tf::Vector3(3, 3, 3));
       q.setRPY(C_PI, 0, 0);
       tf_world_groundFrame.setRotation(q);
-      br.sendTransform(tf::StampedTransform(tf_groudFrame_bodyFrame, ros::Time::now(), "world", "ground_frame"));
+      br.sendTransform(tf::StampedTransform(tf_world_groundFrame, ros::Time::now(), "world", "ground_frame"));
 
       // ---------------------------------------------------------
       // ground_frame - body_frame
@@ -74,10 +75,10 @@ int main(int argc, char** argv){
       // body_frame: front, right, down
       // ---------------------------------------------------------
 
-      tf_groundFrame_gimbal.setOrigin( tf::Vector3(0, 0, 0) );
+      tf_groundFrame_bodyFrame.setOrigin( tf::Vector3(0, 0, 0) );
       q = tf::Quaternion(drone->attitude_quaternion.q1, drone->attitude_quaternion.q2, drone->attitude_quaternion.q3, drone->attitude_quaternion.q0);
-      tf_groudFrame_bodyFrame.setRotation(q);
-      br.sendTransform(tf::StampedTransform(tf_groudFrame_bodyFrame, ros::Time::now(), "ground_frame", "body_frame"));
+      tf_groundFrame_bodyFrame.setRotation(q);
+      br.sendTransform(tf::StampedTransform(tf_groundFrame_bodyFrame, ros::Time::now(), "ground_frame", "body_frame"));
 
       // ---------------------------------------------------------
       // body_frame - gimbal
@@ -85,11 +86,17 @@ int main(int argc, char** argv){
       // gimbal: North-East-Down, origin at gimbal
       // ---------------------------------------------------------
 
-      tf_bodyFrame_gimbal.setOrigin(tf::Vector3(0.2, 0, 0.2));
-      q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, drone->gimbal.pitch/180*C_PI);
-      tf_groundFrame_gimbal.setRotation(q);
-      tf_bodyFrame_gimbal = tf_groundFrame_gimbal*tf_groudFrame_bodyFrame.inverse();
-      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbal, ros::Time::now(), "body_frame", "gimbal"));
+      //q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, drone->gimbal.yaw/180*C_PI);
+      q.setRPY(0, 0, drone->gimbal.yaw/180*C_PI);
+      tf_groundFrame_gimbalNED.setRotation(q);
+      tf_bodyFrame_gimbalNED = tf_groundFrame_gimbalNED*tf_groundFrame_bodyFrame.inverse();
+      tf_bodyFrame_gimbalNED.setOrigin(tf::Vector3(2, 0, 2));
+      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalNED, ros::Time::now(), "body_frame", "gimbal_horizon"));
+
+      q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, 0);
+      tf_gimbalNED_gimbal.setRotation(q);  
+      tf_gimbalNED_gimbal.setOrigin(tf::Vector3(0, 0, 0));
+      br.sendTransform(tf::StampedTransform(tf_gimbalNED_gimbal, ros::Time::now(), "gimbal_horizon", "gimbal"));
 
       ros::spinOnce();
       rate.sleep();
