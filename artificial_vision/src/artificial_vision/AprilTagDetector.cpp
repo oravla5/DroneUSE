@@ -2,6 +2,7 @@
 #include "Tag16h5.h"
 
 #include <ros/ros.h>
+#include <tf/transform_listener.h>
 #include <image_transport/image_transport.h>
 
 #include <opencv/cv.h>
@@ -47,7 +48,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	cam_model_.fromCameraInfo(info_msg);
 
 	vector<TagDetection> tags_detected;
-	vector<Point> tags_position;
+    geometry_msgs::PointStamped tags_position;
 
 	tags_detected = tag_detector_->extractTags(frame);
 
@@ -60,7 +61,8 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			transform = tags_detected[i].getRelativeTransform( 0.155, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
 
 			PointStamped tag_pos;
-			tag_pos.header.stamp = ros::Time::now();
+			tag_pos.header.stamp = image_msg->header.stamp;
+			tag_pos.header.frame_id = "/camera";
 
 			//Camera system tag coordinates to 3D world coordinates
 			tag_pos.point.x = transform(2,3);
