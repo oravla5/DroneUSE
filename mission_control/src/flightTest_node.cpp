@@ -59,20 +59,27 @@ States nextState(const States &current)
                 if(drone->request_sdk_permission_control())
                     printf("\n Permission Control Acquired \n");
                 return TAKEOFF;
+                break;
             }
             else
+            {
                 return INIT_MISSION;
+                break;
+            }
         }
         case TAKEOFF:
         {
             if(drone->local_position.z < 1)
+            {
                 return TAKEOFF;
+                break;
+            }
             else
             {
                 ROS_INFO("WAYPOINT_NAV");
                 return WAYPOINT_NAV;
+                break;
             }
-            break;
         }
         case WAYPOINT_NAV:
         {
@@ -81,10 +88,13 @@ States nextState(const States &current)
             {
                 ROS_INFO("RETURN_HOME");
                 return RETURN_HOME;
+                break;
             }
             else
+            {
                 return WAYPOINT_NAV;
-            break;
+                break;
+            }
         }
         case RETURN_HOME:
         {
@@ -95,10 +105,13 @@ States nextState(const States &current)
             {
                 ROS_INFO("LAND");
                 return LAND;
+                break;
             }
             else
+            {
                 return RETURN_HOME;
-            break;
+                break;
+            }
         }
         case LAND:
         {
@@ -106,10 +119,13 @@ States nextState(const States &current)
             {
                 ROS_INFO("FINISHED");
                 return FINISHED;
+                break;
             }
             else
+            {
                 return LAND;
-            break;
+                break;
+            }
         }
         case FINISHED:
         {
