@@ -35,6 +35,7 @@ ros::Publisher position_pub;
 using namespace cv;
 
 e_vbus_index cam_index = e_vbus1;
+bool depth_img_received = false;
 
 int WIDTH=320;
 int HEIGHT=240;
@@ -138,6 +139,7 @@ int my_callback(int data_type, int data_len, char *content)
 		}
 
 		if ( data->m_depth_image[cam_index] ){
+			depth_img_received = true;
 			memcpy(g_depth.data, data->m_depth_image[cam_index], IMAGE_SIZE * 2);
 			g_depth.convertTo(depth8, CV_8UC1);
 			//publish depth image
@@ -313,7 +315,7 @@ int main(int argc, char** argv)
         std::cout<<cali[i].cu<<"\t"<<cali[i].cv<<"\t"<<cali[i].focal<<"\t"<<cali[i].baseline<<std::endl;
 	}
 	
-	err_code = set_image_frequecy(e_frequecy_5);
+	err_code = set_image_frequecy(e_frequecy_20);
 	RETURN_IF_ERR(err_code);
 
     /* select data */
@@ -358,7 +360,11 @@ int main(int argc, char** argv)
 	{
 		loop_rate.sleep();
 		ros::spinOnce();
+	
+		if(!depth_img_received)
+			continue;
 
+		depth_img_received = false;
 		cam_index = static_cast<e_vbus_index>(cam_index + 1); 
 		if(cam_index > 4)
 			cam_index = e_vbus5;
