@@ -43,8 +43,7 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     float   z       = geom_msgs_transformed.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    //target_pitch   = atan2(z,r_proy)*180/C_PI;
-    target_pitch = 0;
+    target_pitch   = atan2(z,r_proy)*180/C_PI;
     target_yaw     = atan2(y,x)*180/C_PI;
 
 }
