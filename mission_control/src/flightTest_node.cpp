@@ -22,11 +22,8 @@ typedef enum
 States nextState(const States &current);
 void performTask(const States &current);
 DJIDrone* drone;
-bool init_flag = false;
-//dji_sdk::MissionWaypoint home_wp;
-//dji_sdk::MissionWaypointTask waypoint_task;
-float flying_height = 7.0;
-float dist2goal;
+dji_sdk::LocalPosition target_position;
+dji_sdk::LocalPosition home_position;
 
 int main(int argc, char **argv)
 {
@@ -35,10 +32,9 @@ int main(int argc, char **argv)
     ros::Rate rate(20);
     States currentState = INIT_MISSION;
     drone = new DJIDrone(nh);
-    if(drone->request_sdk_permission_control())
-        printf("\n Permission Control Acquired \n");
-
-/*
+    target_position.x = 3;
+    target_position.y = 0;
+    target_position.z = 3;
     while(ros::ok())
     {
       /// Execute state machine.
@@ -47,11 +43,9 @@ int main(int argc, char **argv)
         currentState = nextState(currentState);
         rate.sleep();
     }
-*/
-
+/*
     drone->drone_arm();
     cout << "Taking off\n";
-    drone->takeoff();
     sleep(8);
     cout << "Ascend\n";
     drone->local_position_navigation_send_request(0,0,flying_height);
@@ -68,7 +62,7 @@ int main(int argc, char **argv)
     cout << "Disarm\n";
     drone->drone_disarm();    
     
-
+*/
    //ros::shutdown();
     return 0;
    //return EXIT_SUCCESS;
@@ -81,39 +75,35 @@ States nextState(const States &current)
     {
         case INIT_MISSION:
         {
-            if(init_flag)
+            if(drone->flight_status == 3)
                 return TAKEOFF;
             else
                 return INIT_MISSION;
         }
         case TAKEOFF:
         {
-            if(drone->local_position.z < flying_height)
-            {
+            if(drone->flight_status == 3)
                 return TAKEOFF;
-                break;
-            }
-            return WAYPOINT_NAV;
+            else
+                return WAYPOINT_NAV;
             break;
         }
         case WAYPOINT_NAV:
         {
-            if(dist2goal < 1)
-            {
+            float dist2goal = sqrt((drone->local_position.x - target_position.x)*(drone->local_position.x - target_position.x) + (drone->local_position.y - target_position.y)*(drone->local_position.y - target_position.y) + (drone->local_position.z - target_position.z)*(drone->local_position.z - target_position.z));
+
+            if(dist2goal < 0.5)
                 return RETURN_HOME;
-                break;
-            }
             else
                 return WAYPOINT_NAV;
             break;
         }
         case RETURN_HOME:
         {
-            if(dist2goal < 1)
-            {
+            float dist2goal = sqrt((drone->local_position.x - home_position.x)*(drone->local_position.x - home_position.x) + (drone->local_position.y - home_position.y)*(drone->local_position.y - home_position.y) + (drone->local_position.z - home_position.z)*(drone->local_position.z - home_position.z));
+
+            if(dist2goal < 0.5)
                 return LAND;
-                break;
-            }
             else
                 return RETURN_HOME;
             break;
@@ -121,10 +111,7 @@ States nextState(const States &current)
         case LAND:
         {
             if(drone->local_position.z < 0.1)
-            {
                 return FINISHED;
-                break;
-            }
             else
                 return LAND;
             break;
@@ -151,73 +138,33 @@ void performTask(const States &current)
         case INIT_MISSION: 
         {
             ROS_INFO("INIT_MISSION");
-            if(!init_flag)
-            {
-                char keyboard_input;
-                cout << "\n Input i to start mission: ";
-                cin >> keyboard_input;
-                cout << "\n";
-                if(keyboard_input == 'i')
-                {
-                    cout << "Estamos aqui\n";
-                    init_flag = true;
-                }
-            }
-            /*
-            home_wp.latitude = drone->global_position.latitude;
-            home_wp.longitude = drone->global_position.longitude;
-            home_wp.altitude = flying_height;
-            home_wp.damping_distance = 0;
-            home_wp.target_yaw = 0;
-            home_wp.target_gimbal_pitch = 0;
-            home_wp.turn_mode = 0;
-            home_wp.has_action = 0;
-            */
+            home_position.x = drone->local_position.x;
+            home_position.y = drone->local_position.y;
             break;
         }
         case TAKEOFF:
         {
+            if(drone->request_sdk_permission_control())
+                printf("\n Permission Control Acquired \n");
             ROS_INFO("TAKEOFF");
-            cout << "Arming Drone\n";
-            if(drone->local_position.z < 0.1)
-            {
-                drone->drone_arm();
-                cout << "Taking off\n";
-                drone->takeoff();
-            }
-            else
-                drone->local_position_navigation_send_request(0,0,flying_height);
+            drone->takeoff();
             break;
         }
         case WAYPOINT_NAV:
         {
+            home_position.z = drone->local_position.z;
             cout << "Navigating... ";
-            drone->local_position_navigation_send_request(50,30,flying_height);
+            drone->local_position_navigation_send_request(target_position.x,target_position.y,target_position.z);
             cout << "Waypoint Reached\n";
         }
         case RETURN_HOME:
         {
-            ROS_INFO("RETURN_HOME");
             cout << "Returning home... ";
-            drone->local_position_navigation_send_request(-50,-30,flying_height);
+            drone->local_position_navigation_send_request(home_position.x,home_position.y,home_position.z);
             cout << "Home point reached\n";
-            /*
-            waypoint_task.velocity_range = 10;
-            waypoint_task.idle_velocity = 3;
-            waypoint_task.action_on_finish = 0;
-            waypoint_task.mission_exec_times = 1;
-            waypoint_task.yaw_mode = 4;
-            waypoint_task.trace_mode = 0;
-            waypoint_task.action_on_rc_lost = 0;
-            waypoint_task.gimbal_pitch_mode = 0;
-            waypoint_task.mission_waypoint.push_back(home_wp);
-            drone->mission_waypoint_upload(waypoint_task);
-            drone->mission_start();
-            */
         }
         case LAND:
         {
-            ROS_INFO("LAND");
             cout << "Landing... ";
             drone->landing();
             cout << "Ground\n";
@@ -225,7 +172,6 @@ void performTask(const States &current)
         }
         case FINISHED:
         {
-            ROS_INFO("FINISHED");
             drone->drone_disarm();
             cout << "Disarmed\n";
         }
