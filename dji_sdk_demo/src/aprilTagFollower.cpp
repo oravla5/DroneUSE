@@ -15,10 +15,6 @@
 using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
-float       rel_yaw;
-float       rel_pitch;
-float       gimbal_yaw;
-float       gimbal_pitch;
 DJIDrone* drone;
 tf::TransformListener* listener;
 
@@ -39,9 +35,6 @@ float getYaw(float q0, float q1, float q2, float q3)
 
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
-    gimbal_pitch    = drone->gimbal.pitch;
-    gimbal_yaw      = drone->gimbal.yaw;
-
     geometry_msgs::PointStamped geom_msgs_transformed;
     listener->transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
 
@@ -73,8 +66,8 @@ int main(int argc, char **argv)
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
 
-    PID* pitchControl = new PID(300.0,-300.0,25.0,0.0,0.0);
-    PID* yawControl = new PID(300.0,-300.0,25.0,0.0,0.0);
+    PID* pitchControl = new PID(900.0,-900.0,45.0,0.0,0.0);
+    PID* yawControl = new PID(900.0,-900.0,45.0,0.0,0.0);
     
     int pitch_rate = 0;
     int yaw_rate = 0;
@@ -93,10 +86,6 @@ int main(int argc, char **argv)
     target_yaw = attitude_yaw;
     target_pitch = 0;
     
-    drone->gimbal_angle_control(0, (int)target_pitch*10, (int)target_yaw*10, 20.0, 1);
-
-    sleep(5);
-
     while(nh.ok())
     {   
         //target_yaw = attitude_yaw;
