@@ -11,7 +11,7 @@ void localPosition_callback(const dji_sdk::LocalPosition& msg){
   tf::Quaternion q;
   q.setRPY(0, 0, 0);
   transform.setRotation(q);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "local_position"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "ground_frame"));
 }
 
 void attitudeQuaternion_callback(const dji_sdk::AttitudeQuaternion& msg){
@@ -20,7 +20,7 @@ void attitudeQuaternion_callback(const dji_sdk::AttitudeQuaternion& msg){
   transform.setOrigin( tf::Vector3(0, 0, 0) );
   tf::Quaternion q(msg.q1, msg.q2, msg.q3, msg.q0);
   transform.setRotation(q);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "m100_attitude"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "ground_frame", "body_frame"));
 }
 
 void attitudeGimbal_callback(const dji_sdk::Gimbal& msg){
@@ -30,7 +30,7 @@ void attitudeGimbal_callback(const dji_sdk::Gimbal& msg){
   tf::Quaternion q;
   q.setRPY(msg.roll/180*C_PI, msg.pitch/180*C_PI, msg.yaw/180*C_PI);
   transform.setRotation(q);
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "local_position", "gimbal"));
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "ground_frame", "gimbal"));
 }
 
 int main(int argc, char** argv){
