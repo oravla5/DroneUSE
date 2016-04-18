@@ -24,6 +24,7 @@ void performTask(const States &current);
 DJIDrone* drone;
 dji_sdk::LocalPosition target_position;
 dji_sdk::LocalPosition home_position;
+float dist2goal = 0.0;
 
 int main(int argc, char **argv)
 {
@@ -51,92 +52,77 @@ States nextState(const States &current)
 {
     switch(current)
     {
-        case INIT_MISSION:
-        {
+        case INIT_MISSION :
             if(drone->flight_status == 3)
             {
                 ROS_INFO("TAKEOFF");
                 if(drone->request_sdk_permission_control())
                     printf("\n Permission Control Acquired \n");
                 return TAKEOFF;
-                break;
             }
             else
             {
                 return INIT_MISSION;
-                break;
             }
-        }
-        case TAKEOFF:
-        {
+            break;
+        case TAKEOFF :
             if(drone->local_position.z < 1)
             {
                 return TAKEOFF;
-                break;
             }
             else
             {
                 ROS_INFO("WAYPOINT_NAV");
                 return WAYPOINT_NAV;
-                break;
             }
-        }
-        case WAYPOINT_NAV:
-        {
-            float dist2goal = sqrt((drone->local_position.x - target_position.x)*(drone->local_position.x - target_position.x) + (drone->local_position.y - target_position.y)*(drone->local_position.y - target_position.y) + (drone->local_position.z - target_position.z)*(drone->local_position.z - target_position.z));
+            break;
+
+        case WAYPOINT_NAV :
+            dist2goal = sqrt((drone->local_position.x - target_position.x)*(drone->local_position.x - target_position.x) + (drone->local_position.y - target_position.y)*(drone->local_position.y - target_position.y) + (drone->local_position.z - target_position.z)*(drone->local_position.z - target_position.z));
+
             if(abs(dist2goal) < 0.5)
             {
                 ROS_INFO("RETURN_HOME");
                 return RETURN_HOME;
-                break;
             }
             else
             {
                 return WAYPOINT_NAV;
-                break;
             }
-        }
-        case RETURN_HOME:
-        {
-            float dist2goal = sqrt((drone->local_position.x - home_position.x)*(drone->local_position.x - home_position.x) + (drone->local_position.y - home_position.y)*(drone->local_position.y - home_position.y) + (drone->local_position.z - home_position.z)*(drone->local_position.z - home_position.z));
+            break;
+
+        case RETURN_HOME :
+            dist2goal = sqrt((drone->local_position.x - home_position.x)*(drone->local_position.x - home_position.x) + (drone->local_position.y - home_position.y)*(drone->local_position.y - home_position.y) + (drone->local_position.z - home_position.z)*(drone->local_position.z - home_position.z));
 
             //cout << dist2goal << "\n";
             if(abs(dist2goal) < 0.5)
             {
                 ROS_INFO("LAND");
                 return LAND;
-                break;
             }
             else
             {
                 return RETURN_HOME;
-                break;
             }
-        }
-        case LAND:
-        {
+            break;
+
+        case LAND :
             if(drone->local_position.z < 0.1)
             {
                 ROS_INFO("FINISHED");
                 return FINISHED;
-                break;
             }
             else
             {
                 return LAND;
-                break;
             }
-        }
-        case FINISHED:
-        {
-            return FINISHED;
             break;
-        }
-        default:
-        {
+
+        case FINISHED :
             return FINISHED;
-            break;
-        }
+
+        default :
+            return FINISHED;
     }
 }
 
@@ -145,42 +131,32 @@ void performTask(const States &current)
 {
    switch(current)
    {
-        case INIT_MISSION: 
-        {
+        case INIT_MISSION : 
             home_position.x = drone->local_position.x;
             home_position.y = drone->local_position.y;
             break;
-        }
-        case TAKEOFF:
-        {
+
+        case TAKEOFF :
             drone->takeoff();
             break;
-        }
-        case WAYPOINT_NAV:
-        {
+
+        case WAYPOINT_NAV :
             home_position.z = drone->local_position.z;
             drone->local_position_navigation_send_request(target_position.x,target_position.y,target_position.z);
-        }
-        case RETURN_HOME:
-        {
+            break;
+
+        case RETURN_HOME :
             drone->local_position_navigation_send_request(home_position.x,home_position.y,home_position.z);
-        }
-        case LAND:
-        {
+            break;
+
+        case LAND :
             drone->landing();
             break;
-        }
-        case FINISHED:
-        {
-            drone->drone_disarm();
-        }
-        default:
-      {
-         /// Nothing to do
 
-         break;
+        case FINISHED :
+            drone->drone_disarm();
+
       }
    }
-}
 
 
