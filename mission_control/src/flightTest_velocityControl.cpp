@@ -164,7 +164,7 @@ void performTask(const States &current)
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                             Flight::YawCoordinate::YAW_BODY |
                             Flight::SmoothMode::SMOOTH_ENABLE,
-                            0.5, 0, 0, 0 );
+                            -0.5, 0, 0, 0 );
             break;
 
         case LAND :
