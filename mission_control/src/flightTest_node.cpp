@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     ros::Rate rate(20);
     States currentState = INIT_MISSION;
     drone = new DJIDrone(nh);
-    target_position.x = 3;
+    target_position.x = drone->local_position.x + 3;
     target_position.y = 0;
     target_position.z = 3;
     while(ros::ok())
@@ -78,6 +78,8 @@ States nextState(const States &current)
             if(drone->flight_status == 3)
             {
                 ROS_INFO("TAKEOFF");
+                if(drone->request_sdk_permission_control())
+                    printf("\n Permission Control Acquired \n");
                 return TAKEOFF;
             }
             else
@@ -159,8 +161,6 @@ void performTask(const States &current)
         }
         case TAKEOFF:
         {
-            if(drone->request_sdk_permission_control())
-                printf("\n Permission Control Acquired \n");
             //ROS_INFO("TAKEOFF");
             drone->takeoff();
             break;
