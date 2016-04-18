@@ -41,33 +41,9 @@ int main(int argc, char **argv)
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
-        float dist2goal = sqrt((drone->local_position.x - home_position.x)*(drone->local_position.x - home_position.x) + (drone->local_position.y - home_position.y)*(drone->local_position.y - home_position.y) + (drone->local_position.z - home_position.z)*(drone->local_position.z - home_position.z));
-        cout << dist2goal << "\n";
         rate.sleep();
     }
-/*
-    drone->drone_arm();
-    cout << "Taking off\n";
-    sleep(8);
-    cout << "Ascend\n";
-    drone->local_position_navigation_send_request(0,0,flying_height);
-    sleep(3);
-    cout << "Go Waypoint\n";
-    drone->local_position_navigation_send_request(50,30,flying_height);
-    sleep(8);
-    cout << "Go Home\n";
-    drone->gohome();
-    sleep(8);
-    cout << "Land\n";
-    drone->landing();
-    sleep(8);
-    cout << "Disarm\n";
-    drone->drone_disarm();    
-    
-*/
-   //ros::shutdown();
     return 0;
-   //return EXIT_SUCCESS;
 }
 
 
@@ -155,41 +131,32 @@ void performTask(const States &current)
    {
         case INIT_MISSION: 
         {
-            //ROS_INFO("INIT_MISSION");
             home_position.x = drone->local_position.x;
             home_position.y = drone->local_position.y;
             break;
         }
         case TAKEOFF:
         {
-            //ROS_INFO("TAKEOFF");
             drone->takeoff();
             break;
         }
         case WAYPOINT_NAV:
         {
             home_position.z = drone->local_position.z;
-            //cout << "Navigating... ";
             drone->local_position_navigation_send_request(target_position.x,target_position.y,target_position.z);
-            //cout << "Waypoint Reached\n";
         }
         case RETURN_HOME:
         {
-            //cout << "Returning home... ";
             drone->local_position_navigation_send_request(home_position.x,home_position.y,home_position.z);
-            //cout << "Home point reached\n";
         }
         case LAND:
         {
-            //cout << "Landing... ";
             drone->landing();
-            //cout << "Ground\n";
             break;
         }
         case FINISHED:
         {
             drone->drone_disarm();
-            //cout << "Disarmed\n";
         }
         default:
       {
