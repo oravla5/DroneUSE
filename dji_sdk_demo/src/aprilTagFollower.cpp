@@ -65,8 +65,8 @@ int main(int argc, char **argv)
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
 
-    PID* pitchControl = new PID(900.0,-900.0,45.0,0.0,0.0);
-    PID* yawControl = new PID(900.0,-900.0,45.0,0.0,0.0);
+    PID* pitchControl   = new PID(900.0,-900.0,20.0,0.0,0.0);
+    PID* yawControl     = new PID(900.0,-900.0,20.0,0.0,0.0);
     
     int pitch_rate = 0;
     int yaw_rate = 0;
@@ -95,6 +95,12 @@ int main(int argc, char **argv)
 
         pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
         yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
+
+        if(abs(target_yaw - gimbal_yaw)<5)
+            yaw_rate = 0;
+
+        if(abs(target_pitch - gimbal_pitch)<5)
+            pitch_rate = 0;
 
 
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
