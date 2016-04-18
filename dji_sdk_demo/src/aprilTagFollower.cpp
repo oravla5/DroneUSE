@@ -42,8 +42,8 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     gimbal_yaw      = drone->gimbal.yaw;
 
     tf::TransformListener listener;
-    geometry_msgs::PointStamped geo_msgs_transformed;
-    listener.transformPoint("/camera_ground", goem_msgs, geo_msgs_transformed);
+    geometry_msgs::PointStamped geom_msgs_transformed;
+    listener.transformPoint("/camera_ground", geom_msgs, geom_msgs_transformed);
 
     float   x       = geom_msgs_transformed.point.x;
     float   y       = geom_msgs_transformed.point.y;

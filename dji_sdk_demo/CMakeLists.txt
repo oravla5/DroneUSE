@@ -7,6 +7,7 @@ project(dji_sdk_demo)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   dji_sdk
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
