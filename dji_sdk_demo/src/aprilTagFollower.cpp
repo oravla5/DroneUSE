@@ -36,24 +36,24 @@ float getYaw(float q0, float q1, float q2, float q3)
   return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3))*180/C_PI;
 }
 
-
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
     gimbal_pitch    = drone->gimbal.pitch;
     gimbal_yaw      = drone->gimbal.yaw;
 
+    tf::TransformListener listener;
+    geometry_msgs::PointStamped geo_msgs_transformed;
+    listener.transformPoint("/camera_ground", goem_msgs, geo_msgs_transformed);
 
-    float   x       = geom_msgs.point.x;
-    float   y       = geom_msgs.point.y;
-    float   z       = geom_msgs.point.z;
+    float   x       = geom_msgs.transformed.point.x;
+    float   y       = geom_msgs.transformed.point.y;
+    float   z       = geom_msgs.transformed.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    rel_pitch   = atan2(z,r_proy)*180/C_PI;
-    rel_yaw     = -atan2(y,x)*180/C_PI;
-
-    target_yaw      =  rel_yaw + gimbal_yaw;
-    //target_pitch    =  rel_pitch  + attitude_pitch;
+    //target_pitch   = atan2(z,r_proy)*180/C_PI;
     target_pitch = 0;
+    target_yaw     = atan2(y,x)*180/C_PI;
+
 }
 
 /*
