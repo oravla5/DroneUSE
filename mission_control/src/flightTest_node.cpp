@@ -99,7 +99,6 @@ States nextState(const States &current)
         case WAYPOINT_NAV:
         {
             float dist2goal = sqrt((drone->local_position.x - target_position.x)*(drone->local_position.x - target_position.x) + (drone->local_position.y - target_position.y)*(drone->local_position.y - target_position.y) + (drone->local_position.z - target_position.z)*(drone->local_position.z - target_position.z));
-            cout << dist2goal << "\n";
             if(abs(dist2goal) < 0.5)
             {
                 ROS_INFO("RETURN_HOME");
@@ -113,6 +112,7 @@ States nextState(const States &current)
         {
             float dist2goal = sqrt((drone->local_position.x - home_position.x)*(drone->local_position.x - home_position.x) + (drone->local_position.y - home_position.y)*(drone->local_position.y - home_position.y) + (drone->local_position.z - home_position.z)*(drone->local_position.z - home_position.z));
 
+            cout << dist2goal << "\n";
             if(abs(dist2goal) < 0.5)
             {
                 ROS_INFO("LAND");
