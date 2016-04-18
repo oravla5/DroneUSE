@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         pitch_rate      = pitchControl->calculate(1.0, target_pitch, gimbal_pitch);
         yaw_rate        = yawControl->calculate(1.0, target_yaw, gimbal_yaw);
 
-        if(abs(rel_yaw) < 5)
+        if(abs(rel_yaw) < 1)
         { 
             yaw_rate = 0;
         }
@@ -133,8 +133,8 @@ int main(int argc, char **argv)
         //std::cout << "q2 = " << q2 << "\n";
         //std::cout << "q3 = " << q3 << "\n";
         //std::cout << "Euler Angles:" << q3 << "\n";
-        std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
-        std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
+        //std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
+        //std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
         //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
         std::cout << "*----*--------------*-----*\n";
 
