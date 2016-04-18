@@ -33,9 +33,9 @@ int main(int argc, char **argv)
     ros::Rate rate(20);
     States currentState = INIT_MISSION;
     drone = new DJIDrone(nh);
-    target_position.x = drone->local_position.x + 3;
+    target_position.x = drone->local_position.x + 10;
     target_position.y = 0;
-    target_position.z = 3;
+    target_position.z = 5;
     while(ros::ok())
     {
       /// Execute state machine.
@@ -119,7 +119,7 @@ States nextState(const States &current)
             break;
 
         case FINISHED :
-            return FINISHED;
+            return INIT_MISSION;
 
         default :
             return FINISHED;
