@@ -1,0 +1,54 @@
+#include "droneuseController.h"
+#include <ros/ros.h>
+#include <math.h>
+#include <stdio.h>
+
+#define C_PI (double) 3.141592653589793
+
+void droneuseController::gimbal_subscriber_callback(const dji_sdk::Gimbal gimbal)
+{
+    this->gimbal = gimbal;
+}
+
+droneuseController::droneuseController(ros::NodeHandle& nh)
+{
+    gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &droneuseController::gimbal_subscriber_callback, this);
+
+    gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
+	gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
+    
+    maxRate = 90;
+    K_p     = 10;
+
+}
+
+bool droneuseController::gimbal_rateBased_orientation_controller(const float x, const float y, const float z)
+{
+    float   r_proy      = sqrt(x*x +  y*y);
+    float   des_pitch   = atan2(z,r_proy)*180/C_PI;
+    float   des_yaw     = atan2(y,x)*180/C_PI;
+    
+    float   pitch_err   = des_pith - gimbal.pitch;    
+    float   yaw_err     = des_yaw - gimbal.yaw;
+    
+    
+    int     pitch_rate  = pitch_err*K_p;
+    int     yaw_rate    = yaw_err*K_p;
+
+    // Rate Saturator
+    pitch_rate          = sign(pitch_rate)*abs(pitch_rate)%maxRate;
+    yaw_rate            = sign(yaw_rate)*abs(pitch_rate)%maxRate;
+
+    printf("Pitch = %d\n Yaw = %d\n ------------------\n", pitch_rate, yaw_rate);
+
+    // ROS Service Call
+    dji_sdk::GimbalSpeedControl gimbal_speed_control;
+    gimbal_speed_control.request.roll_rate = 0;
+    gimbal_speed_control.request.pitch_rate = pitch_rate*10;    // Units are 0.1 deg/seg
+    gimbal_speed_control.request.yaw_rate = yaw_rate*10;        // Units are 0.1 deg/seg
+
+	return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+    
+}
+
+
