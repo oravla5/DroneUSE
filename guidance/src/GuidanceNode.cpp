@@ -319,12 +319,12 @@ int main(int argc, char** argv)
 	RETURN_IF_ERR(err_code);
 
     /* select data */
- /*   err_code = select_greyscale_image(cam_index, true);
+    err_code = select_greyscale_image(cam_index, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(cam_index, false);
 	RETURN_IF_ERR(err_code);
-   */ err_code = select_depth_image(cam_index);
-	RETURN_IF_ERR(err_code);
+   // err_code = select_depth_image(cam_index);
+//	RETURN_IF_ERR(err_code);
 
     select_imu();
     select_ultrasonic();
@@ -354,13 +354,10 @@ int main(int argc, char** argv)
 
 	std::cout << "start_transfer" << std::endl;
 
-
-	ros::Rate loop_rate(0.5);
 	while (ros::ok())
 	{
-		loop_rate.sleep();
 		ros::spinOnce();
-	
+	/*
 		if(!depth_img_received)
 			continue;
 
@@ -374,18 +371,18 @@ int main(int argc, char** argv)
     		
     		err_code = select_depth_image(cam_index);
 			RETURN_IF_ERR(err_code);
-/*    		err_code = select_greyscale_image(cam_index, true);
+    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
     		err_code = select_greyscale_image(cam_index, false);
 			RETURN_IF_ERR(err_code);
-*/
+
     		select_imu();
     		select_ultrasonic();
     		select_obstacle_distance();
     		select_velocity();
     		err_code = start_transfer();
     			RETURN_IF_ERR(err_code);
-	}
+	*/}
 
 	/* release data transfer */
 	err_code = stop_transfer();
