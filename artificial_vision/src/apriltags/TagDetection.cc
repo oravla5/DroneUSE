@@ -4,6 +4,8 @@
 #include "TagDetection.h"
 #include "MathUtil.h"
 
+#include <iostream>
+
 #ifdef PLATFORM_APERIOS
 //missing/broken isnan
 namespace std {
@@ -97,7 +99,8 @@ Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, d
                            0, fy, py,
                            0,  0,  1);
   cv::Vec4f distParam(0,0,0,0); // all 0?
-  cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+  //cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+  cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec, false, CV_EPNP);
   cv::Matx33d r;
   cv::Rodrigues(rvec, r);
   Eigen::Matrix3d wRo;
