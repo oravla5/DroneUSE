@@ -23,7 +23,7 @@ AprilTagDetector::AprilTagDetector(char *imageTopic, char *infoTopic) : it_(nh_)
 	imgSub_ = it_.subscribeCamera(imageTopic, 1, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
-	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 1);
+	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 50);
 
 	//AprilTag detector initialization
 	tag_detector_ = new TagDetector(tagCodes16h5);
@@ -41,8 +41,8 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 {
 	//Ros image message to cv format
 	cv::Mat frame_original = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
-    	cv::Mat frame;
 
+    	cv::Mat frame;
     	cv::resize(frame_original, frame, cv::Size(), 0.5, 0.5);
 
 	if(frame.empty())
@@ -61,7 +61,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	{
 		if(tags_detected[i].good)
 		{
-			transform = tags_detected[i].getRelativeTransform( 0.155, info_msg->K[0], info_msg->K[4], info_msg->K[2], info_msg->K[5]);
+			transform = tags_detected[i].getRelativeTransform( 0.155, 0.5*info_msg->K[0], 0.5*info_msg->K[4], 0.5*info_msg->K[2], 0.5*info_msg->K[5]);
 
             tags_detected[i].draw(frame);
 			PointStamped tag_pos;
