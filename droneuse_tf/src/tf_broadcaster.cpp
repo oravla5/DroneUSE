@@ -49,7 +49,7 @@ int main(int argc, char** argv){
   tf_body_guidance_left.setRotation(q);  
   tf_body_guidance_left.setOrigin(tf::Vector3(0, -1, 1));
   // body_frame - guidance down
-  q.setRPY(C_PI, C_PI/2, 0);
+  q.setRPY(C_PI, -C_PI/2, 0);
   tf_body_guidance_down.setRotation(q);  
   tf_body_guidance_down.setOrigin(tf::Vector3(0, 0, 1));
 
