@@ -9,9 +9,9 @@
 #include "TagDetector.h"
 
 struct trackedTag_{
-	AprilTags::TagDetector *tag;
+	AprilTags::TagDetection *tag;
 	int frames_num;
-} trackedTag;
+};
 
 class AprilTagDetector
 {
@@ -23,13 +23,15 @@ class AprilTagDetector
 	ros::Publisher				tagPub_;
 
 	AprilTags::TagDetector			*tag_detector_;
-	std::vector<trackedTag>			tracked_tags_;	
+	std::vector<trackedTag_>		tracked_tags_;	
 
 	const int				MIN_FRAME_NUM_;
 	const float				MIN_TAG_DIST_;
+	const float				TAG_SIZE_;
+	const float				SCALE_FACTOR_;
 
 	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
-	float	getTagDistance(const AprilTags::TagDetection&, const AprilTgas::TagDetection&);
+	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
 
 	public:
 			AprilTagDetector();
