@@ -3,6 +3,31 @@
 #include <dji_sdk/dji_drone.h>
 #define C_PI (double) 3.141592653589793
 
+// Measures from body_frame
+#define CAMERA_X (float) 0.085
+#define CAMERA_Y (float) 0
+#define CAMERA_Z (float) 0.085
+
+#define GUIDANCE_FRONT_X (float) 0.1
+#define GUIDANCE_FRONT_Y (float) 0
+#define GUIDANCE_FRONT_Z (float) -0.07
+
+#define GUIDANCE_RIGHT_X (float) 0
+#define GUIDANCE_RIGHT_Y (float) 0.09
+#define GUIDANCE_RIGHT_Z (float) 0.09
+
+#define GUIDANCE_BACK_X (float) -0.13
+#define GUIDANCE_BACK_Y (float) 0
+#define GUIDANCE_BACK_Z (float) 0.09
+
+#define GUIDANCE_LEFT_X (float) 0
+#define GUIDANCE_LEFT_Y (float) -0.09
+#define GUIDANCE_LEFT_Z (float) 0.09
+
+#define GUIDANCE_DOWN_X (float) 0
+#define GUIDANCE_DOWN_Y (float) 0
+#define GUIDANCE_DOWN_Z (float) 0.12
+
 int main(int argc, char** argv){
   ros::init(argc, argv, "tf_broadcaster");
   ros::NodeHandle nh;
@@ -35,23 +60,23 @@ int main(int argc, char** argv){
   // body_frame - guidance front
   q.setRPY(C_PI, 0, 0);
   tf_body_guidance_front.setRotation(q);  
-  tf_body_guidance_front.setOrigin(tf::Vector3(1, 0, -1));
+  tf_body_guidance_front.setOrigin(tf::Vector3(GUIDANCE_FRONT_X, GUIDANCE_FRONT_Y, GUIDANCE_FRONT_Z));
   // body_frame - guidance right
   q.setRPY(C_PI, 0, C_PI/2);
   tf_body_guidance_right.setRotation(q);  
-  tf_body_guidance_right.setOrigin(tf::Vector3(0, 1, 1));
+  tf_body_guidance_right.setOrigin(tf::Vector3(GUIDANCE_RIGHT_X, GUIDANCE_RIGHT_Y, GUIDANCE_RIGHT_Z));
   // body_frame - guidance back
   q.setRPY(C_PI, 0, C_PI);
   tf_body_guidance_back.setRotation(q);  
-  tf_body_guidance_back.setOrigin(tf::Vector3(-1, 0, 1));
+  tf_body_guidance_back.setOrigin(tf::Vector3(GUIDANCE_BACK_X, GUIDANCE_BACK_Y, GUIDANCE_BACK_Z));
   // body_frame - guidance left
   q.setRPY(C_PI, 0, 3*C_PI/2);
   tf_body_guidance_left.setRotation(q);  
-  tf_body_guidance_left.setOrigin(tf::Vector3(0, -1, 1));
+  tf_body_guidance_left.setOrigin(tf::Vector3(GUIDANCE_LEFT_X, GUIDANCE_LEFT_Y, GUIDANCE_LEFT_Z));
   // body_frame - guidance down
   q.setRPY(C_PI, -C_PI/2, 0);
   tf_body_guidance_down.setRotation(q);  
-  tf_body_guidance_down.setOrigin(tf::Vector3(0, 0, 1));
+  tf_body_guidance_down.setOrigin(tf::Vector3(GUIDANCE_DOWN_X, GUIDANCE_DOWN_Y, GUIDANCE_DOWN_Z));
 
   while(nh.ok())
   {
@@ -85,7 +110,7 @@ int main(int argc, char** argv){
       // ---------------------------------------------------------
 
       tf_bodyFrame_gimbalNED = tf_groundFrame_bodyFrame.inverse();
-      tf_bodyFrame_gimbalNED.setOrigin(tf::Vector3(0.2, 0, 0.2));
+      tf_bodyFrame_gimbalNED.setOrigin(tf::Vector3(CAMERA_X, CAMERA_Y, CAMERA_Z));
       br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalNED, ros::Time::now(), "body_frame", "gimbal_NED"));
 
       q.setRPY(0, 0, drone->gimbal.yaw/180*C_PI);
