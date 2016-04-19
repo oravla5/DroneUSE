@@ -19,7 +19,7 @@ using namespace AprilTags;
 using namespace geometry_msgs;
 using namespace boost;
 
-AprilTagDetector::AprilTagDetector() : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
+AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
 {
 	//Subscription
 	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &AprilTagDetector::callback, this);

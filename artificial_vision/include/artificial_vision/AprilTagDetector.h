@@ -34,7 +34,7 @@ class AprilTagDetector
 	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
 
 	public:
-			AprilTagDetector();
+			AprilTagDetector(char *imageTopic);
 			~AprilTagDetector();
 		void	callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
 };
