@@ -13,17 +13,19 @@ int main(int argc, char** argv){
   tf::Quaternion q;
 
   // Dinamic frames
-
   tf::Transform tf_world_groundFrame;
   tf::Transform tf_groundFrame_bodyFrame;
   tf::Transform tf_bodyFrame_gimbalNED;
   tf::Transform tf_gimbalNED_gimbalHorizon;
   tf::Transform tf_gimbalHorizon_gimbal;
   tf::Transform tf_gimbal_camera;
-  tf::Transform tf_body_guidance;
-
 
   // Static Frames
+  tf::Transform tf_body_guidance_front;
+  tf::Transform tf_body_guidance_right;
+  tf::Transform tf_body_guidance_back;
+  tf::Transform tf_body_guidance_left;
+  tf::Transform tf_body_guidance_down;
 
   // gimbal - camera
   q.setRPY(C_PI, 0, 0);
@@ -32,24 +34,24 @@ int main(int argc, char** argv){
 
   // body_frame - guidance front
   q.setRPY(C_PI, 0, 0);
-  tf_body_guidance.setRotation(q);  
-  tf_body_guidance.setOrigin(tf::Vector3(1, 0, -1));
+  tf_body_guidance_front.setRotation(q);  
+  tf_body_guidance_front.setOrigin(tf::Vector3(1, 0, -1));
   // body_frame - guidance right
   q.setRPY(C_PI, 0, C_PI/2);
-  tf_body_guidance.setRotation(q);  
-  tf_body_guidance.setOrigin(tf::Vector3(0, 1, 1));
-  // body_frame - guidance front
+  tf_body_guidance_right.setRotation(q);  
+  tf_body_guidance_right.setOrigin(tf::Vector3(0, 1, 1));
+  // body_frame - guidance back
   q.setRPY(C_PI, 0, C_PI);
-  tf_body_guidance.setRotation(q);  
-  tf_body_guidance.setOrigin(tf::Vector3(-1, 0, 1));
-  // body_frame - guidance front
+  tf_body_guidance_back.setRotation(q);  
+  tf_body_guidance_back.setOrigin(tf::Vector3(-1, 0, 1));
+  // body_frame - guidance left
   q.setRPY(C_PI, 0, 3*C_PI/2);
-  tf_body_guidance.setRotation(q);  
-  tf_body_guidance.setOrigin(tf::Vector3(0, -1, 1));
-  // body_frame - guidance front
+  tf_body_guidance_left.setRotation(q);  
+  tf_body_guidance_left.setOrigin(tf::Vector3(0, -1, 1));
+  // body_frame - guidance down
   q.setRPY(C_PI, C_PI/2, 0);
-  tf_body_guidance.setRotation(q);  
-  tf_body_guidance.setOrigin(tf::Vector3(0, 0, 1));
+  tf_body_guidance_down.setRotation(q);  
+  tf_body_guidance_down.setOrigin(tf::Vector3(0, 0, 1));
 
   while(nh.ok())
   {
@@ -89,7 +91,7 @@ int main(int argc, char** argv){
       q.setRPY(0, 0, drone->gimbal.yaw/180*C_PI);
       tf_gimbalNED_gimbalHorizon.setRotation(q);
       tf_gimbalNED_gimbalHorizon.setOrigin(tf::Vector3(0, 0, 0));
-      br.sendTransform(tf::StampedTransform(tf_bodyFrame_gimbalHorizon, ros::Time::now(), "gimbal_NED", "gimbal_horizon"));
+      br.sendTransform(tf::StampedTransform(tf_gimbalNED_gimbalHorizon, ros::Time::now(), "gimbal_NED", "gimbal_horizon"));
 
       q.setRPY(drone->gimbal.roll/180*C_PI, drone->gimbal.pitch/180*C_PI, 0);
       tf_gimbalHorizon_gimbal.setRotation(q);  
@@ -104,7 +106,6 @@ int main(int argc, char** argv){
       // guidance: front guidance, left guidance, up guidance 
       // ---------------------------------------------------------
 
-      // Front
       br.sendTransform(tf::StampedTransform(tf_body_guidance_front, ros::Time::now(), "body_frame", "guidance_front"));
       br.sendTransform(tf::StampedTransform(tf_body_guidance_right, ros::Time::now(), "body_frame", "guidance_right"));
       br.sendTransform(tf::StampedTransform(tf_body_guidance_back,  ros::Time::now(), "body_frame", "guidance_back"));
