@@ -59,26 +59,26 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	vector<TagDetection> new_tags;
 
 	new_tags = tag_detector_->extractTags(frame);
-    updateTrackedTags(new_tags);
+    	updateTrackedTags(new_tags);
 
 	//Publish tags
 	Eigen::Matrix4d transform;
 
 	for(int i=0; i<tracked_tags_.size() && tracked_tags_[i].consecutive_detections > MIN_CONSECUTIVE_DETECTIONS_; i++)
-    {
-        transform = new_tags[i].getRelativeTransform( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+    	{
+        	transform = new_tags[i].getRelativeTransform( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
 
-        PointStamped tag_pos;
-        tag_pos.header.stamp = image_msg->header.stamp;
-        tag_pos.header.frame_id = "/camera";
+        	PointStamped tag_pos;
+        	tag_pos.header.stamp = image_msg->header.stamp;
+        	tag_pos.header.frame_id = "/camera";
 
-        //Camera system tag coordinates to 3D world coordinates
-        tag_pos.point.x = transform(2,3);
-        tag_pos.point.y = -1 * transform(0,3);
-        tag_pos.point.z = -1 * transform(1,3);
+        	//Camera system tag coordinates to 3D world coordinates
+        	tag_pos.point.x = transform(2,3);
+        	tag_pos.point.y = -1 * transform(0,3);
+        	tag_pos.point.z = -1 * transform(1,3);
         
-        new_tags[i].draw(frame);
-        tagPub_.publish(tag_pos);
+        	new_tags[i].draw(frame);
+        	tagPub_.publish(tag_pos);
 	}
 
 	cv::imshow("Frame", frame);
@@ -89,24 +89,28 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 void AprilTagDetector::updateTrackedTags(vector<TagDetection>& new_tags)
 {
 	vector<trackedTag_> old_tracked_tags = tracked_tags_;
-    tracked_tags_.clear();
-
+    	//tracked_tags_.clear();
 
 	for(int i=0; i< new_tags.size() && new_tags[i].good; i++)
 	{
 		for(int j=0; j< old_tracked_tags.size(); j++)
-        {
+        	{
 			if(new_tags[i].id == old_tracked_tags[j].tag->id)
 			{
 				if( getTagDistance(new_tags[i],*(old_tracked_tags[j].tag)) < MIN_TAG_DIST_)
 				{
 					tracked_tags_[j].consecutive_detections = old_tracked_tags[j].consecutive_detections + 1;
 				}
-            }
-            tracked_tags_[j].tag = &new_tags[i];
-        }
-    }
+				
+            		}
+			else
+			{
+				tracked_tags_[j].consecutive_detections = 0;
 
+			}
+            		tracked_tags_[j].tag = &new_tags[i];
+        	}
+    	}
 	return;
 }
 
