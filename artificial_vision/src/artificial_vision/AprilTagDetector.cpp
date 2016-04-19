@@ -19,7 +19,12 @@ using namespace AprilTags;
 using namespace geometry_msgs;
 using namespace boost;
 
-AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
+AprilTagDetector::AprilTagDetector(char *imageTopic) :  it_(nh_), 
+                                                        MIN_FRAME_NUM_(3), 
+                                                        MIN_TAG_DIST_(1000), 
+                                                        TAG_SIZE_(0.155), 
+                                                        SCALE_FACTOR_(0.5), 
+                                                        MIN_CONSECUTIVE_DETECTIONS_(2)
 {
 	//Subscription
 	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &AprilTagDetector::callback, this);
@@ -48,41 +53,32 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 	cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
 
-	cout << "FRAME ORI SIZE = " << frame_ori.size().height << " x " << frame_ori.size().width << endl;
-	cout << "FRAME  SIZE = " << frame.size().height << " x " << frame.size().width << endl;
-	
 	if(frame.empty())
 		return;
 
-	vector<TagDetection> tags_detected;
+	vector<TagDetection> new_tags;
 
-	timer t;
-	tags_detected = tag_detector_->extractTags(frame);
-
-	cout << "TIEMPO: " << t.elapsed() << endl;
-	//associateTags(tags_detected);
+	new_tags = tag_detector_->extractTags(frame);
+    updateTrackedTags(new_tags);
 
 	//Publish tags
 	Eigen::Matrix4d transform;
 
-	for(int i=0; i<tags_detected.size(); i++)
-	{
-		if(tags_detected[i].good)
-		{
-			transform = tags_detected[i].getRelativeTransform( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+	for(int i=0; i<tracked_tags_.size() && tracked_tags_[i].consecutive_detections > MIN_CONSECUTIVE_DETECTIONS_; i++)
+    {
+        transform = new_tags[i].getRelativeTransform( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
 
-			PointStamped tag_pos;
-			tag_pos.header.stamp = image_msg->header.stamp;
-			tag_pos.header.frame_id = "/camera";
+        PointStamped tag_pos;
+        tag_pos.header.stamp = image_msg->header.stamp;
+        tag_pos.header.frame_id = "/camera";
 
-			//Camera system tag coordinates to 3D world coordinates
-			tag_pos.point.x = transform(2,3);
-			tag_pos.point.y = -1 * transform(0,3);
-			tag_pos.point.z = -1 * transform(1,3);
-			
-			tags_detected[i].draw(frame);
-			tagPub_.publish(tag_pos);
-		}
+        //Camera system tag coordinates to 3D world coordinates
+        tag_pos.point.x = transform(2,3);
+        tag_pos.point.y = -1 * transform(0,3);
+        tag_pos.point.z = -1 * transform(1,3);
+        
+        new_tags[i].draw(frame);
+        tagPub_.publish(tag_pos);
 	}
 
 	cv::imshow("Frame", frame);
@@ -90,24 +86,27 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	return;
 }
 
-void AprilTagDetector::associateTags(vector<TagDetection>& tags_detected)
+void AprilTagDetector::updateTrackedTags(vector<TagDetection>& new_tags)
 {
-	vector<trackedTag_> old_tags = tracked_tags_;
-	tracked_tags_.clear();
+	vector<trackedTag_> old_tracked_tags = tracked_tags_;
+    tracked_tags_.clear();
 
-	for(int i=0; i< tags_detected.size() && tags_detected[i].good; i++)
+
+	for(int i=0; i< new_tags.size() && new_tags[i].good; i++)
 	{
-		for(int j=0; j< tracked_tags_.size(); j++)
-			if(tags_detected[i].id == tracked_tags_[j].tag->id)
+		for(int j=0; j< old_tracked_tags.size(); j++)
+        {
+			if(new_tags[i].id == old_tracked_tags[j].tag->id)
 			{
-				if( getTagDistance(tags_detected[i],*(tracked_tags_[j].tag)) < MIN_TAG_DIST_)
+				if( getTagDistance(new_tags[i],*(old_tracked_tags[j].tag)) < MIN_TAG_DIST_)
 				{
-					tracked_tags_[j].tag = &tags_detected[i];
-					tracked_tags_[j].frames_num++;
-					break;
+					tracked_tags_[j].consecutive_detections = old_tracked_tags[j].consecutive_detections + 1;
 				}
-			}	
-	}
+            }
+            tracked_tags_[j].tag = &new_tags[i];
+        }
+    }
+
 	return;
 }
 

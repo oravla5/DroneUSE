@@ -10,7 +10,7 @@
 
 struct trackedTag_{
 	AprilTags::TagDetection *tag;
-	int frames_num;
+	int consecutive_detections;
 };
 
 class AprilTagDetector
@@ -26,11 +26,12 @@ class AprilTagDetector
 	std::vector<trackedTag_>		tracked_tags_;	
 
 	const int				MIN_FRAME_NUM_;
+	const int				MIN_CONSECUTIVE_DETECTIONS_;
 	const float				MIN_TAG_DIST_;
 	const float				TAG_SIZE_;
 	const float				SCALE_FACTOR_;
 
-	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
+	void	updateTrackedTags(std::vector<AprilTags::TagDetection> &tags_detected);
 	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
 
 	public:
