@@ -1,5 +1,6 @@
 
 #include "opencv2/opencv.hpp"
+#include "opencv2/gpu/gpu.hpp"
 
 #include "TagDetection.h"
 #include "MathUtil.h"
@@ -76,38 +77,43 @@ bool TagDetection::overlapsTooMuch(const TagDetection &other) const {
 }
 
 Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, double fy, double px, double py) const {
-  std::vector<cv::Point3f> objPts;
-  std::vector<cv::Point2f> imgPts;
+
   double s = tag_size/2.;
-  objPts.push_back(cv::Point3f(-s,-s, 0));
-  objPts.push_back(cv::Point3f( s,-s, 0));
-  objPts.push_back(cv::Point3f( s, s, 0));
-  objPts.push_back(cv::Point3f(-s, s, 0));
 
-  std::pair<float, float> p1 = p[0];
-  std::pair<float, float> p2 = p[1];
-  std::pair<float, float> p3 = p[2];
-  std::pair<float, float> p4 = p[3];
-  imgPts.push_back(cv::Point2f(p1.first, p1.second));
-  imgPts.push_back(cv::Point2f(p2.first, p2.second));
-  imgPts.push_back(cv::Point2f(p3.first, p3.second));
-  imgPts.push_back(cv::Point2f(p4.first, p4.second));
+  cv::Mat objPts(1,4, CV_32FC3);
+  objPts.at<cv::Point3f>(0,0) = cv::Point3f(-s, -s, 0); 
+  objPts.at<cv::Point3f>(0,1) = cv::Point3f( s, -s, 0); 
+  objPts.at<cv::Point3f>(0,2) = cv::Point3f( s,  s, 0); 
+  objPts.at<cv::Point3f>(0,3) = cv::Point3f(-s,  s, 0); 
 
-  cv::Mat rvec, tvec;
-  cv::Matx33f cameraMatrix(
-                           fx, 0, px,
-                           0, fy, py,
-                           0,  0,  1);
-  cv::Vec4f distParam(0,0,0,0); // all 0?
+  cv::Mat imgPts(1,4, CV_32FC2);
+  imgPts.at<cv::Point2f>(0,0) = cv::Point2f(p[0].first, p[0].second); 
+  imgPts.at<cv::Point2f>(0,1) = cv::Point2f(p[1].first, p[1].second); 
+  imgPts.at<cv::Point2f>(0,2) = cv::Point2f(p[2].first, p[2].second); 
+  imgPts.at<cv::Point2f>(0,3) = cv::Point2f(p[3].first, p[3].second); 
+
+  cv::Mat rvec;
+  cv::Mat tvec;
+
+  double camv[9] = {fx, 0, px, 0, fy, py, 0, 0, 1};
+  cv::Mat cameraMatrix(3,3,CV_32F, camv);
+
+  double distv[4] = {0,0,0,0};
+  cv::Mat distParam(1,4, CV_32F, distv);
+
   //cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
-  cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec, false, CV_EPNP);
-  cv::Matx33d r;
+  //cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec, false, CV_EPNP);
+
+  cv::gpu::solvePnPRansac(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+
+  cv::Matx33f r;
   cv::Rodrigues(rvec, r);
   Eigen::Matrix3d wRo;
   wRo << r(0,0), r(0,1), r(0,2), r(1,0), r(1,1), r(1,2), r(2,0), r(2,1), r(2,2);
 
   Eigen::Matrix4d T; 
   T.topLeftCorner(3,3) = wRo;
+
   T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
   T.row(3) << 0,0,0,1;
 

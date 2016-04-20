@@ -22,7 +22,7 @@ using namespace boost;
 AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
 {
 	//Subscription
-	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &AprilTagDetector::callback, this);
+	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 20, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
 	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 60);
