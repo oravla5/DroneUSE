@@ -313,7 +313,7 @@ int main(int argc, char** argv)
     obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
     ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
     position_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/position", 1);
-    caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/cam_info",1);
+    caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/camera_info",1);
 
     /* initialize guidance */
     reset_config();
