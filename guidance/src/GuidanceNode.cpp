@@ -21,6 +21,7 @@
 #include <geometry_msgs/TransformStamped.h> //IMU
 #include <geometry_msgs/Vector3Stamped.h> //velocity
 #include <sensor_msgs/LaserScan.h> //obstacle distance & ultrasonic
+#include <sensor_msgs/CameraInfo.h>
 
 ros::Publisher depth_image_pub;
 ros::Publisher left_image_pub;
@@ -30,12 +31,14 @@ ros::Publisher obstacle_distance_pub;
 ros::Publisher velocity_pub;
 ros::Publisher ultrasonic_pub;
 ros::Publisher position_pub;
+ros::Publisher caminfo_pub;
 
 
 using namespace cv;
 
 e_vbus_index cam_index = e_vbus1;
 bool depth_img_received = false;
+sensor_msgs::CameraInfo cam_info;
 
 int WIDTH=320;
 int HEIGHT=240;
@@ -90,24 +93,31 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
+					cam_info.header.frame_id = "guidance_down";
 					left_8.header.frame_id  = "guidance_down";
 					break;
 				case 1:
+					cam_info.header.frame_id = "guidance_front";
 					left_8.header.frame_id  = "guidance_front";
 					break;
 				case 2:
+					cam_info.header.frame_id = "guidance_right";
 					left_8.header.frame_id  = "guidance_right";
 					break;
 				case 3:
+					cam_info.header.frame_id = "guidance_back";
 					left_8.header.frame_id  = "guidance_back";
 					break;
 				case 4:
+					cam_info.header.frame_id = "guidance_left";
 					left_8.header.frame_id  = "guidance_left";
 					break;
 			}	
 			left_8.header.stamp	= ros::Time::now();
+			cam_info.header.stamp = left_8.header.stamp;
 			left_8.encoding		= sensor_msgs::image_encodings::MONO8;
 			left_image_pub.publish(left_8.toImageMsg());
+			caminfo_pub.publish(cam_info);
 		}
 
 		if ( data->m_greyscale_image_right[cam_index] ){
@@ -118,22 +128,28 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
+					cam_info.header.frame_id = "guidance_down";
 					right_8.header.frame_id  = "guidance_down";
 					break;
 				case 1:
+					cam_info.header.frame_id = "guidance_front";
 					right_8.header.frame_id  = "guidance_front";
 					break;
 				case 2:
+					cam_info.header.frame_id = "guidance_right";
 					right_8.header.frame_id  = "guidance_right";
 					break;
 				case 3:
+					cam_info.header.frame_id = "guidance_back";
 					right_8.header.frame_id  = "guidance_back";
 					break;
 				case 4:
+					cam_info.header.frame_id = "guidance_left";
 					right_8.header.frame_id  = "guidance_left";
 					break;
 			}	
 			right_8.header.stamp	 = ros::Time::now();
+			cam_info.header.stamp	 = right_8.header.stamp;
 			right_8.encoding  	 = sensor_msgs::image_encodings::MONO8;
 			right_image_pub.publish(right_8.toImageMsg());
 		}
@@ -148,24 +164,31 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
+					cam_info.header.frame_id = "guidance_down";
 					depth_16.header.frame_id  = "guidance_down";
 					break;
 				case 1:
+					cam_info.header.frame_id = "guidance_front";
 					depth_16.header.frame_id  = "guidance_front";
 					break;
 				case 2:
+					cam_info.header.frame_id = "guidance_right";
 					depth_16.header.frame_id  = "guidance_right";
 					break;
 				case 3:
+					cam_info.header.frame_id = "guidance_back";
 					depth_16.header.frame_id  = "guidance_back";
 					break;
 				case 4:
+					cam_info.header.frame_id = "guidance_left";
 					depth_16.header.frame_id  = "guidance_left";
 					break;
 			}	
 			depth_16.header.stamp	  = ros::Time::now();
+			cam_info.header.stamp	  = depth_16.header.stamp;
 			depth_16.encoding	  = sensor_msgs::image_encodings::MONO16;
 			depth_image_pub.publish(depth_16.toImageMsg());
+			caminfo_pub.publish(cam_info);
                 }
     }
 
@@ -288,8 +311,9 @@ int main(int argc, char** argv)
     imu_pub  		= my_node.advertise<geometry_msgs::TransformStamped>("/guidance/imu",1);
     velocity_pub  	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/velocity",1);
     obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
-	ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
-	position_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/position", 1);
+    ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
+    position_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/position", 1);
+    caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/cam_info",1);
 
     /* initialize guidance */
     reset_config();
@@ -317,6 +341,29 @@ int main(int argc, char** argv)
 	
 	err_code = set_image_frequecy(e_frequecy_20);
 	RETURN_IF_ERR(err_code);
+
+	/*CameraInfo data*/
+        cam_info.height = HEIGHT;
+        cam_info.width = WIDTH;
+
+        cam_info.distortion_model = "plumb_bob";
+        cam_info.D.push_back(-0.001980888066537227);
+        cam_info.D.push_back(-0.02147700025762941);
+        cam_info.D.push_back(0.0006841015603197759);
+        cam_info.D.push_back(-0.00108815737201456);
+        cam_info.D.push_back(0.0);
+
+        cam_info.K = {247.35757622530616, 0.0, 153.29506251287017, 0.0, 247.39002468328675, 116.8939252668646, 0.0, 0.0, 1.0};
+        cam_info.R = {0.9995417232106595, 0.0032279128371214463, -0.0300985737167282, -0.0032132327445043023, 0.9999946938578694, 0.0005360890183786829, 0.03010014445804239, -0.0004391296185950722, 0.9995467915354354};
+        cam_info.P = {251.2699111385827, 0.0, 163.1802978515625, 0.0, 0.0, 251.2699111385827, 116.94859886169434, 0.0, 0.0, 0.0, 1.0, 0.0};
+        cam_info.binning_x = 0;
+        cam_info.binning_x = 0;
+
+        cam_info.roi.x_offset = 0;
+        cam_info.roi.y_offset = 0;
+        cam_info.roi.height = 0;
+        cam_info.roi.width = 0;
+        cam_info.roi.do_rectify = false;
 
     /* select data */
  /*   err_code = select_greyscale_image(cam_index, true);
