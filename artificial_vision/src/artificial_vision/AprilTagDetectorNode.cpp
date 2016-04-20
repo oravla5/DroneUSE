@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
 	init(argc, argv, "tag_detector");
 
-	VideoCapture video("/home/viki/apriltag-test.mp4");
+	VideoCapture video("/home/martina/Escritorio/apriltag-test.mp4");
 	if(!video.isOpened())
 	{
 		cout << "Cannot open file!" << endl;
