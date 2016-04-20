@@ -82,12 +82,12 @@ int main(int argc, char **argv)
                 sleep(2);
                 break;
             case 'j':
-                if(drone->gimbal_angle_control(300, 0, 0, 20, 0))
+                if(drone->gimbal_angle_control(0, -300, 0, 20, 0))
                     printf("\nGimbal pitch has been increased 30º");
                 sleep(2);
                 break;
             case 'k':
-                if(drone->gimbal_angle_control(-300, 0, 0, 20, 0))
+                if(drone->gimbal_angle_control(0, 300, 0, 20, 0))
                     printf("\nGimbal yaw has been decreased 30º");
                 sleep(2);
                 break;

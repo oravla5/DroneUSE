@@ -9,11 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   dji_sdk_lib
   roscpp
   std_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -102,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES m100_control
+#  LIBRARIES mission_control
 #  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
 #  DEPENDS system_lib
 )
@@ -115,31 +117,36 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-    ${catkin_INCLUDE_DIRS}
-    include/uavController
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(m100_control
-#   src/${PROJECT_NAME}/m100_control.cpp
-# )
+# add_library(mission_control
+#   src/${PROJECT_NAME}/mission_control.cpp
+#    ${catkin_INCLUDE_DIRS}
+#)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(m100_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(mission_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(m100_control_node src/m100_control_node.cpp)
+add_executable(flightTest_node src/flightTest_node.cpp)
+add_executable(flightTestVelocity_node src/flightTest_velocityControl.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(m100_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(m100_control_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(flightTest_node
+   ${catkin_LIBRARIES}
+)
+target_link_libraries(flightTestVelocity_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
@@ -156,7 +163,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS m100_control m100_control_node
+# install(TARGETS mission_control mission_control_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -181,7 +188,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_m100_control.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_mission_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
