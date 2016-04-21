@@ -48,7 +48,7 @@ DJI_lock        g_lock;
 DJI_event       g_event;
 Mat             g_greyscale_image_left(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_greyscale_image_right(HEIGHT, WIDTH, CV_8UC1);
-Mat		g_depth(HEIGHT,WIDTH,CV_16SC1);
+Mat		g_depth(HEIGHT,WIDTH,CV_16UC1);
 Mat		depth8(HEIGHT, WIDTH, CV_8UC1);
 
 std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
@@ -187,7 +187,9 @@ int my_callback(int data_type, int data_len, char *content)
 			depth_16.header.stamp	  = ros::Time::now();
 			cam_info.header.stamp	  = depth_16.header.stamp;
 			depth_16.encoding	  = sensor_msgs::image_encodings::MONO16;
-			depth_image_pub.publish(depth_16.toImageMsg());
+			sensor_msgs::ImagePtr depth_image = depth_16.toImageMsg();
+			depth_image->encoding = sensor_msgs::image_encodings::TYPE_16UC1; 
+			depth_image_pub.publish(depth_image);
 			caminfo_pub.publish(cam_info);
                 }
     }
