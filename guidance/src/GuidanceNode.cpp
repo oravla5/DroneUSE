@@ -403,11 +403,8 @@ int main(int argc, char** argv)
 
 	std::cout << "start_transfer" << std::endl;
 
-
-	ros::Rate loop_rate(0.5);
 	while (ros::ok())
 	{
-		loop_rate.sleep();
 		ros::spinOnce();
 	
 		if(!depth_img_received)
