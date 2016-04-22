@@ -13,7 +13,7 @@
 void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target)
 {
     this->gimbal_attitude_target = gimbal_target;
-    //this->control_enable = true;
+    this->control_enable = true;
 }
 
 void gimbalController::gimbal_control_state_subscriber_callback(const std_msgs::UInt8 control_state)

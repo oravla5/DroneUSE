@@ -117,7 +117,7 @@ int main(int argc, char** argv){
       tf_yaw.setRotation(q);
       tf_yaw.setOrigin(tf::Vector3(0, 0, 0));
       tf::Transform tf_pitch;
-      q.setRPY(0, -drone->gimbal.pitch/180*C_PI, 0);
+      q.setRPY(0, drone->gimbal.pitch/180*C_PI, 0);
       tf_pitch.setRotation(q);
       tf_pitch.setOrigin(tf::Vector3(0, 0, 0));
       tf::Transform tf_roll;
