@@ -105,7 +105,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES m100_control
-  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs message_runtime
+  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -132,11 +132,11 @@ include_directories(
 # add_dependencies(m100_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-#add_executable(gimbal_controller_node
-#    src/gimbal_controller_node.cpp
-#    src/gimbalController.cpp
-#    src/pid.cpp
-#)
+add_executable(gimbal_controller_node
+    src/gimbal_controller_node.cpp
+    src/gimbalController.cpp
+    src/pid.cpp
+)
 
 add_executable(m100_controller_node
     src/m100_controller_node.cpp
@@ -149,9 +149,9 @@ add_executable(m100_controller_node
 # add_dependencies(m100_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-#target_link_libraries(gimbal_controller_node
-#   ${catkin_LIBRARIES}
-#)
+target_link_libraries(gimbal_controller_node
+   ${catkin_LIBRARIES}
+)
 
 target_link_libraries(m100_controller_node
    ${catkin_LIBRARIES}
@@ -172,11 +172,11 @@ target_link_libraries(m100_controller_node
 # )
 
 ## Mark executables and/or libraries for installation
-#install(TARGETS gimbal_controller_node
-#    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-##    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+install(TARGETS gimbal_controller_node
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 install(TARGETS m100_controller_node 
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

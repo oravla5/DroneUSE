@@ -4,7 +4,7 @@
 #include <dji_sdk/dji_sdk.h>
 #include "pid.h"
 #include <std_msgs/UInt8.h>
-#include <m100_control/TargetLocalPosition.h>
+#include <geometry_msgs/PointStamped.h>
 #include <tf/transform_listener.h>
 
 class m100Controller 
@@ -14,12 +14,14 @@ class m100Controller
         // Service 
         ros::ServiceClient m100_attitude_control_service; 
         // Subscriber
-        ros::Subscriber m100_target_local_position_subscriber; 
+        ros::Subscriber m100_target_position_subscriber; 
+        ros::Subscriber m100_target_orientation_subscriber;
         ros::Subscriber m100_control_state_subscriber;
         
         // Subscriber Callback
-        void m100_target_local_position_subscriber_callback(const m100_control::TargetLocalPosition m100_target_local_position);
+        void m100_target_position_subscriber_callback(const geometry_msgs::PointStamped m100_target_position);
         void m100_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
+        void m100_target_orientation_subscriber_callback(const geometry_msgs::PointStamped m100_target_orientation);
         
         geometry_msgs::PointStamped m100_target_position;
         geometry_msgs::PointStamped m100_target_orientation;

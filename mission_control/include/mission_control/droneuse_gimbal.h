@@ -18,11 +18,14 @@ class droneuse_gimbal
         ros::Publisher gimbal_control_state_publisher;
 
         // Subscriber Callback
-        void gimbal_attitude_subscriber_callback();
+        void gimbal_attitude_subscriber_callback(const dji_sdk::Gimbal gimbal);
+
+        dji_sdk::Gimbal gimbal_attitude;
+        geometry_msgs::PointStamped gimbal_target_attitude;
         
     public:
-        void refresh_gimbal_target_orientation(float roll, float pitch, float yaw);
-        void enable_gimbal_controller();
+        droneuse_gimbal(ros::NodeHandle& nh);
+        void set_target_orientation(geometry_msgs::PointStamped target_orientation);
         void disable_gimbal_controller();
 
         dji_sdk::Gimbal     get_gimbal();
@@ -30,3 +33,5 @@ class droneuse_gimbal
         float               get_pitch();
         float               get_roll();
 };
+
+#endif

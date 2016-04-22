@@ -10,23 +10,30 @@
 
 #define C_PI (double) 3.141592653589793
 
-void m100Controller::m100_target_local_position_subscriber_callback(const geometry_msgs::PointStamped target_position)
+void m100Controller::m100_target_position_subscriber_callback(const geometry_msgs::PointStamped target_position)
 {
     this->m100_target_position = target_position;
 }
 
 void m100Controller::m100_control_state_subscriber_callback(const std_msgs::UInt8 control_state)
 {
-    this->control_state = control_state.data;
+    this->control_enable = control_state.data;
+}
+
+void m100Controller::m100_target_orientation_subscriber_callback(const geometry_msgs::PointStamped target_orientation)
+{
+    this->m100_target_orientation = target_orientation;
 }
 
 m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
 {
     this->control_rate = control_rate; // Hz
 
-    m100_local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &m100Controller::m100_local_position_subscriber_callback, this);
+    m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 
-    m100_target_local_position_subscriber = nh.subscribe<m100_control::TargetLocalPosition>("droneuse/local_position_target", 10, &m100Controller::m100_target_local_position_subscriber_callback, this);
+    m100_target_position_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/m100_target_position", 10, &m100Controller::m100_target_position_subscriber_callback, this);
+    
+    m100_target_orientation_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/m100_target_orientation", 10, &m100Controller::m100_target_orientation_subscriber_callback, this);
 
     m100_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_controller_state",10, &m100Controller::m100_control_state_subscriber_callback, this);
 
@@ -46,26 +53,24 @@ bool m100Controller::m100_controller_update()
     {
         unsigned char ctrl_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                                     DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
-                                    DJI::onboardSDK::Flight::YawLogic::YAW_RATE |
+                                    DJI::onboardSDK::Flight::YawLogic::YAW_PALSTANCE |
                                     DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                                     DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
 
         geometry_msgs::PointStamped m100_target_position_transformed;
-        tf_listener->tranformPoint("/body",m100_target_position, m100_target_position_transformed);
+        tf_listener->transformPoint("/body",m100_target_position, m100_target_position_transformed);
 
 
-        double target_yaw = atan2(y,x)*180/C_PI; 
-        
-        double velocity_x   = m100_velocity_x_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.x);
-        double velocity_y   = m100_velocity_y_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.y);
-        double velocity_z   = m100_velocity_z_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.z);
+        double velocity_x   = m100_velocity_x_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.point.x);
+        double velocity_y   = m100_velocity_y_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.point.y);
+        double velocity_z   = m100_velocity_z_pid->calculate(1/control_rate, 0.0, m100_target_position_transformed.point.z);
 
         geometry_msgs::PointStamped m100_target_orientation_transformed;
         tf_listener->transformPoint("/body", m100_target_orientation, m100_target_orientation_transformed);
         
         double x            = m100_target_orientation_transformed.point.x;
         double y            = m100_target_orientation_transformed.point.y;
-
+        double target_yaw   = atan2(y,x);
         double yaw_rate     = m100_yaw_rate_pid->calculate(1/control_rate, 0.0, target_yaw);
         
            // double vel_mod      = sqrt(velocity_x*velocity_x + velocity_y*velocity_y + velocity_z*velocity_z);

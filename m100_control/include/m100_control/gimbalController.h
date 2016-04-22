@@ -4,6 +4,7 @@
 #include <dji_sdk/dji_sdk.h>
 #include "pid.h"
 #include <std_msgs/UInt8.h>
+#include <geometry_msgs/PointStamped.h>
 #include <tf/transform_listener.h>
 
 class gimbalController
@@ -18,7 +19,8 @@ class gimbalController
         ros::Subscriber gimbal_target_subscriber;
         ros::Subscriber gimbal_control_state_subscriber;
 
-        void gimbal_target_subscriber_callback(const m100_control::GimbalTarget gimbal_target);
+        void gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target);
+        void gimbal_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
 
         geometry_msgs::PointStamped gimbal_attitude_target;
 
@@ -45,7 +47,7 @@ class gimbalController
 
     public:
         gimbalController(ros::NodeHandle& nh, int control_rate);
-        bool gimbal_cotroller_update();
+        bool gimbal_controller_update();
 
 
 };

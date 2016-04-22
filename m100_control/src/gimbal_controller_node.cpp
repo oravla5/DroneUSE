@@ -9,19 +9,19 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "gimbal_controller_node");
     ros::NodeHandle nh;
+    int control_rate = 20;
+    gimbalController* gimbal_controller = new gimbalController(nh, control_rate);
 
-    gimbalController* gimbal_controller = new gimbalController(nh);
-
-    ros::Rate rate(20);
+    ros::Rate rate(control_rate);
 
     while(nh.ok())
     {
-        gimbal_controller->gimbal_rate_based_orientation_controller();
+        gimbal_controller->gimbal_controller_update();
         rate.sleep();
     }
 
-    delete gimbal_controller_node;
-    gimbal_controller_node = NULL;
+    //delete gimbal_controller_node;
+    //gimbal_controller_node = NULL;
 
     return 0;
 }

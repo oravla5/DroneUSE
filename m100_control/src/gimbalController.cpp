@@ -10,11 +10,17 @@
 
 #define C_PI (double) 3.141592653589793
 
-void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped& gimbal_target)
+void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target)
 {
-    this->gimbal_target = gimbal_target;
-    this->control_enable = true;
+    this->gimbal_attitude_target = gimbal_target;
+    //this->control_enable = true;
 }
+
+void gimbalController::gimbal_control_state_subscriber_callback(const std_msgs::UInt8 control_state)
+{
+    this->control_enable = control_state.data;
+}
+
 
 gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 {
@@ -22,9 +28,10 @@ gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 
     tf_listener = new tf::TransformListener;
 
-    
+    gimbal_speed_control_service        = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
 
-    gimbal_target_subscriber = nh.subscribe<dji_sdk::Gimbal>("droneuse/gimbal_target", 10, &gimbalController::gimbal_target_subscriber_callback, this);
+    gimbal_target_subscriber            = nh.subscribe<geometry_msgs::PointStamped>("droneuse/gimbal_target", 10, &gimbalController::gimbal_target_subscriber_callback, this);
+    gimbal_control_state_subscriber     = nh.subscribe<std_msgs::UInt8>("droneuse/gimbal_control_state", 10, &gimbalController::gimbal_control_state_subscriber_callback, this);
 
     // PID initialization
     gimbal_pitch_rate_pid = new PID(gimbal_pitch_maxRate, -gimbal_pitch_maxRate, gimbal_pitchRate_Kp, gimbal_pitchRate_Kd, gimbal_pitchRate_Ki);

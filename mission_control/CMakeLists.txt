@@ -102,9 +102,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES mission_control
-#  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
+  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -116,6 +116,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+    include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -132,9 +133,19 @@ include_directories(
 # add_dependencies(mission_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(flightTest_node src/flightTest_node.cpp)
-add_executable(flightTestVelocity_node src/flightTest_velocityControl.cpp)
+add_executable(flightTest_node 
+    src/flightTest_node.cpp 
+    src/droneuse_m100.cpp 
+    src/droneuse_gimbal.cpp)
 
+add_executable(flightTestVelocity_node 
+    src/flightTest_velocityControl.cpp 
+    src/droneuse_m100.cpp 
+    src/droneuse_gimbal.cpp)
+
+add_executable(apriltag_tracking_mission_node 
+    src/apriltag_tracking_mission_node.cpp 
+    src/droneuse_gimbal.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -147,6 +158,9 @@ target_link_libraries(flightTestVelocity_node
    ${catkin_LIBRARIES}
 )
 
+target_link_libraries(apriltag_tracking_mission_node
+   ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
@@ -162,18 +176,29 @@ target_link_libraries(flightTestVelocity_node
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS mission_control mission_control_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS flightTest_node 
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
+install(TARGETS flightTestVelocity_node 
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS apriltag_tracking_mission_node 
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
+#install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
-# )
+#)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
