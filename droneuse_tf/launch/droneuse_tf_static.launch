@@ -1,0 +1,8 @@
+<launch>
+<node pkg="tf" type="static_transform_publisher" name="guidance_front"  args=" 1  0 -1 0                 0               3.14159265358   body_frame guidance_front  100" />
+<node pkg="tf" type="static_transform_publisher" name="guidance_right"  args=" 0  1  1 1.57079632679     0               3.14159265358   body_frame guidance_right  100" />
+<node pkg="tf" type="static_transform_publisher" name="guidance_back"   args="-1  0  1 3.14159265358     0               3.14159265358   body_frame guidance_back   100" />
+<node pkg="tf" type="static_transform_publisher" name="guidance_left"   args=" 0 -1  1 4.712388980380    0               3.14159265358   body_frame guidance_left   100" />
+<node pkg="tf" type="static_transform_publisher" name="guidance_down"   args=" 0  0  1 0                 -1.57079632679  3.14159265358   body_frame guidance_down   100" />
+<node pkg="tf" type="static_transform_publisher" name="camera"          args=" 0  0  0 0                 0               3.14159265358   gimbal     camera          100" />
+</launch>
