@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dji_sdk_demo)
+project(droneuse_tf)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,8 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package( PkgConfig REQUIRED)
-pkg_check_modules( EIGEN REQUIRED eigen3)
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -117,8 +115,6 @@ catkin_package(
 # include_directories(include)
 include_directories(
  	${catkin_INCLUDE_DIRS}
-    ${EIGEN_INCLUDE_DIRS}
-    include/pidController
 )
 
 ## Declare a C++ library
@@ -142,23 +138,8 @@ include_directories(
 # target_link_libraries(dji_sdk_demo_node
 #   ${catkin_LIBRARIES}
 # )
-add_executable(dji_sdk_client src/client.cpp)
-add_executable(dji_sdk_gimbalClient src/gimbalControl_client.cpp)
-add_executable(aprilTagFollower src/aprilTagFollower.cpp src/pidController/pid.cpp)
-target_link_libraries(dji_sdk_client
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(dji_sdk_gimbalClient
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(aprilTagFollower  
-    ${catkin_LIBRARIES}
-    ${EIGEN_LIBRARIES}
-)
-
-add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
-add_dependencies(dji_sdk_gimbalClient dji_sdk_generate_messages_cpp)
-add_dependencies(aprilTagFollower dji_sdk_generate_messages_cpp)
+add_executable(tf_broadcaster src/tf_broadcaster.cpp)
+target_link_libraries(tf_broadcaster ${catkin_LIBRARIES}) 
 #############
 ## Install ##
 #############
@@ -175,23 +156,9 @@ add_dependencies(aprilTagFollower dji_sdk_generate_messages_cpp)
 #)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS dji_sdk_client 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS aprilTagFollower 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 
 ## Mark cpp header files for installation
 
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-)
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1

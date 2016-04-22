@@ -10,15 +10,16 @@
 #include <iostream>
 #include <std_msgs/UInt8.h>
 #include <pid.h>
+#include <tf/transform_listener.h>
+
 #define C_PI (double) 3.141592653589793
 
 using namespace DJI::onboardSDK;
 float       target_pitch;
 float       target_yaw;
-float       rel_yaw;
-float       rel_pitch;
 DJIDrone* drone;
 ros::ServiceClient send_data_to_mobile_service;
+tf::TransformListener* listener;
 
 float getRoll(float q0, float q1, float q2, float q3)
 {
@@ -35,24 +36,18 @@ float getYaw(float q0, float q1, float q2, float q3)
   return atan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3))*180/C_PI;
 }
 
-
 void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
 {
-    float q0 = drone->attitude_quaternion.q0;
-    float q1 = drone->attitude_quaternion.q1;
-    float q2 = drone->attitude_quaternion.q2;
-    float q3 = drone->attitude_quaternion.q3;
+    geometry_msgs::PointStamped geom_msgs_transformed;
+    listener->transformPoint("/gimbal_NED", geom_msgs, geom_msgs_transformed);
 
-    float attitude_yaw      = getYaw(q0,q1,q2,q3);
-    float attitude_pitch    = getPitch(q0,q1,q2,q3);
-
-    float   x       = geom_msgs.point.x;
-    float   y       = geom_msgs.point.y;
-    float   z       = geom_msgs.point.z;
+    float   x       = geom_msgs_transformed.point.x;
+    float   y       = geom_msgs_transformed.point.y;
+    float   z       = geom_msgs_transformed.point.z;
     float   r_proy  = sqrt(x*x +  y*y);
 
-    rel_pitch   = atan2(z,r_proy)*180/C_PI;
-    rel_yaw     = -atan2(y,x)*180/C_PI;
+    target_pitch   = atan2(-z,r_proy)*180/C_PI;
+    target_yaw     = atan2(y,x)*180/C_PI;
 
     target_yaw      =  rel_yaw + attitude_yaw;
     //target_pitch    =  rel_pitch  + attitude_pitch;
@@ -78,14 +73,15 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "aprilTagFollower");
     ROS_INFO("sdk_service_client_test");
     ros::NodeHandle nh;
-    ros::Rate rate(20);
+    ros::Rate rate(10);
     drone = new DJIDrone(nh);
+    listener = new tf::TransformListener;
     if(drone->request_sdk_permission_control())
         printf("\n Permission Control Acquired \n");
     ros::Subscriber targetPosition = nh.subscribe("droneuse/tag_position", 10, targetPosition_callback);
 
-    PID* pitchControl = new PID(300.0,-300.0,25.0,0.0,0.0);
-    PID* yawControl = new PID(300.0,-300.0,25.0,0.0,0.0);
+    PID* pitchControl   = new PID(900.0,-900.0,40.0,0.0,0.0);
+    PID* yawControl     = new PID(900.0,-900.0,40.0,0.0,0.0);
     
     int pitch_rate = 0;
     int yaw_rate = 0;
@@ -110,22 +106,10 @@ int main(int argc, char **argv)
     target_yaw = attitude_yaw;
     target_pitch = 0;
     
-    drone->gimbal_angle_control(0, (int)target_pitch, (int)target_yaw, 20.0, 1);
-
-    sleep(5);
-
     while(nh.ok())
     {   
-        q0 = drone->attitude_quaternion.q0;
-        q1 = drone->attitude_quaternion.q1;
-        q2 = drone->attitude_quaternion.q2;
-        q3 = drone->attitude_quaternion.q3;
-
-        attitude_yaw      = getYaw(q0,q1,q2,q3);
-        attitude_pitch    = getPitch(q0,q1,q2,q3);
-        
         //target_yaw = attitude_yaw;
-        //target_pitch = attitude_pitch;
+    //target_pitch = attitude_pitch;
 
         gimbal_pitch    = drone->gimbal.pitch;
         gimbal_yaw      = drone->gimbal.yaw;
@@ -135,34 +119,26 @@ int main(int argc, char **argv)
 
         drone->gimbal_speed_control(0, pitch_rate, yaw_rate);
 
-        if((count%20)==0)
-        {
-            std::cout << "Rel yaw = "       << rel_yaw      << '\n';
-            std::cout << "Rel pitch = "     << rel_pitch    << '\n';
-            std::cout << "Target Yaw = "    << target_yaw   << "\n";
-            std::cout << "Target Pitch = " << target_pitch << "\n";
-            std::cout << "Gimbal Yaw = "    << gimbal_yaw   << "\n";
-            std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
-            //std::cout << "Yaw Rate = "      << yaw_rate     << "\n";
-            //std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
-            //std::cout << "Pitch Rate = " << pitch_rate << "\n";
-            //std::cout << "Gimbal Yaw = " << gimbal_yaw << "\n";
-            //std::cout << "Yaw Rate = " << yaw_rate << "\n";
-            std::cout << "--------------------------\n";
-            //std::cout << "Quaternions: \n";
-            //std::cout << "q0 = " << q0 << "\n";
-            //std::cout << "q1 = " << q1 << "\n";
-            //std::cout << "q2 = " << q2 << "\n";
-            //std::cout << "q3 = " << q3 << "\n";
-            //std::cout << "Euler Angles:" << q3 << "\n";
-            std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
-            std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
-            //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
-            std::cout << "*----*--------------*-----*\n";
-        }
+        std::cout << "Target Yaw = "    << target_yaw   << "\n";
+        std::cout << "Gimbal Yaw = "    << gimbal_yaw   << "\n";
+        std::cout << "Yaw Rate = " << yaw_rate << "\n";
+        std::cout << "----\n";
+        std::cout << "Target Pitch = " << target_pitch << "\n";
+        std::cout << "Gimbal Pitch = " << gimbal_pitch << "\n";
+        std::cout << "Pitch Rate = " << pitch_rate << "\n";
+        std::cout << "--------------------------\n";
+
+        //std::cout << "Quaternions: \n";
+        //std::cout << "q0 = " << q0 << "\n";
+        //std::cout << "q1 = " << q1 << "\n";
+        //std::cout << "q2 = " << q2 << "\n";
+        //std::cout << "q3 = " << q3 << "\n";
+        //std::cout << "Euler Angles:" << q3 << "\n";
+        //std::cout << "Drone Yaw = "   << getYaw(q0,q1,q2,q3)   << "\n";
+        //std::cout << "Drone Pitch = " << getPitch(q0,q1,q2,q3) << "\n";
+        //std::cout << "Roll = "  << getRoll(q0,q1,q2,q3)  << "\n";
 
         ros::spinOnce();
-        count++;
         rate.sleep();
     }
     //ros::spin();
