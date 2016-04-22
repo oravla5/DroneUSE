@@ -68,9 +68,13 @@ bool gimbalController::gimbal_controller_update()
         gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
         gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
         
-        geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
-
-        tf_listener->transformPoint(gimbal_attitude_target_old.header.frame_id, ros::Time::now(), gimbal_attitude_target_old, "/body_frame", gimbal_attitude_target);
+        try
+        {
+            geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
+            tf_listener->transformPoint(gimbal_attitude_target_old.header.frame_id, ros::Time::now(), gimbal_attitude_target_old, "/body_frame", gimbal_attitude_target);
+        }
+       catch (tf::ExtrapolationException ex){
+       }
 
 	    return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
     }
