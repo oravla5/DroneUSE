@@ -75,10 +75,9 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			tag_pos.header.stamp = image_msg->header.stamp;
 			tag_pos.header.frame_id = "/camera";
 
-			//Camera system tag coordinates to 3D world coordinates
-			tag_pos.point.x = transform(2,3);
-			tag_pos.point.y = -1 * transform(0,3);
-			tag_pos.point.z = -1 * transform(1,3);
+			tag_pos.point.x = transform(0,3);
+			tag_pos.point.y = transform(1,3);
+			tag_pos.point.z = transform(2,3);
 			
 			tags_detected[i].draw(frame);
 			tagPub_.publish(tag_pos);
