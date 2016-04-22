@@ -46,8 +46,11 @@ bool gimbalController::gimbal_controller_update()
 {
     if(control_enable)
     {
-        geometry_msgs::PointStamped gimbal_attitude_target_transformed;
-        tf_listener->transformPoint("/gimbal", gimbal_attitude_target, gimbal_attitude_target_transformed);
+        // TODO Wait for transform
+        try
+        {
+            geometry_msgs::PointStamped gimbal_attitude_target_transformed;
+            tf_listener->transformPoint("/gimbal", gimbal_attitude_target, gimbal_attitude_target_transformed);
 
         double x         = gimbal_attitude_target_transformed.point.x;
         double y         = gimbal_attitude_target_transformed.point.y;
@@ -57,16 +60,14 @@ bool gimbalController::gimbal_controller_update()
         double target_pitch = atan2(-z,r_proj)*180/C_PI; 
         double target_yaw = atan2(y,x)*180/C_PI; 
 
-        double pitch_rate = gimbal_pitch_rate_pid->calculate(1/control_rate, 0.0, target_pitch);
-        double yaw_rate = gimbal_yaw_rate_pid->calculate(1/control_rate, 0.0, target_yaw);
-        
-        std::cout << "pitch_rate: " << pitch_rate << "\nyaw_rate: " << yaw_rate << "\n";
+        double pitch_rate = gimbal_pitch_rate_pid->calculate(1.0/control_rate, 0.0, target_pitch);
+        double yaw_rate = gimbal_yaw_rate_pid->calculate(1.0/control_rate, 0.0, target_yaw);
+
         // dji_sdk Service Call
         dji_sdk::GimbalSpeedControl gimbal_speed_control;
         gimbal_speed_control.request.roll_rate = 0;
         gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
         gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
-        
         try
         {
             geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
@@ -74,8 +75,12 @@ bool gimbalController::gimbal_controller_update()
         }
        catch (tf::ExtrapolationException ex){
        }
-
 	    return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+        }
+        catch (tf::ExtrapolationException ex){
+        }
+
+
     }
 }
 
