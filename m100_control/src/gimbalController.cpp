@@ -13,6 +13,7 @@
 void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target)
 {
     this->gimbal_attitude_target = gimbal_target;
+    ROS_INFO("TARGET REFRESHED");
     this->control_enable = true;
 }
 

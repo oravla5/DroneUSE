@@ -24,8 +24,8 @@ droneuse_gimbal::droneuse_gimbal(ros::NodeHandle& nh)
     
     gimbal_attitude_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &droneuse_gimbal::gimbal_attitude_subscriber_callback, this);
 
-   gimbal_target_publisher = nh.advertise<geometry_msgs::PointStamped>("droneuse/gimbal_target_orientation", 10);
-   gimbal_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/gimbal_controller_state", 10);
+   gimbal_target_publisher = nh.advertise<geometry_msgs::PointStamped>("droneuse/gimbal_target", 10);
+   gimbal_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/gimbal_control_state", 10);
 }
 
 void droneuse_gimbal::set_target_orientation(geometry_msgs::PointStamped target_orientation)
