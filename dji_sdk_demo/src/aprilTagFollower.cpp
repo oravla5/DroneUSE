@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <dji_sdk/dji_drone.h>
 #include <cstdlib>
+#include <stdint.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <geometry_msgs/PointStamped.h>
 #include <math.h>
 #include <iostream>
+#include <std_msgs/UInt8.h>
 #include <pid.h>
 #define C_PI (double) 3.141592653589793
 
@@ -16,6 +18,7 @@ float       target_yaw;
 float       rel_yaw;
 float       rel_pitch;
 DJIDrone* drone;
+ros::ServiceClient send_data_to_mobile_service;
 
 float getRoll(float q0, float q1, float q2, float q3)
 {
@@ -54,6 +57,15 @@ void targetPosition_callback(const geometry_msgs::PointStamped& geom_msgs)
     target_yaw      =  rel_yaw + attitude_yaw;
     //target_pitch    =  rel_pitch  + attitude_pitch;
     target_pitch = 0;
+    //const unsigned char cmd1[] = {0xfe, 0x58};
+    std::vector<unsigned char> cmd1;
+    cmd1.push_back(8);
+    dji_sdk::SendDataToRemoteDevice data_to_mobile;
+    
+    data_to_mobile.request.data = cmd1;
+    
+    if(send_data_to_mobile_service.call(data_to_mobile) && data_to_mobile.response.result)
+        ROS_INFO("Message sent");
 }
 
 /*
@@ -83,6 +95,8 @@ int main(int argc, char **argv)
 
     int count = 0;
     std::cout << "\n";
+
+    send_data_to_mobile_service = nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
 
 
     float q0 = drone->attitude_quaternion.q0;
