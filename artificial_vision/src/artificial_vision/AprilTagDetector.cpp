@@ -1,5 +1,7 @@
 #include "AprilTagDetector.h"
-#include "Tag16h5.h"
+
+#include "TagDetector.hpp"
+#include "Tag16h5.hpp"
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -15,7 +17,7 @@
 using namespace ros;
 using namespace std;
 using namespace sensor_msgs;
-using namespace AprilTags;
+using namespace april::tag;
 using namespace geometry_msgs;
 using namespace boost;
 
@@ -28,14 +30,14 @@ AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(
 	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 60);
 
 	//AprilTag detector initialization
-	tag_detector_ = new TagDetector(tagCodes16h5);
+	//tag_detector_ = new TagDetector(tagCodes16h5);
 
 	return;
 }
 
 AprilTagDetector::~AprilTagDetector()
 {
-	delete tag_detector_;
+	//delete tag_detector_;
 	return;
 }
 
@@ -53,7 +55,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	
 	if(frame.empty())
 		return;
-
+/*
 	vector<TagDetection> tags_detected;
 
 	timer t;
@@ -88,8 +90,9 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	cv::imshow("Frame", frame);
 	cv::waitKey(1);
 	return;
-}
+*/}
 
+/*
 void AprilTagDetector::associateTags(vector<TagDetection>& tags_detected)
 {
 	vector<trackedTag_> old_tags = tracked_tags_;
@@ -117,4 +120,4 @@ float AprilTagDetector::getTagDistance(const TagDetection& tag1,const TagDetecti
 	float r2 = tag2.cxy.second - tag2.cxy.second; 
 
 	return sqrt(r1*r1 + r2*r2); 
-}
+}*/

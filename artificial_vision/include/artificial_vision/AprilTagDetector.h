@@ -6,13 +6,14 @@
 #include <image_transport/image_transport.h>
 
 #include <ros/ros.h>
-#include "TagDetector.h"
+#include "TagDetector.hpp"
 
+/*
 struct trackedTag_{
 	AprilTags::TagDetection *tag;
 	int frames_num;
 };
-
+*/
 class AprilTagDetector
 {
 	ros::NodeHandle				nh_;
@@ -22,16 +23,16 @@ class AprilTagDetector
 
 	ros::Publisher				tagPub_;
 
-	AprilTags::TagDetector			*tag_detector_;
-	std::vector<trackedTag_>		tracked_tags_;	
+	april::tag::TagDetector			*tag_detector_;
+	//std::vector<trackedTag_>		tracked_tags_;	
 
 	const int				MIN_FRAME_NUM_;
 	const float				MIN_TAG_DIST_;
 	const float				TAG_SIZE_;
 	const float				SCALE_FACTOR_;
 
-	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
-	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
+//	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
+//	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
 
 	public:
 			AprilTagDetector(char *imageTopic);
