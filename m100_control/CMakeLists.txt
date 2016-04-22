@@ -9,11 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   dji_sdk_lib
   roscpp
   std_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -45,11 +47,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
+#add_message_files(
+#  FILES
+#  TargetLocalPosition.msg
 #   Message2.msg
-# )
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +68,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -101,9 +103,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES m100_control
-#  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs
+  CATKIN_DEPENDS dji_sdk dji_sdk_lib roscpp std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -115,6 +117,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+    include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -129,16 +132,30 @@ include_directories(
 # add_dependencies(m100_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(m100_control_node src/m100_control_node.cpp)
+#add_executable(gimbal_controller_node
+#    src/gimbal_controller_node.cpp
+#    src/gimbalController.cpp
+#    src/pid.cpp
+#)
+
+add_executable(m100_controller_node
+    src/m100_controller_node.cpp
+    src/m100Controller.cpp
+    src/pid.cpp
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(m100_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(m100_control_node
+#target_link_libraries(gimbal_controller_node
 #   ${catkin_LIBRARIES}
-# )
+#)
+
+target_link_libraries(m100_controller_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
@@ -155,12 +172,21 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS m100_control m100_control_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+#install(TARGETS gimbal_controller_node
+#    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+##    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
+install(TARGETS m100_controller_node 
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

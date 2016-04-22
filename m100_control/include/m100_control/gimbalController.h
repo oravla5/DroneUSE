@@ -1,32 +1,28 @@
 #ifndef GIMBAL_CONTROLLER_H
 #define GIMBAL_CONTROLLER_H
-#include <dji_sdk/dji_sdk.h>
 #include <ros/ros.h>
-#include <geometry_msgs/PointStamped.h>
+#include <dji_sdk/dji_sdk.h>
 #include "pid.h"
+#include <std_msgs/UInt8.h>
+#include <tf/transform_listener.h>
 
 class gimbalController
 {
     private:
+        tf::TransformListener* tf_listener;
+
         // Service
         ros::ServiceClient gimbal_speed_control_service;
 
         // Subscriber
-        ros::Subscriber gimbal_subscriber;
         ros::Subscriber gimbal_target_subscriber;
-        ros::Subscriber m100_local_position_subscriber;
+        ros::Subscriber gimbal_control_state_subscriber;
 
-        void gimbal_subscriber_callback(const dji_sdk::Gimbal gimbal);
-        void gimbal_target_subscriber_callback(const dji_sdk::Gimbal gimbal_target);
-        void m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position);
+        void gimbal_target_subscriber_callback(const m100_control::GimbalTarget gimbal_target);
 
-        dji_sdk::Gimbal gimbal_attitude;
-        dji_sdk::Gimbal gimbal_target;
-        dji_sdk::LocalPosition m100_local_positon;
+        geometry_msgs::PointStamped gimbal_attitude_target;
 
-        int gimbal_roll_offset      = 0;
-        int gimbal_pitch_offset     = 0;
-        int gimbal_yaw_offset       = 0;
+        bool control_enable = false;
 
         // Gimbal Mechanical Specs: http://wiki.dji.com/en/index.php/Matrice_100-DJI_Zenmuse_X3_Gimbal_with_Camera
         double gimbal_yaw_maxRate       = 1800.0;
@@ -47,23 +43,10 @@ class gimbalController
 
         int control_rate;
 
-        typedef gimbalBehaviour
-        {
-            FPV,
-            HOT_POINT,
-            APRILTAG_TRACK,
-            ATTITUDE
-        } struct;
-
     public:
+        gimbalController(ros::NodeHandle& nh, int control_rate);
+        bool gimbal_cotroller_update();
 
-        bool gimbal_rate_based_orientation_cotroller();
-        void set_rpy_to_body(int roll, int pitch, int yaw);
-
-        dji_sdk::Gimbal     get_gimbal();
-        float               get_yaw();
-        float               get_pitch();
-        float               get_roll();
 
 };
 

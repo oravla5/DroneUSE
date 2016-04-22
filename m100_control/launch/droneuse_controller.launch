@@ -1,0 +1,8 @@
+<launch>
+	<node pkg="m100_control" type="m100_controller_node" name="m100_controller_node" output="screen">
+	</node>
+
+	<node pkg="m100_control" type="gimbal_controller_node" name="gimbal_controller_node" output="screen">
+	</node>
+    
+</launch>

@@ -1,34 +1,30 @@
-#include "gimbalController.h"
+#include "m100_control/gimbalController.h"
 #include <ros/ros.h>
+#include <dji_sdk/dji_sdk.h>
 #include <math.h>
 #include <stdio.h>
-#include "pid.h"
+#include "m100_control/pid.h"
+#include <std_msgs/UInt8.h>
+#include <geometry_msgs/PointStamped.h>
+#include <tf/transform_listener.h>
 
-void gimbalController::gimbal_subscriber_callback(const dji_sdk::Gimbal gimbal)
-{
-    this->gimbal = gimbal;
-}
+#define C_PI (double) 3.141592653589793
 
-void gimbalController::gimbal_target_subscriber_callback(const dji_sdk::Gimbal gimbal_target)
+void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped& gimbal_target)
 {
     this->gimbal_target = gimbal_target;
+    this->control_enable = true;
 }
 
-void gimbalController::m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position)
-{
-    this->m100_local_position = m100_local_position;
-}
 gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 {
     this->control_rate = control_rate;  // Hz
 
-    gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &gimbalController::gimbal_subscriber_callback, this);
+    tf_listener = new tf::TransformListener;
+
+    
 
     gimbal_target_subscriber = nh.subscribe<dji_sdk::Gimbal>("droneuse/gimbal_target", 10, &gimbalController::gimbal_target_subscriber_callback, this);
-
-    m100_local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &gimbalController::m100_local_position_subscriber_callback, this);
-
-    gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
 
     // PID initialization
     gimbal_pitch_rate_pid = new PID(gimbal_pitch_maxRate, -gimbal_pitch_maxRate, gimbal_pitchRate_Kp, gimbal_pitchRate_Kd, gimbal_pitchRate_Ki);
@@ -37,42 +33,31 @@ gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 }
 
 
-bool gimbalController::gimbal_rate_based_orientation_controller()
+bool gimbalController::gimbal_controller_update()
 {
-    double pitch_rate = gimbal_pitch_rate_pid->calculate(1/control_rate, (double) gimbal_attitude.pitch, (double) gimbal_target.pitch);
+    if(control_enable)
+    {
+        geometry_msgs::PointStamped gimbal_attitude_target_transformed;
+        tf_listener->transformPoint("/gimbal", gimbal_attitude_target, gimbal_attitude_target_transformed);
 
-double yaw_rate = gimbal_yaw_rate_pid->calculate(1/control_rate, (double) gimbal_attitude.yaw, (double) gimbal_target.yaw);
+        double x         = gimbal_attitude_target_transformed.point.x;
+        double y         = gimbal_attitude_target_transformed.point.y;
+        double z         = gimbal_attitude_target_transformed.point.z;
+        double r_proj    = sqrt(x*x + y*y);
 
-    // dji_sdk Service Call
-    dji_sdk::GimbalSpeedControl gimbal_speed_control;
-    gimbal_speed_control.request.roll_rate = 0;
-    gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
-    gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
+        double target_pitch = atan2(-z,r_proj)*180/C_PI; 
+        double target_yaw = atan2(y,x)*180/C_PI; 
 
-	return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+        double pitch_rate = gimbal_pitch_rate_pid->calculate(1/control_rate, 0.0, target_pitch);
+        double yaw_rate = gimbal_yaw_rate_pid->calculate(1/control_rate, 0.0, target_yaw);
+
+        // dji_sdk Service Call
+        dji_sdk::GimbalSpeedControl gimbal_speed_control;
+        gimbal_speed_control.request.roll_rate = 0;
+        gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
+        gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
+
+	    return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+    }
 }
 
-void set_rpy_to_body(int roll, int pitch, int yaw)
-{
-    
-}
-
-dji_sdk::Gimbal get_gimbal()
-{
-    return gimbal_attitude;
-}
-
-float get_yaw()
-{
-    return gimbal_attitude.yaw;
-}
-
-float get_pitch()
-{
-    return gimbal_attitude.pitch;
-}
-
-float get_roll()
-{
-    return gimbal_attitude.roll;
-}
