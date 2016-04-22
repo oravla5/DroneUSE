@@ -145,6 +145,7 @@ add_executable(flightTestVelocity_node
 
 add_executable(apriltag_tracking_mission_node 
     src/apriltag_tracking_mission_node.cpp 
+    src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above

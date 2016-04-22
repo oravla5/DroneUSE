@@ -29,6 +29,7 @@ class droneuse_m100
 
     public:
         droneuse_m100(ros::NodeHandle& nh);
+        
         void set_target_position(geometry_msgs::PointStamped target_position);
         void set_target_orientation(geometry_msgs::PointStamped target_orientation);
         void disable_m100_velocity_control();
