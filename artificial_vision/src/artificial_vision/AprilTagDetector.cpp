@@ -22,10 +22,10 @@ using namespace boost;
 AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
 {
 	//Subscription
-	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 20, &AprilTagDetector::callback, this);
+	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 5, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
-	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 60);
+	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 10);
 
 	//AprilTag detector initialization
 	tag_detector_ = new TagDetector(tagCodes16h5);
@@ -78,6 +78,8 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			tag_pos.point.x = transform(0,3);
 			tag_pos.point.y = transform(1,3);
 			tag_pos.point.z = transform(2,3);
+	
+			cout << "X= " << tag_pos.point.x << endl << "Y= " << tag_pos.point.y << endl << "Z= " << tag_pos.point.z << endl;
 			
 			tags_detected[i].draw(frame);
 			tagPub_.publish(tag_pos);
