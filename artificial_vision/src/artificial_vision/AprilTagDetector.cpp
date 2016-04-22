@@ -1,7 +1,7 @@
 #include "AprilTagDetector.h"
 
 #include "TagDetector.hpp"
-#include "Tag16h5.hpp"
+#include "TagFamilyFactory.hpp"
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -30,14 +30,14 @@ AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(
 	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 60);
 
 	//AprilTag detector initialization
-	//tag_detector_ = new TagDetector(tagCodes16h5);
+	TagFamilyFactory::create("0" ,gTagFamilies_);	
+	tag_detector_ = new TagDetector(gTagFamilies_);
 
 	return;
 }
 
 AprilTagDetector::~AprilTagDetector()
 {
-	//delete tag_detector_;
 	return;
 }
 
@@ -55,18 +55,25 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	
 	if(frame.empty())
 		return;
-/*
+
 	vector<TagDetection> tags_detected;
 
 	timer t;
-	tags_detected = tag_detector_->extractTags(frame);
+	tag_detector_->process(frame, tags_detected);
 
 	cout << "TIEMPO: " << t.elapsed() << endl;
+
+	for(int i=0; i<tags_detected.size(); i++)
+		if(tags_detected[i].good)
+			tags_detected[i].draw(frame);
+
+	cv::imshow("Frame", frame);
+	cv::waitKey(1);
+
 	//associateTags(tags_detected);
 
 	//Publish tags
-	Eigen::Matrix4d transform;
-
+/*
 	for(int i=0; i<tags_detected.size(); i++)
 	{
 		if(tags_detected[i].good)
@@ -87,10 +94,9 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		}
 	}
 
-	cv::imshow("Frame", frame);
-	cv::waitKey(1);
+*/
 	return;
-*/}
+}
 
 /*
 void AprilTagDetector::associateTags(vector<TagDetection>& tags_detected)

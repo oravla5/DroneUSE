@@ -8,12 +8,15 @@
 #include <ros/ros.h>
 #include "TagDetector.hpp"
 
+#include <opencv2/opencv.hpp>
+
 /*
 struct trackedTag_{
 	AprilTags::TagDetection *tag;
 	int frames_num;
 };
 */
+
 class AprilTagDetector
 {
 	ros::NodeHandle				nh_;
@@ -23,8 +26,9 @@ class AprilTagDetector
 
 	ros::Publisher				tagPub_;
 
-	april::tag::TagDetector			*tag_detector_;
+	cv::Ptr<april::tag::TagDetector>	tag_detector_;
 	//std::vector<trackedTag_>		tracked_tags_;	
+	std::vector<cv::Ptr<april::tag::TagFamily> > gTagFamilies_;
 
 	const int				MIN_FRAME_NUM_;
 	const float				MIN_TAG_DIST_;

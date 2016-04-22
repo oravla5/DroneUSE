@@ -162,6 +162,12 @@ struct TagDetection {
 		                  "errors=%d   position =  (%8.2f,%8.2f) @ %3d deg]",
 		                  code, id, hammingDistance, cxy[0], cxy[1], rotation*90);
 	}
+
+	inline void draw(cv::Mat& im)
+	{
+		cv::circle(im, cv::Point(cxy[0],cxy[1]), 2, cv::Scalar(0,0,0));	
+		return;
+	}
 };
 
 }//end of tag
