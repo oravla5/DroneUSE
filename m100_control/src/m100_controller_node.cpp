@@ -15,6 +15,7 @@ int main(int argc, char **argv)
 
     while(nh.ok())
     {
+        ros::spinOnce();
         m100_controller->m100_controller_update();
         rate.sleep();
     }
