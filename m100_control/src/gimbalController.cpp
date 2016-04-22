@@ -10,14 +10,14 @@
 
 #define C_PI (double) 3.141592653589793
 
-void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target)
+void gimbalController::gimbal_target_subscriber_callback(const geometry_msgs::PointStamped& gimbal_target)
 {
     this->gimbal_attitude_target = gimbal_target;
     ROS_INFO("TARGET REFRESHED");
     this->control_enable = true;
 }
 
-void gimbalController::gimbal_control_state_subscriber_callback(const std_msgs::UInt8 control_state)
+void gimbalController::gimbal_control_state_subscriber_callback(const std_msgs::UInt8& control_state)
 {
     this->control_enable = control_state.data;
 }

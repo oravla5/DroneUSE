@@ -19,8 +19,8 @@ class gimbalController
         ros::Subscriber gimbal_target_subscriber;
         ros::Subscriber gimbal_control_state_subscriber;
 
-        void gimbal_target_subscriber_callback(const geometry_msgs::PointStamped gimbal_target);
-        void gimbal_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
+        void gimbal_target_subscriber_callback(const geometry_msgs::PointStamped& gimbal_target);
+        void gimbal_control_state_subscriber_callback(const std_msgs::UInt8& control_state);
 
         geometry_msgs::PointStamped gimbal_attitude_target;
 
