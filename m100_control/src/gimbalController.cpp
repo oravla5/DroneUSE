@@ -52,35 +52,36 @@ bool gimbalController::gimbal_controller_update()
             geometry_msgs::PointStamped gimbal_attitude_target_transformed;
             tf_listener->transformPoint("/gimbal", gimbal_attitude_target, gimbal_attitude_target_transformed);
 
-        double x         = gimbal_attitude_target_transformed.point.x;
-        double y         = gimbal_attitude_target_transformed.point.y;
-        double z         = gimbal_attitude_target_transformed.point.z;
-        double r_proj    = sqrt(x*x + y*y);
+            double x         = gimbal_attitude_target_transformed.point.x;
+            double y         = gimbal_attitude_target_transformed.point.y;
+            double z         = gimbal_attitude_target_transformed.point.z;
+            double r_proj    = sqrt(x*x + y*y);
 
-        double target_pitch = atan2(-z,r_proj)*180/C_PI; 
-        double target_yaw = atan2(y,x)*180/C_PI; 
+            double target_pitch = atan2(-z,r_proj)*180/C_PI; 
+            double target_yaw = atan2(y,x)*180/C_PI; 
 
-        double pitch_rate = gimbal_pitch_rate_pid->calculate(1.0/control_rate, 0.0, target_pitch);
-        double yaw_rate = gimbal_yaw_rate_pid->calculate(1.0/control_rate, 0.0, target_yaw);
+            double pitch_rate = gimbal_pitch_rate_pid->calculate(1.0/control_rate, 0.0, target_pitch);
+            double yaw_rate = gimbal_yaw_rate_pid->calculate(1.0/control_rate, 0.0, target_yaw);
 
-        // dji_sdk Service Call
-        dji_sdk::GimbalSpeedControl gimbal_speed_control;
-        gimbal_speed_control.request.roll_rate = 0;
-        gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
-        gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
-        try
+            // dji_sdk Service Call
+            dji_sdk::GimbalSpeedControl gimbal_speed_control;
+            gimbal_speed_control.request.roll_rate = 0;
+            gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
+            gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
+            try
+            {
+                geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
+                tf_listener->transformPoint(gimbal_attitude_target_old.header.frame_id, ros::Time::now(), gimbal_attitude_target_old, "/world", gimbal_attitude_target);
+            }
+            catch (tf::ExtrapolationException ex)
+            {
+            }
+
+            return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+        }
+        catch (tf::ExtrapolationException ex)
         {
-            geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
-            tf_listener->transformPoint(gimbal_attitude_target_old.header.frame_id, ros::Time::now(), gimbal_attitude_target_old, "/body_frame", gimbal_attitude_target);
         }
-       catch (tf::ExtrapolationException ex){
-       }
-	    return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
-        }
-        catch (tf::ExtrapolationException ex){
-        }
-
-
     }
 }
 
