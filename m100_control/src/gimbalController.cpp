@@ -44,8 +44,10 @@ gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 
 bool gimbalController::gimbal_controller_update()
 {
+    ROS_INFO("GIMBAL_CONTROLLER_UPDATE");
     if(control_enable)
     {
+        ROS_INFO("UPDATING_CONTROLLER");
         geometry_msgs::PointStamped gimbal_attitude_target_transformed;
         tf_listener->transformPoint("/gimbal", gimbal_attitude_target, gimbal_attitude_target_transformed);
 
@@ -65,6 +67,10 @@ bool gimbalController::gimbal_controller_update()
         gimbal_speed_control.request.roll_rate = 0;
         gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
         gimbal_speed_control.request.yaw_rate = (int) yaw_rate;
+        
+        geometry_msgs::PointStamped gimbal_attitude_target_old = gimbal_attitude_target;
+
+        tf_listener->transformPoint(gimbal_attitude_target_old.header.frame_id, ros::Time::now(), gimbal_attitude_target_old, "/body_frame", gimbal_attitude_target);
 
 	    return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
     }
