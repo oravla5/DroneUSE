@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <dji_sdk/dji_drone.h>
+#include <dji_sdk/dji_sdk.h>
 #include <std_msgs/UInt8.h>
 #include <mission_control/droneuse_m100.h>
 #include <mission_control/droneuse_gimbal.h>
@@ -28,11 +29,18 @@ droneuse_m100*      m100;
 ros::Time time_start;
 bool follow_april_flag = false;
 uint8_t flight_status;
+ros::ServiceClient m100_attitude_control_service; 
+dji_sdk::AttitudeControl m100_control_command;
+unsigned char control_flag;
+
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
     if(follow_april_flag)
+    {
+        gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
+    }
 }
 
 void flight_status_subscriber_callback(std_msgs::UInt8 flight_status_msg)
@@ -48,7 +56,9 @@ int main(int argc, char **argv)
     States currentState = INIT_MISSION;
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
-    
+
+     m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
+
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
@@ -148,7 +158,21 @@ void performTask(const States &current)
 
         case FOLLOW_APRIL :
             if(!follow_april_flag)
-                follow_april_flag = true;
+                follow_april_flag = false;
+
+                        control_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::YawLogic::YAW_PALSTANCE |
+                                    DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                                    DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
+            m100_control_command.request.flag   = control_flag;
+            m100_control_command.request.x      = (float) 0;
+            m100_control_command.request.y      = (float) 0;
+            m100_control_command.request.z      = (float) 0;
+            m100_control_command.request.yaw    = (float) 3;
+
+            if(m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result)
+                ROS_INFO("Changing yaw");
             break;
 
         case LAND :
