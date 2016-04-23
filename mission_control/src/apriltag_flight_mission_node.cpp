@@ -6,18 +6,17 @@
 #include <mission_control/droneuse_gimbal.h>
 #include <geometry_msgs/PointStamped.h>
 
-
 using namespace std;
 
 droneuse_gimbal*    gimbal;
 droneuse_m100*      m100;
 
-// create a droneuse_AprilTag_detector?
-geometry_msgs::PointStamped apriltag_position;
+bool follow_apriltag_enabled = false;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-    apriltag_position = apriltag_position_msg;
+    gimbal->set_target(apriltag_position);
+    m100->set_target_orientation(apriltag_position);
 }
 
 int main(int argc, char **argv)
@@ -38,8 +37,6 @@ int main(int argc, char **argv)
     ros::Time time_start = ros::Time::now();
     while(time_start < ros::Time::now() + ros::Duration(20)
     {
-        gimbal->set_target(apriltag_position);
-        m100->set_target_orientation(apriltag_position);
         ros::spinOnce();
     }
 

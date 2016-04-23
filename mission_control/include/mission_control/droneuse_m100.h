@@ -41,10 +41,6 @@ class droneuse_m100
         bool disarm();
 
         dji_sdk::LocalPosition  get_local_position();
-        //TODO change to get_local_position();
-        float                   get_local_X();
-        float                   get_local_Y();
-        float                   get_local_Z();
 };
 
 #endif
