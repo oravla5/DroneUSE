@@ -87,10 +87,10 @@ bool m100Controller::m100_controller_update()
 
             double x            = m100_target_orientation.point.x;
             double y            = m100_target_orientation.point.y;
-            double target_yaw   = atan2(y,x);
+            double target_yaw   = atan2(y,x)*180/C_PI;
+	    std::cout << " target yaw = " << target_yaw << std::endl;
 
             yaw_rate     = m100_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
-            yaw_rate        = 40;
         }
         catch(tf::TransformException ex)
         {
