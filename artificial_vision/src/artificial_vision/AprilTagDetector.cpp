@@ -21,7 +21,7 @@ using namespace april::tag;
 using namespace geometry_msgs;
 using namespace boost;
 
-AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(1)
+AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
 {
 	//Subscription
 	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 5, &AprilTagDetector::callback, this);
@@ -61,7 +61,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	timer t;
 	tag_detector_->process(frame, tags_detected);
 
-	cout << "TIEMPO: " << t.elapsed() << endl;
 
 	for(int i=0; i<tags_detected.size(); i++)
 		if(tags_detected[i].good)
@@ -91,5 +90,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		}
 	}
 
+	cout << "TIEMPO: " << t.elapsed() << endl;
 	return;
 }

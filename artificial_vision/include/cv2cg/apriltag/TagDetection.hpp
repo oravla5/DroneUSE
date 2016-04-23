@@ -187,9 +187,9 @@ struct TagDetection {
 		return;
 	}
 
-	cv::Matx13d getPosition(double tag_size, double fx, double fy, double px, double py)
+	cv::Matx13d getPosition(float tag_size, float fx, float fy, float px, float py)
 	{
-		double s = tag_size/2.;
+		float s = tag_size/2.;
 
 	  	cv::Mat objPts(1,4, CV_32FC3);
 		objPts.at<cv::Point3f>(0,0) = cv::Point3f(-s, -s, 0); 
@@ -206,15 +206,14 @@ struct TagDetection {
   		cv::Mat rvec;
   		cv::Mat tvec;
 
-  		double camv[9] = {fx, 0, px, 0, fy, py, 0, 0, 1};
+  		float camv[9] = {fx, 0, px, 0, fy, py, 0, 0, 1};
+
   		cv::Mat cameraMatrix(3,3,CV_32F, camv);
 
-  		double distv[4] = {0,0,0,0};
+  		float distv[4] = {0,0,0,0};
   		cv::Mat distParam(1,4, CV_32F, distv);
 
   		cv::gpu::solvePnPRansac(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
-
-		std::cout << "Tvec=" << std::endl << tvec << std::endl;
 
   		return tvec;
 	}
