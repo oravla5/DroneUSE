@@ -32,7 +32,7 @@ uint8_t flight_status;
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
     if(follow_april_flag)
-        gimbal->set_target(apriltag_position_msg);
+        m100->set_target_orientation(apriltag_position_msg);
 }
 
 void flight_status_subscriber_callback(std_msgs::UInt8 flight_status_msg)
