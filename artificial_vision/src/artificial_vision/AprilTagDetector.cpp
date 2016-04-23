@@ -63,7 +63,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 
 	for(int i=0; i<tags_detected.size(); i++)
-		if(tags_detected[i].good)
+		if(tags_detected[i].good && tags_detected[i].id == 2)
 			tags_detected[i].draw(frame);
 
 	cv::imshow("Frame", frame);
@@ -73,7 +73,7 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 	for(int i=0; i<tags_detected.size(); i++)
 	{
-		if(tags_detected[i].good)
+		if(tags_detected[i].good && tags_detected[i].id == 2)
 		{
 			cv::Matx13d tvec = tags_detected[i].getPosition( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
 
