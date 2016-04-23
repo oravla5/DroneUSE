@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   dji_sdk_lib
   roscpp
   std_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions

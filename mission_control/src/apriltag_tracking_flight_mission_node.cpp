@@ -7,7 +7,7 @@
 #include <std_msgs/UInt8.h>
 #include <mission_control/droneuse_m100.h>
 #include <mission_control/droneuse_gimbal.h>
-
+#include <tf/transform_broadcaster.h>
 
 using namespace std;
 using namespace DJI::onboardSDK;
@@ -40,6 +40,18 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
     {
         gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
+	geometry_msgs::PointStamped target_position;
+	tf::Vector3 apriltag_target(	apriltag_position_msg.point.x,
+					apriltag_position_msg.point.y,
+					apriltag_position_msg.point.z);
+	apriltag_target = apriltag_target - apriltag_target.normalize()*1.5;
+	target_position.header.frame_id = apriltag_position_msg.header.frame_id;
+	target_position.header.stamp = apriltag_position_msg.header.stamp;
+	target_position.point.x = (float)apriltag_target.x();
+	target_position.point.y = (float)apriltag_target.y();
+	target_position.point.z = (float)apriltag_target.z();
+	std::cout << "target_x " << target_position.point.x << "\ntarget_y " << target_position.point.y << "\ntarget_z " << target_position.point.z << "\n";
+        m100->set_target_position(target_position);
     }
 }
 
@@ -69,6 +81,7 @@ int main(int argc, char **argv)
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
+	//std::cout << "flight status " << int(flight_status) << "\n";
         rate.sleep();
     }
     return 0;
@@ -107,7 +120,7 @@ States nextState(const States &current)
             break;
 
         case FOLLOW_APRIL :
-            if((ros::Time::now() - time_start) < ros::Duration(20))
+            if(!(flight_status == 4))
             {
                 return FOLLOW_APRIL;
             }

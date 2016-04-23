@@ -66,6 +66,7 @@ bool m100Controller::m100_controller_update()
             ros::Time time_now = ros::Time::now();
             tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
+		std::cout << "target x " << m100_target_position.point.x << "\ntarget y " << m100_target_position.point.y << "target z " << m100_target_position.point.z << "\n";
 
             velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
             velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
