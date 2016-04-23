@@ -152,6 +152,10 @@ add_executable(apriltag_flight_mission_node
     src/apriltag_flight_mission_node.cpp 
     src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
+add_executable(apriltag_tracking_flight_mission_node
+    src/apriltag_tracking_flight_mission_node.cpp
+    src/droneuse_m100.cpp 
+    src/droneuse_gimbal.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -169,6 +173,10 @@ target_link_libraries(apriltag_tracking_mission_node
 )
 
 target_link_libraries(apriltag_flight_mission_node
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(apriltag_tracking_flight_mission_node
    ${catkin_LIBRARIES}
 )
 #############
@@ -199,6 +207,12 @@ install(TARGETS flightTestVelocity_node
 )
 
 install(TARGETS apriltag_tracking_mission_node 
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS apriltag_tracking_flight_mission_node 
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
