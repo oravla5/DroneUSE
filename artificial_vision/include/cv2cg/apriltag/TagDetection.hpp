@@ -167,7 +167,6 @@ struct TagDetection {
 	inline void draw(cv::Mat& image)
 	{
 
-		double p[4][2];
 		// plot outline
 		cv::line(image, cv::Point2f(p[0][0], p[0][1]), cv::Point2f(p[1][0], p[1][1]), cv::Scalar(255,0,0,0) );
 		cv::line(image, cv::Point2f(p[1][0], p[1][1]), cv::Point2f(p[2][0], p[2][1]), cv::Scalar(0,255,0,0) );
