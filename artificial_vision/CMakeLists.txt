@@ -16,8 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package( OpenCV REQUIRED)
-find_package( PkgConfig REQUIRED)
-pkg_check_modules( EIGEN REQUIRED eigen3)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -122,9 +120,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${EIGEN_INCLUDE_DIRS}
   include/
-  include/apriltags/
+  include/cv2cg/
+  include/cv2cg/apriltag/
   include/artificial_vision/
 )
 
@@ -138,12 +136,10 @@ include_directories(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(artificial_vision ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-aux_source_directory(src/apriltags src1)
 
 ## Declare a C++ executable
 add_executable(apriltag_detector_node src/artificial_vision/AprilTagDetectorNode.cpp
 	src/artificial_vision/AprilTagDetector.cpp
-	${src1}
 	)
 
 ## Add cmake target dependencies of the executable
@@ -154,10 +150,8 @@ add_dependencies(apriltag_detector_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(apriltag_detector_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
-   ${EIGEN_LIBRARIES}
  )
 
-add_definitions(${EIGEN_DEFINITIONS})
 #############
 ## Install ##
 #############
