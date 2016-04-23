@@ -29,7 +29,7 @@ gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
 
     gimbal_speed_control_service        = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
 
-    gimbal_target_subscriber            = nh.subscribe<geometry_msgs::PointStamped>("droneuse/gimbal_target", 1, &gimbalController::gimbal_target_subscriber_callback, this);
+    gimbal_target_subscriber            = nh.subscribe<geometry_msgs::PointStamped>("droneuse/gimbal_target", 5, &gimbalController::gimbal_target_subscriber_callback, this);
     gimbal_control_state_subscriber     = nh.subscribe<std_msgs::UInt8>("droneuse/gimbal_control_state", 3, &gimbalController::gimbal_control_state_subscriber_callback, this);
 
     gimbal_pitch_rate_pid = new PID(gimbal_pitch_maxRate, -gimbal_pitch_maxRate, gimbal_pitchRate_Kp, gimbal_pitchRate_Kd, gimbal_pitchRate_Ki);
