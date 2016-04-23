@@ -214,14 +214,7 @@ struct TagDetection {
 
   		cv::gpu::solvePnPRansac(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
 
-  		//cv::Matx33d r;
-  		//cv::Rodrigues(rvec, r);
-
-  		//cv::Matx44d T; 
-  		//T.topLeftCorner(3,3) = wRo;
-
-  		//T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
-  		//T.row(3) << 0,0,0,1;
+		std::cout << "Tvec=" << std::endl << tvec << std::endl;
 
   		return tvec;
 	}
