@@ -79,6 +79,9 @@ bool droneuse_m100::release_sdk_control()
     dji_sdk::SDKPermissionControl sdk_permission_control;
     sdk_permission_control.request.control_enable = 0;
     
+    std::cout << m100_sdk_permission_control_service.call(sdk_permission_control) << std::endl;
+	std::cout << sdk_permission_control.response.result << std::endl;
+
     return m100_sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.response.result;
 }
 bool droneuse_m100::arm()
