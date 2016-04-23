@@ -121,18 +121,3 @@ dji_sdk::LocalPosition droneuse_m100::get_local_position()
 {
     return m100_local_position;
 }
-
-float droneuse_m100::get_local_X()
-{
-    return m100_local_position.x;
-}
-
-float droneuse_m100::get_local_Y()
-{
-    return m100_local_position.y;
-}
-
-float droneuse_m100::get_local_Z()
-{
-    return m100_local_position.z;
-}

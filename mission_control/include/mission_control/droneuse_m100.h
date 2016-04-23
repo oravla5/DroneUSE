@@ -7,25 +7,21 @@
 class droneuse_m100
 {
     private:
-        // Service Suscription
         ros::ServiceClient m100_attitude_control_service;
         ros::ServiceClient m100_task_control_service;
         ros::ServiceClient m100_arm_control_service;
         ros::ServiceClient m100_sdk_permission_control_service;
 
-        // Topic Subscriber
         ros::Subscriber m100_local_position_subscriber;
         
-        // Topic Publisher
         ros::Publisher m100_target_position_publisher;
         ros::Publisher m100_target_orientation_publisher;
         ros::Publisher m100_position_control_state_publisher;
         ros::Publisher m100_orientation_control_state_publisher;
         
-        // Subscriber Callback
         void m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position);
         
-        dji_sdk::LocalPosition m100_local_position;
+        dji_sdk::LocalPosition      m100_local_position;
         geometry_msgs::PointStamped m100_target_position;
 
     public:
@@ -45,9 +41,6 @@ class droneuse_m100
         bool disarm();
 
         dji_sdk::LocalPosition  get_local_position();
-        float                   get_local_X();
-        float                   get_local_Y();
-        float                   get_local_Z();
 };
 
 #endif
