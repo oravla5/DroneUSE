@@ -15,7 +15,6 @@ droneuse_m100*      m100;
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
     gimbal->set_target_orientation(apriltag_position_msg);
-    ROS_INFO("TAG RECEIVED");
 }
 
 int main(int argc, char **argv)
@@ -27,7 +26,6 @@ int main(int argc, char **argv)
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     if(m100->get_sdk_control())
     {
-        ROS_INFO("PERMISSION ACQUIRED");
         ros::spin();
     }
 

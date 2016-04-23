@@ -13,22 +13,32 @@ class m100Controller
         tf::TransformListener* tf_listener;
         // Service 
         ros::ServiceClient m100_attitude_control_service; 
+
         // Subscriber
         ros::Subscriber m100_target_position_subscriber; 
         ros::Subscriber m100_target_orientation_subscriber;
-        ros::Subscriber m100_control_state_subscriber;
+        ros::Subscriber m100_position_control_state_subscriber;
+        ros::Subscriber m100_orientation_control_state_subscriber;
         
         // Subscriber Callback
         void m100_target_position_subscriber_callback(const geometry_msgs::PointStamped m100_target_position);
-        void m100_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
         void m100_target_orientation_subscriber_callback(const geometry_msgs::PointStamped m100_target_orientation);
+        void m100_position_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
+        void m100_orientation_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
         
         geometry_msgs::PointStamped m100_target_position;
         geometry_msgs::PointStamped m100_target_orientation;
-        bool control_enable = false;
-        
+        bool position_control_enable = false;
+        bool orientation_control_enable = false;
+
         // M100 Specs http://wiki.dji.com/en/index.php/Matrice_100 
-        
+        unsigned char ctrl_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
+                                    DJI::onboardSDK::Flight::YawLogic::YAW_PALSTANCE |
+                                    DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                                    DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
+        dji_sdk::AttitudeControl m100_control_command;
+
         // PID controller parameters
         double x_maxVelocity    = 1.0;
         double y_maxVelocity    = 1.0;

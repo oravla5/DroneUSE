@@ -19,7 +19,8 @@ class droneuse_m100
         // Topic Publisher
         ros::Publisher m100_target_position_publisher;
         ros::Publisher m100_target_orientation_publisher;
-        ros::Publisher m100_control_mode_publisher;
+        ros::Publisher m100_position_control_state_publisher;
+        ros::Publisher m100_orientation_control_state_publisher;
         
         // Subscriber Callback
         void m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position);
@@ -32,7 +33,9 @@ class droneuse_m100
         
         void set_target_position(geometry_msgs::PointStamped target_position);
         void set_target_orientation(geometry_msgs::PointStamped target_orientation);
-        void disable_m100_velocity_control();
+        void disable_m100_position_control();
+        void disable_m100_orientation_control();
+
         bool attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw);
 
         bool get_sdk_control();
