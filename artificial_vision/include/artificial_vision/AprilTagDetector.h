@@ -27,16 +27,12 @@ class AprilTagDetector
 	ros::Publisher				tagPub_;
 
 	cv::Ptr<april::tag::TagDetector>	tag_detector_;
-	//std::vector<trackedTag_>		tracked_tags_;	
 	std::vector<cv::Ptr<april::tag::TagFamily> > gTagFamilies_;
 
 	const int				MIN_FRAME_NUM_;
 	const float				MIN_TAG_DIST_;
 	const float				TAG_SIZE_;
 	const float				SCALE_FACTOR_;
-
-//	void	associateTags(std::vector<AprilTags::TagDetection> &tags_detected);
-//	float	getTagDistance(const AprilTags::TagDetection&, const AprilTags::TagDetection&);
 
 	public:
 			AprilTagDetector(char *imageTopic);

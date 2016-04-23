@@ -58,6 +58,7 @@
 #include "TagUtils.hpp"
 #include "UtilHelper.h"
 
+
 using namespace UtilHelper;
 
 namespace april
@@ -163,11 +164,92 @@ struct TagDetection {
 		                  code, id, hammingDistance, cxy[0], cxy[1], rotation*90);
 	}
 
-	inline void draw(cv::Mat& im)
+	inline void draw(cv::Mat& image)
 	{
-		cv::circle(im, cv::Point(cxy[0],cxy[1]), 2, cv::Scalar(0,0,0));	
+
+		double p[4][2];
+		// plot outline
+		cv::line(image, cv::Point2f(p[0][0], p[0][1]), cv::Point2f(p[1][0], p[1][1]), cv::Scalar(255,0,0,0) );
+		cv::line(image, cv::Point2f(p[1][0], p[1][1]), cv::Point2f(p[2][0], p[2][1]), cv::Scalar(0,255,0,0) );
+		cv::line(image, cv::Point2f(p[2][0], p[2][1]), cv::Point2f(p[3][0], p[3][1]), cv::Scalar(0,0,255,0) );
+		cv::line(image, cv::Point2f(p[3][0], p[3][1]), cv::Point2f(p[0][0], p[0][1]), cv::Scalar(255,0,255,0) );
+
+		// mark center
+		cv::circle(image, cv::Point2f(cxy[0], cxy[1]), 8, cv::Scalar(0,0,255,0), 2);
+
+		// print ID
+		std::ostringstream strSt;
+		strSt << "#" << id;
+		cv::putText(image, strSt.str(),
+		cv::Point2f(cxy[0] + 10, cxy[1] + 10),
+		cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0,0,255));
+
 		return;
 	}
+
+	cv::Matx13d getPosition(double tag_size, double fx, double fy, double px, double py)
+	{
+		double s = tag_size/2.;
+
+	  	cv::Mat objPts(1,4, CV_32FC3);
+		objPts.at<cv::Point3f>(0,0) = cv::Point3f(-s, -s, 0); 
+		objPts.at<cv::Point3f>(0,1) = cv::Point3f( s, -s, 0); 
+		objPts.at<cv::Point3f>(0,2) = cv::Point3f( s,  s, 0); 
+		objPts.at<cv::Point3f>(0,3) = cv::Point3f(-s,  s, 0); 
+
+		cv::Mat imgPts(1,4, CV_32FC2);
+		imgPts.at<cv::Point2f>(0,0) = cv::Point2f(p[0][0], p[0][1]); 
+		imgPts.at<cv::Point2f>(0,1) = cv::Point2f(p[1][0], p[1][1]); 
+		imgPts.at<cv::Point2f>(0,2) = cv::Point2f(p[2][0], p[2][1]); 
+		imgPts.at<cv::Point2f>(0,3) = cv::Point2f(p[3][0], p[3][1]); 
+
+  		cv::Mat rvec;
+  		cv::Mat tvec;
+
+  		double camv[9] = {fx, 0, px, 0, fy, py, 0, 0, 1};
+  		cv::Mat cameraMatrix(3,3,CV_32F, camv);
+
+  		double distv[4] = {0,0,0,0};
+  		cv::Mat distParam(1,4, CV_32F, distv);
+
+  		cv::gpu::solvePnPRansac(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+
+  		//cv::Matx33d r;
+  		//cv::Rodrigues(rvec, r);
+
+  		//cv::Matx44d T; 
+  		//T.topLeftCorner(3,3) = wRo;
+
+  		//T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
+  		//T.row(3) << 0,0,0,1;
+
+  		return tvec;
+	}
+
+	bool overlapsTooMuch(const TagDetection &other)
+	{
+		// Compute a sort of "radius" of the two targets. We'll do this by
+  		// computing the average length of the edges of the quads (in
+  		// pixels).
+
+  		double radius =
+    		( UtilHelper::distance2D(p[0], p[1]) +
+      		  UtilHelper::distance2D(p[1], p[2]) +
+      		  UtilHelper::distance2D(p[2], p[3]) +
+      		  UtilHelper::distance2D(p[3], p[0]) +
+      		  UtilHelper::distance2D(other.p[0], other.p[1]) +
+      		  UtilHelper::distance2D(other.p[1], other.p[2]) +
+      		  UtilHelper::distance2D(other.p[2], other.p[3]) +
+      		  UtilHelper::distance2D(other.p[3], other.p[0]) ) / 16.0f;
+
+  		// distance (in pixels) between two tag centers
+  		float dist = UtilHelper::distance2D(cxy, other.cxy);
+
+  		// reject pairs where the distance between centroids is smaller than
+  		// the "radius" of one of the tags.
+  		return ( dist < radius );
+	}
+
 };
 
 }//end of tag

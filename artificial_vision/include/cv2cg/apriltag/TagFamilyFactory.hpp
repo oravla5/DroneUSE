@@ -65,8 +65,9 @@ namespace april
 namespace tag
 {
 
+enum SUPPORT_TYPE {TAG16H5=0, TAG25H7=1, TAG25H9=2, TAG36H9=3, TAG36H11=4, TAGTOTAL};
+
 struct TagFamilyFactory {
-	enum SUPPORT_TYPE {TAG16H5=0, TAG25H7=1, TAG25H9=2, TAG36H9=3, TAG36H11=4, TAGTOTAL};
 
 	inline static cv::Ptr<TagFamily> create(unsigned int type) {
 		cv::Ptr<TagFamily> ret;

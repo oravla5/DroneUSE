@@ -19,6 +19,7 @@
 
 #include <string>
 #include <bitset>
+#include <math.h>
 
 #include "AllOpenCVHeaders.h"
 
@@ -137,6 +138,13 @@ inline double deg2rad(double deg)
 inline double rad2deg(double rad)
 {
 	return rad*180/CV_PI;
+}
+
+static inline double distance2D(const double p0[2], const double p1[2]) 
+{
+	float dx = p0[0] - p1[1];
+	float dy = p0[0] - p1[1];
+	return std::sqrt(dx*dx + dy*dy);
 }
 
 }//end of UtilHelper
