@@ -12,7 +12,7 @@
 
 void gimbalController::gimbal_target_subscriber_callback(geometry_msgs::PointStamped gimbal_target)
 {
-    this->gimbal_attitude_target = gimbal_target;
+    this->gimbal_target = gimbal_target;
     this->control_enable = true;
 }
 
@@ -43,19 +43,13 @@ bool gimbalController::gimbal_controller_update()
     {
 	try
 	{
-	    gimbal_attitude_target.header.frame_id = "gimbal_NED";
-	    gimbal_attitude_target.header.stamp = ros::Time::now();
-	    gimbal_attitude_target.point.x = 1;
-	    gimbal_attitude_target.point.y = 0;
-	    gimbal_attitude_target.point.z = 0;
-
 		ros::Time time_now = ros::Time::now();
-		tf_listener->waitForTransform("/gimbal", gimbal_attitude_target.header.frame_id, time_now , ros::Duration(1.5/control_rate));
-		tf_listener->transformPoint("/gimbal", time_now, gimbal_attitude_target, "/world", gimbal_attitude_target);
+		tf_listener->waitForTransform("/gimbal", gimbal_target.header.frame_id, time_now , ros::Duration(1.5/control_rate));
+		tf_listener->transformPoint("/gimbal", time_now, gimbal_target, "/world", gimbal_target);
 
-		double x         = gimbal_attitude_target.point.x;
-		double y         = gimbal_attitude_target.point.y;
-		double z         = gimbal_attitude_target.point.z;
+		double x         = gimbal_target.point.x;
+		double y         = gimbal_target.point.y;
+		double z         = gimbal_target.point.z;
 		double r_proj    = sqrt(x*x + y*y);
 
 		double target_pitch = atan2(-z,r_proj)*180/C_PI; 
@@ -64,7 +58,6 @@ bool gimbalController::gimbal_controller_update()
 		double pitch_rate = gimbal_pitch_rate_pid->calculate(1.0/control_rate, target_pitch, 0.0);
 		double yaw_rate = gimbal_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
 
-		// dji_sdk Service Call
 		dji_sdk::GimbalSpeedControl gimbal_speed_control;
 		gimbal_speed_control.request.roll_rate = 0;
 		gimbal_speed_control.request.pitch_rate = (int) pitch_rate;
