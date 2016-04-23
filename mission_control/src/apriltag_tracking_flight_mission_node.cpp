@@ -158,21 +158,8 @@ void performTask(const States &current)
 
         case FOLLOW_APRIL :
             if(!follow_april_flag)
-                follow_april_flag = false;
+                follow_april_flag = true;
 
-                        control_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
-                                    DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
-                                    DJI::onboardSDK::Flight::YawLogic::YAW_PALSTANCE |
-                                    DJI::onboardSDK::Flight::HorizontalCoordinate::HORIZONTAL_BODY |
-                                    DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
-            m100_control_command.request.flag   = control_flag;
-            m100_control_command.request.x      = (float) 0;
-            m100_control_command.request.y      = (float) 0;
-            m100_control_command.request.z      = (float) 0;
-            m100_control_command.request.yaw    = (float) 3;
-
-            if(m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result)
-                ROS_INFO("Changing yaw");
             break;
 
         case LAND :

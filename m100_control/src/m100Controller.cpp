@@ -90,6 +90,7 @@ bool m100Controller::m100_controller_update()
             double target_yaw   = atan2(y,x);
 
             yaw_rate     = m100_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
+            yaw_rate        = 40;
         }
         catch(tf::TransformException ex)
         {
@@ -106,6 +107,7 @@ bool m100Controller::m100_controller_update()
         m100_control_command.request.y      = (float) velocity_y;
         m100_control_command.request.z      = (float) velocity_z;
         m100_control_command.request.yaw    = (float) yaw_rate;
+        std::cout << "yaw rate " << yaw_rate << "\n";
         return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
     }
     else
