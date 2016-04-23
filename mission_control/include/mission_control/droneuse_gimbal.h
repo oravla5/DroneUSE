@@ -25,7 +25,7 @@ class droneuse_gimbal
         
     public:
         droneuse_gimbal(ros::NodeHandle& nh);
-        void set_target_orientation(geometry_msgs::PointStamped target_orientation);
+        void set_target(geometry_msgs::PointStamped target_orientation);
         void disable_gimbal_controller();
 
         dji_sdk::Gimbal     get_gimbal();

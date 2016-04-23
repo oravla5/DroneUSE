@@ -14,7 +14,7 @@ droneuse_m100*      m100;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-    gimbal->set_target_orientation(apriltag_position_msg);
+    gimbal->set_target(apriltag_position_msg);
 }
 
 int main(int argc, char **argv)

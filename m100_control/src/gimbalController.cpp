@@ -43,7 +43,7 @@ bool gimbalController::gimbal_controller_update()
         try
         {
             ros::Time time_now = ros::Time::now();
-            tf_listener->waitForTransform("/gimbal", gimbal_target.header.frame_id, time_now , ros::Duration(1.5/control_rate));
+            tf_listener->waitForTransform("/gimbal", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/gimbal", time_now, gimbal_target, "/world", gimbal_target);
 
             double x         = gimbal_target.point.x;

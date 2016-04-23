@@ -64,12 +64,12 @@ bool m100Controller::m100_controller_update()
         try
         {
             ros::Time time_now = ros::Time::now();
-            tf_listener->waitForTransform("/body_frame", m100_target_position.header.frame_id, time_now , ros::Duration(1.5/control_rate));
+            tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
 
-            double velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
-            double velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
-            double velocity_z   = m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
+            velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
+            velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
+            velocity_z   = m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
         }
         catch(tf::TransformException ex)
         {
@@ -82,14 +82,14 @@ bool m100Controller::m100_controller_update()
         try
         {
             ros::Time time_now = ros::Time::now();
-            tf_listener->waitForTransform("/body_frame", m100_target_orientation.header.frame_id, time_now , ros::Duration(1.5/control_rate));
+            tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_orientation, "/world", m100_target_orientation);
 
             double x            = m100_target_orientation.point.x;
             double y            = m100_target_orientation.point.y;
             double target_yaw   = atan2(y,x);
 
-            double yaw_rate     = m100_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
+            yaw_rate     = m100_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
         }
         catch(tf::TransformException ex)
         {

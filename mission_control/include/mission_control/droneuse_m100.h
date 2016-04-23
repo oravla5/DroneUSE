@@ -38,6 +38,7 @@ class droneuse_m100
         bool release_sdk_control();
         bool takeoff();
         bool land();
+        bool arm();
         bool disarm();
 
         dji_sdk::LocalPosition  get_local_position();

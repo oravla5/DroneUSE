@@ -66,7 +66,6 @@ bool droneuse_m100::attitude_control(unsigned char ctrl_flag, float x, float y, 
 
     return m100_attitude_control_service.call(attitude_control) && attitude_control.response.result;
 }
-
 bool droneuse_m100::get_sdk_control()
 {
 
@@ -75,32 +74,30 @@ bool droneuse_m100::get_sdk_control()
     
     return m100_sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.response.result;
 }
-
 bool droneuse_m100::release_sdk_control()
 {
-
     dji_sdk::SDKPermissionControl sdk_permission_control;
     sdk_permission_control.request.control_enable = 0;
     
     return m100_sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.response.result;
 }
-
-bool droneuse_m100::takeoff()
+bool droneuse_m100::arm()
 {
-    
     dji_sdk::DroneArmControl drone_arm_control;
     drone_arm_control.request.arm = 1;
-    if(m100_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result)
-    {
-        dji_sdk::DroneTaskControl drone_task_control;
-        drone_task_control.request.task = 4;
-        return m100_task_control_service.call(drone_task_control) && drone_task_control.response.result;
-    }
-    else
-    {
-        ROS_INFO("M100 ARM FAILED");
-        return false;
-    }
+    return m100_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
+}
+bool droneuse_m100::disarm()
+{
+    dji_sdk::DroneArmControl drone_arm_control;
+    drone_arm_control.request.arm = 0;
+    return m100_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
+}
+bool droneuse_m100::takeoff()
+{
+    dji_sdk::DroneTaskControl drone_task_control;
+    drone_task_control.request.task = 4;
+    return m100_task_control_service.call(drone_task_control) && drone_task_control.response.result;
 }
 
 bool droneuse_m100::land()
@@ -108,13 +105,6 @@ bool droneuse_m100::land()
     dji_sdk::DroneTaskControl drone_task_control;
     drone_task_control.request.task = 6;
     return m100_task_control_service.call(drone_task_control) && drone_task_control.response.result;
-}
-
-bool droneuse_m100::disarm()
-{
-    dji_sdk::DroneArmControl drone_arm_control;
-    drone_arm_control.request.arm = 0;
-    return m100_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
 }
 
 dji_sdk::LocalPosition droneuse_m100::get_local_position()

@@ -28,10 +28,9 @@ droneuse_gimbal::droneuse_gimbal(ros::NodeHandle& nh)
    gimbal_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/gimbal_control_state", 10);
 }
 
-void droneuse_gimbal::set_target_orientation(geometry_msgs::PointStamped target_orientation)
+void droneuse_gimbal::set_target(geometry_msgs::PointStamped target_orientation)
 {
     gimbal_target_publisher.publish(target_orientation);
-    ROS_INFO("GIMBAL TARGET PUBLISHED");
 }
 
 dji_sdk::Gimbal droneuse_gimbal::get_gimbal()
