@@ -50,8 +50,8 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 	cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
 
-	cout << "FRAME ORI SIZE = " << frame_ori.size().height << " x " << frame_ori.size().width << endl;
-	cout << "FRAME  SIZE = " << frame.size().height << " x " << frame.size().width << endl;
+	//cout << "FRAME ORI SIZE = " << frame_ori.size().height << " x " << frame_ori.size().width << endl;
+	//cout << "FRAME  SIZE = " << frame.size().height << " x " << frame.size().width << endl;
 	
 	if(frame.empty())
 		return;
@@ -90,6 +90,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		}
 	}
 
-	cout << "TIEMPO: " << t.elapsed() << endl;
+	//cout << "TIEMPO: " << t.elapsed() << endl;
 	return;
 }
