@@ -53,7 +53,7 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
-        target_position.point.y = (float)target_position_vector.y();
+        target_position.point.y = (float)target_position_vector.y() - 0.5;
         target_position.point.z = (float)target_position_vector.z();
 
         m100->set_target_position(target_position);
