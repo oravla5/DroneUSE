@@ -32,6 +32,7 @@ ros::Publisher velocity_pub;
 ros::Publisher ultrasonic_pub;
 ros::Publisher position_pub;
 ros::Publisher caminfo_pub;
+ros::Publisher disp_image_pub;
 
 
 using namespace cv;
@@ -50,6 +51,7 @@ Mat             g_greyscale_image_left(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_greyscale_image_right(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_depth(HEIGHT,WIDTH,CV_16UC1);
 Mat		depth8(HEIGHT, WIDTH, CV_8UC1);
+Mat		g_disparity(HEIGHT, WIDTH, CV_16SC1);
 
 std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
 	const char* s = 0;
@@ -192,6 +194,34 @@ int my_callback(int data_type, int data_len, char *content)
 			depth_image_pub.publish(depth_image);
 			caminfo_pub.publish(cam_info);
                 }
+		if ( data->m_disparity_image[cam_index] ){
+			memcpy( g_disparity.data, data->m_disparity_image[cam_index], IMAGE_SIZE * 2 );
+			cv_bridge::CvImage disp_16;
+			g_disparity.copyTo(disp_16.image);
+			switch((int) cam_index)
+			{
+				case 0:
+					disp_16.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					disp_16.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					disp_16.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					disp_16.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					disp_16.header.frame_id  = "guidance_left";
+					break;
+			}	
+			disp_16.header.stamp	= ros::Time::now();
+			disp_16.encoding	= sensor_msgs::image_encodings::MONO16;
+			sensor_msgs::ImagePtr disp_image = disp_16.toImageMsg();
+			disp_image->encoding = sensor_msgs::image_encodings::TYPE_16SC1;
+			disp_image_pub.publish(disp_image);
+		}
     }
 
     /* imu */
@@ -316,6 +346,7 @@ int main(int argc, char** argv)
     ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
     position_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/position", 1);
     caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/camera_info",1);
+    disp_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/disp_image", 1);
 
     /* initialize guidance */
     reset_config();
@@ -374,6 +405,8 @@ int main(int argc, char** argv)
 	RETURN_IF_ERR(err_code);
    */ err_code = select_depth_image(cam_index);
 	RETURN_IF_ERR(err_code);
+    err_code = select_disparity_image(cam_index);
+	RETURN_IF_ERR(err_code);
 
     select_imu();
     select_ultrasonic();
@@ -419,6 +452,8 @@ int main(int argc, char** argv)
     		reset_config();
     		
     		err_code = select_depth_image(cam_index);
+			RETURN_IF_ERR(err_code);
+    		err_code = select_disparity_image(cam_index);
 			RETURN_IF_ERR(err_code);
 /*    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
