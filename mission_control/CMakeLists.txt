@@ -134,59 +134,39 @@ include_directories(
 # add_dependencies(mission_control ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(flightTest_node 
-    src/flightTest_node.cpp 
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
-
-add_executable(flightTestVelocity_node 
-    src/flightTest_velocityControl.cpp 
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
 
 add_executable(apriltag_tracking_mission_node 
     src/apriltag_tracking_mission_node.cpp 
     src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
 
-add_executable(apriltag_flight_mission_node 
-    src/apriltag_flight_mission_node.cpp 
+add_executable(apriltag_tracking_hover_mission_node
+    src/apriltag_tracking_hover_mission_node.cpp
     src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
-add_executable(apriltag_tracking_flight_mission_node
-    src/apriltag_tracking_flight_mission_node.cpp
+
+add_executable(apriltag_tracking_follow_mission_node
+    src/apriltag_tracking_follow_mission_node.cpp
     src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
-add_executable(apriltag_orientation_mission_node
-    src/apriltag_orientation_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(flightTest_node
-   ${catkin_LIBRARIES}
-)
-target_link_libraries(flightTestVelocity_node
-   ${catkin_LIBRARIES}
-)
-
 target_link_libraries(apriltag_tracking_mission_node
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(apriltag_flight_mission_node
+target_link_libraries(apriltag_tracking_hover_mission_node
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(apriltag_tracking_flight_mission_node
+target_link_libraries(apriltag_tracking_follow_mission_node
    ${catkin_LIBRARIES}
 )
-target_link_libraries(apriltag_orientation_mission_node
-   ${catkin_LIBRARIES}
-)
+
 #############
 ## Install ##
 #############
@@ -202,29 +182,19 @@ target_link_libraries(apriltag_orientation_mission_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS flightTest_node 
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
-install(TARGETS flightTestVelocity_node 
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(TARGETS apriltag_tracking_mission_node 
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
-install(TARGETS apriltag_tracking_mission_node 
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(TARGETS apriltag_tracking_follow_mission_node 
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
-install(TARGETS apriltag_tracking_flight_mission_node 
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 ## Mark cpp header files for installation
 #install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

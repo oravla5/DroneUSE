@@ -66,11 +66,12 @@ bool m100Controller::m100_controller_update()
             ros::Time time_now = ros::Time::now();
             tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
-		std::cout << "target x " << m100_target_position.point.x << "\ntarget y " << m100_target_position.point.y << "target z " << m100_target_position.point.z << "\n";
+		//std::cout << "target x " << m100_target_position.point.x << " target y " << m100_target_position.point.y << " target z " << m100_target_position.point.z << "\n";
 
             velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
             velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
             velocity_z   = m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
+            velocity_z   = 0;
         }
         catch(tf::TransformException ex)
         {
@@ -89,7 +90,6 @@ bool m100Controller::m100_controller_update()
             double x            = m100_target_orientation.point.x;
             double y            = m100_target_orientation.point.y;
             double target_yaw   = atan2(y,x)*180/C_PI;
-	    std::cout << " target yaw = " << target_yaw << std::endl;
 
             yaw_rate     = m100_yaw_rate_pid->calculate(1.0/control_rate, target_yaw, 0.0);
         }
@@ -108,7 +108,6 @@ bool m100Controller::m100_controller_update()
         m100_control_command.request.y      = (float) velocity_y;
         m100_control_command.request.z      = (float) velocity_z;
         m100_control_command.request.yaw    = (float) yaw_rate;
-        std::cout << "yaw rate " << yaw_rate << "\n";
         return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
     }
     else

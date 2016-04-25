@@ -41,20 +41,21 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
         gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
 
-        geometry_msgs::PointStamped target_position;
-        tf::Vector3 apriltag_target(	apriltag_position_msg.point.x,
-                        apriltag_position_msg.point.y,
-                        apriltag_position_msg.point.z);
 
-        apriltag_target = apriltag_target - apriltag_target.normalize()*0.5;
+        geometry_msgs::PointStamped target_position;
+	tf::Vector3 target_position_vector;
+        tf::Vector3 apriltag_position_vector (	apriltag_position_msg.point.x,
+                        			apriltag_position_msg.point.y,
+                        			apriltag_position_msg.point.z);
+
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
-        target_position.point.x = (float)apriltag_target.x();
-        target_position.point.y = (float)apriltag_target.y();
-        target_position.point.z = (float)apriltag_target.z();
+        target_position.point.x = (float)target_position_vector.x();
+        target_position.point.y = (float)target_position_vector.y();
+        target_position.point.z = (float)target_position_vector.z();
 
-        std::cout << "target_x " << target_position.point.x << "\ntarget_y " << target_position.point.y << "\ntarget_z " << target_position.point.z << "\n";
         m100->set_target_position(target_position);
     }
 }
@@ -79,7 +80,7 @@ int main(int argc, char **argv)
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
 
-    while(ros::ok())
+    while(ros::ok() && currentState != FINISHED)
     {
       /// Execute state machine.
         ros::spinOnce();
@@ -154,7 +155,7 @@ States nextState(const States &current)
             break;
 
         case FINISHED :
-            return INIT_MISSION;
+            return FINISHED;
 
         default :
             return FINISHED;
