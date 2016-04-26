@@ -51,6 +51,8 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
    m100_position_control_state_publisher    = nh.advertise<std_msgs::UInt8>("droneuse/m100_position_control_state", 10);
    m100_orientation_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/m100_orientation_control_state", 10);
 
+   tf_listener = new tf::TransformListener();
+
 }
 
 bool droneuse_m100::attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw)
@@ -110,6 +112,20 @@ bool droneuse_m100::land()
     return m100_task_control_service.call(drone_task_control) && drone_task_control.response.result;
 }
 
+float distance_to_position(geometry_msgs::PointStamped position)
+{
+    try
+    {
+        tf_listener->waitForTransform("/body_frame", position.header.frame_id, ros::Time::now(), 0.1);
+        tf_listener->transformPoint("/body_frame", ros::Time::now(), position, "/world", position);
+        return sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);
+    }
+    catch(tf::TransformException ex)
+    {
+            ROS_ERROR("%s", ex.what());
+            return 0;
+    }
+}
 dji_sdk::LocalPosition droneuse_m100::get_local_position()
 {
     return m100_local_position;

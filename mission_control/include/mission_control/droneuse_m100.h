@@ -3,6 +3,7 @@
 #include <ros/ros.h> 
 #include <dji_sdk/dji_sdk.h>
 #include <geometry_msgs/PointStamped.h>
+#include <tf/transform_listener.h>
 
 class droneuse_m100
 {
@@ -24,6 +25,8 @@ class droneuse_m100
         dji_sdk::LocalPosition      m100_local_position;
         geometry_msgs::PointStamped m100_target_position;
 
+        tf::TransformListener* tf_listener;
+
     public:
         droneuse_m100(ros::NodeHandle& nh);
         
@@ -40,6 +43,7 @@ class droneuse_m100
         bool land();
         bool arm();
         bool disarm();
+        float distance_to_position(geometry_msgs::PointStamped position);
 
         dji_sdk::LocalPosition  get_local_position();
 };
