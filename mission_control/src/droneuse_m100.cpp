@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <std_msgs/UInt8.h>
 #include <tf/transform_listener.h>
+#include <string>
 #define C_PI (double) 3.141592653589793
 
 void droneuse_m100::m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position)
@@ -118,6 +119,29 @@ float droneuse_m100::distance_to_position(geometry_msgs::PointStamped position)
     ros::Time time_now = ros::Time::now();
     try
     {
+        tf_listener->waitForTransform("/body_frame", position.header.frame_id, time_now, ros::Duration(0.1));
+        tf_listener->transformPoint("/body_frame", time_now, position, "/world", position);
+        return (float) sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);
+    }
+    catch(tf::TransformException ex)
+    {
+            ROS_ERROR("%s", ex.what());
+            return 0;
+    }
+}
+
+float droneuse_m100::distance_to_position(geometry_msgs::Point point, string frame_id)
+{
+    //TODO Create unestamped data type
+    ros::Time time_now = ros::Time::now();
+    try
+    {
+        tf::PointStamped position;
+        position.point.x = point.x;
+        position.point.y = point.y;
+        position.point.z = point.z;
+        position.header.frame_id = frame_id;
+        position.header.stamp = time_now;
         tf_listener->waitForTransform("/body_frame", position.header.frame_id, time_now, ros::Duration(0.1));
         tf_listener->transformPoint("/body_frame", time_now, position, "/world", position);
         return (float) sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);

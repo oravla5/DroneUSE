@@ -7,7 +7,9 @@
 #include <std_msgs/UInt8.h>
 #include <mission_control/droneuse_m100.h>
 #include <mission_control/droneuse_gimbal.h>
+#include <geometry_msgs/Point.h>
 #include <tf/transform_listener.h>
+
 
 using namespace std;
 using namespace DJI::onboardSDK;
@@ -30,9 +32,9 @@ droneuse_m100*      m100;
 uint8_t flight_status;
 ros::ServiceClient m100_attitude_control_service; 
 dji_sdk::AttitudeControl m100_control_command;
-geometry_msgs::PointStamped home_point;
-geometry_msgs::PointStamped target_point;
-geometry_msgs::PointStamped land_point;
+geometry_msgs::Point home_point;
+geometry_msgs::Point target_point;
+geometry_msgs::Point land_point;
 float dist2goal;
 
 
@@ -53,24 +55,24 @@ int main(int argc, char **argv)
 
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
 
-    home_point.point.x = 0.0;
-    home_point.point.y = 0.0;
-    home_point.point.z = 2.0;
-    home_point.header.frame_id = "/world";
-    home_point.header.stamp = ros::Time::now();
+    home_point.x = 0.0;
+    home_point.y = 0.0;
+    home_point.z = 2.0;
+    //home_point.frame_id = "/world";
+    //home_point.header.stamp = ros::Time::now();
     dist2goal = m100->distance_to_position(home_point);
 
-    target_point.point.x = 3.0;
-    target_point.point.y = 3.0;
-    target_point.point.z = 2.0;
-    target_point.header.frame_id = "/world";
-    target_point.header.stamp = ros::Time::now();
+    target_point.x = 3.0;
+    target_point.y = 3.0;
+    target_point.z = 2.0;
+    //target_point.header.frame_id = "/world";
+    //target_point.header.stamp = ros::Time::now();
 
-    land_point.point.x = 0.0;
-    land_point.point.y = 0.0;
-    land_point.point.z = 0.0;
-    land_point.header.frame_id = "/world";
-    land_point.header.stamp = ros::Time::now();
+    land_point.x = 0.0;
+    land_point.y = 0.0;
+    land_point.z = 0.0;
+    //land_point.header.frame_id = "/world";
+    //land_point.header.stamp = ros::Time::now();
 
     dist2goal = m100->distance_to_position(home_point);
     while(ros::ok() && currentState != FINISHED)
@@ -177,23 +179,23 @@ void performTask(const States &current)
                 m100->takeoff();
             else
             {
-                dist2goal = m100->distance_to_position(home_point);
+                dist2goal = m100->distance_to_position(home_point, "/world");
                 m100->set_target_position(home_point);
             }
             break;
 
         case WAYPOINT_NAV :
-            dist2goal = m100->distance_to_position(target_point);
+            dist2goal = m100->distance_to_position(target_point, "/world");
             m100->set_target_position(target_point);
             break;
 
         case RETURN_HOME :
-            dist2goal = m100->distance_to_position(target_point);
+            dist2goal = m100->distance_to_position(target_point, "/world");
             m100->set_target_position(home_point);
             break;
 
         case LAND :
-            dist2goal = m100->distance_to_position(target_point);
+            dist2goal = m100->distance_to_position(target_point, "/world");
             if(dist2goal > 0.3)
                 m100->set_target_position(land_point);
             else
