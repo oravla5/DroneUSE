@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <std_msgs/UInt8.h>
+#include <tf/transform_listener.h>
 #define C_PI (double) 3.141592653589793
 
 void droneuse_m100::m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position)
@@ -51,7 +52,7 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
    m100_position_control_state_publisher    = nh.advertise<std_msgs::UInt8>("droneuse/m100_position_control_state", 10);
    m100_orientation_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/m100_orientation_control_state", 10);
 
-   tf_listener = new tf::TransformListener();
+   tf_listener = new tf::TransformListener;
 
 }
 
@@ -112,13 +113,13 @@ bool droneuse_m100::land()
     return m100_task_control_service.call(drone_task_control) && drone_task_control.response.result;
 }
 
-float distance_to_position(geometry_msgs::PointStamped position)
+float droneuse_m100::distance_to_position(geometry_msgs::PointStamped position)
 {
     try
     {
-        tf_listener->waitForTransform("/body_frame", position.header.frame_id, ros::Time::now(), 0.1);
+        tf_listener->waitForTransform("/body_frame", position.header.frame_id, ros::Time::now(), ros::Duration(0.1));
         tf_listener->transformPoint("/body_frame", ros::Time::now(), position, "/world", position);
-        return sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);
+        return (float) sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);
     }
     catch(tf::TransformException ex)
     {
