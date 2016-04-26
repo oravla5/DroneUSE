@@ -55,14 +55,14 @@ int main(int argc, char **argv)
 
     home_point.point.x = 0.0;
     home_point.point.y = 0.0;
-    home_point.point.z = -2.0;
+    home_point.point.z = 2.0;
     home_point.header.frame_id = "/world";
     home_point.header.stamp = ros::Time::now();
     dist2goal = m100->distance_to_position(home_point);
 
     target_point.point.x = 3.0;
     target_point.point.y = 3.0;
-    target_point.point.z = -2.0;
+    target_point.point.z = 2.0;
     target_point.header.frame_id = "/world";
     target_point.header.stamp = ros::Time::now();
 
