@@ -51,7 +51,12 @@ Mat             g_greyscale_image_left(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_greyscale_image_right(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_depth(HEIGHT,WIDTH,CV_16UC1);
 Mat		depth8(HEIGHT, WIDTH, CV_8UC1);
+Mat		disp8(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_disparity(HEIGHT, WIDTH, CV_16SC1);
+
+
+Mat		disp8_filtered(HEIGHT, WIDTH, CV_16SC1);
+Mat		depth8_filtered(HEIGHT, WIDTH, CV_16UC1);
 
 std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
 	const char* s = 0;
@@ -161,6 +166,7 @@ int my_callback(int data_type, int data_len, char *content)
 			memcpy(g_depth.data, data->m_depth_image[cam_index], IMAGE_SIZE * 2);
 			g_depth.convertTo(depth8, CV_8UC1);
 			//publish depth image
+			cv::medianBlur(g_depth, g_depth, 5);
 			cv_bridge::CvImage depth_16;
 			g_depth.copyTo(depth_16.image);
 			switch((int) cam_index)
@@ -197,6 +203,8 @@ int my_callback(int data_type, int data_len, char *content)
 		if ( data->m_disparity_image[cam_index] ){
 			memcpy( g_disparity.data, data->m_disparity_image[cam_index], IMAGE_SIZE * 2 );
 			cv_bridge::CvImage disp_16;
+			g_disparity.convertTo(disp8, CV_8UC1);
+			cv::medianBlur(g_disparity, g_disparity, 5);
 			g_disparity.copyTo(disp_16.image);
 			switch((int) cam_index)
 			{
@@ -399,14 +407,14 @@ int main(int argc, char** argv)
         cam_info.roi.do_rectify = false;
 
     /* select data */
- /*   err_code = select_greyscale_image(cam_index, true);
+    err_code = select_greyscale_image(cam_index, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(cam_index, false);
 	RETURN_IF_ERR(err_code);
-   */ err_code = select_depth_image(cam_index);
+    err_code = select_depth_image(cam_index);
 	RETURN_IF_ERR(err_code);
-//    err_code = select_disparity_image(cam_index);
-//	RETURN_IF_ERR(err_code);
+    err_code = select_disparity_image(cam_index);
+	RETURN_IF_ERR(err_code);
 
     select_imu();
     select_ultrasonic();
@@ -424,10 +432,10 @@ int main(int argc, char** argv)
 	
 	// for setting exposure
 	exposure_param para;
-	para.m_is_auto_exposure = 0;
-	//para.m_step = 10;
-	para.m_exposure_time=0.1;
-	//para.m_expected_brightness = 120;
+	para.m_is_auto_exposure = 1;
+	para.m_step = 10;
+	//para.m_exposure_time=1;
+	para.m_expected_brightness = 85;
 
 	for(int i=0; i<CAMERA_PAIR_NUM; i++)
 	{
