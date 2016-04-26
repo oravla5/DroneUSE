@@ -405,8 +405,8 @@ int main(int argc, char** argv)
 	RETURN_IF_ERR(err_code);
    */ err_code = select_depth_image(cam_index);
 	RETURN_IF_ERR(err_code);
-    err_code = select_disparity_image(cam_index);
-	RETURN_IF_ERR(err_code);
+//    err_code = select_disparity_image(cam_index);
+//	RETURN_IF_ERR(err_code);
 
     select_imu();
     select_ultrasonic();
@@ -453,8 +453,8 @@ int main(int argc, char** argv)
     		
     		err_code = select_depth_image(cam_index);
 			RETURN_IF_ERR(err_code);
-    		err_code = select_disparity_image(cam_index);
-			RETURN_IF_ERR(err_code);
+ //   		err_code = select_disparity_image(cam_index);
+//			RETURN_IF_ERR(err_code);
 /*    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
     		err_code = select_greyscale_image(cam_index, false);
