@@ -115,10 +115,11 @@ bool droneuse_m100::land()
 
 float droneuse_m100::distance_to_position(geometry_msgs::PointStamped position)
 {
+    ros::Time time_now = ros::Time::now();
     try
     {
-        tf_listener->waitForTransform("/body_frame", position.header.frame_id, ros::Time::now(), ros::Duration(0.1));
-        tf_listener->transformPoint("/body_frame", ros::Time::now(), position, "/world", position);
+        tf_listener->waitForTransform("/body_frame", position.header.frame_id, time_now, ros::Duration(0.1));
+        tf_listener->transformPoint("/body_frame", time_now, position, "/world", position);
         return (float) sqrt(position.point.x*position.point.x + position.point.y*position.point.y + position.point.z*position.point.z);
     }
     catch(tf::TransformException ex)
