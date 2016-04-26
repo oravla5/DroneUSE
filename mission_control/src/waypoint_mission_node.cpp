@@ -7,7 +7,9 @@
 #include <std_msgs/UInt8.h>
 #include <mission_control/droneuse_m100.h>
 #include <mission_control/droneuse_gimbal.h>
+#include <geometry_msgs/Point.h>
 #include <tf/transform_listener.h>
+
 
 using namespace std;
 using namespace DJI::onboardSDK;
@@ -49,11 +51,33 @@ int main(int argc, char **argv)
 	while(ascending)
 	{
 		takeoff_waypoint.header.stamp = ros::Time::now();
-		std::cout << " dist " << m100->distance_to_position(takeoff_waypoint) << std::endl;
 		if(m100->distance_to_position(takeoff_waypoint) < 0.5)
 			ascending = false;
 		ros::spinOnce();
 	}
+
+
+	// Go to first waypoint
+	geometry_msgs::PointStamped waypoint1_waypoint;
+	waypoint1_waypoint.point.x = 2.0;
+	waypoint1_waypoint.point.y = 0.0;
+	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.header.frame_id = "/world";
+	waypoint1_waypoint.header.stamp = ros::Time::now();
+
+	m100->set_target_position(waypoint1_waypoint);
+
+	// Wait to ascend
+	//TODO points without stamp
+	bool flying = true;
+	while(flying)
+	{
+		waypoint1_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
+			flying = false;
+		ros::spinOnce();
+	}
+
 
 	return 0;
 }

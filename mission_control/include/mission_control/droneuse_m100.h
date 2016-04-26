@@ -3,8 +3,10 @@
 #include <ros/ros.h> 
 #include <dji_sdk/dji_sdk.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Point.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/UInt8.h>
+#include <string>
 
 class droneuse_m100
 {
@@ -49,6 +51,7 @@ class droneuse_m100
         bool disarm();
         float distance_to_position(geometry_msgs::PointStamped position);
 	uint8_t get_flight_status();
+        float distance_to_position(geometry_msgs::Point point, std::string frame_id);
 
         dji_sdk::LocalPosition  get_local_position();
 };
