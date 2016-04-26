@@ -4,6 +4,7 @@
 #include <dji_sdk/dji_sdk.h>
 #include <geometry_msgs/PointStamped.h>
 #include <tf/transform_listener.h>
+#include <std_msgs/UInt8.h>
 
 class droneuse_m100
 {
@@ -14,16 +15,19 @@ class droneuse_m100
         ros::ServiceClient m100_sdk_permission_control_service;
 
         ros::Subscriber m100_local_position_subscriber;
-        
+        ros::Subscriber m100_flight_status_subscriber;
+
         ros::Publisher m100_target_position_publisher;
         ros::Publisher m100_target_orientation_publisher;
         ros::Publisher m100_position_control_state_publisher;
         ros::Publisher m100_orientation_control_state_publisher;
         
         void m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position);
+	void m100_flight_status_subscriber_callback(std_msgs::UInt8 flight_status_msg);
         
         dji_sdk::LocalPosition      m100_local_position;
         geometry_msgs::PointStamped m100_target_position;
+	uint8_t m100_flight_status;
 
         tf::TransformListener* tf_listener;
 
@@ -44,6 +48,7 @@ class droneuse_m100
         bool arm();
         bool disarm();
         float distance_to_position(geometry_msgs::PointStamped position);
+	uint8_t get_flight_status();
 
         dji_sdk::LocalPosition  get_local_position();
 };
