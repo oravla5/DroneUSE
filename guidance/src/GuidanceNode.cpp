@@ -424,9 +424,10 @@ int main(int argc, char** argv)
 	
 	// for setting exposure
 	exposure_param para;
-	para.m_is_auto_exposure = 1;
-	para.m_step = 10;
-	para.m_expected_brightness = 120;
+	para.m_is_auto_exposure = 0;
+	//para.m_step = 10;
+	para.m_exposure_time=0.1;
+	//para.m_expected_brightness = 120;
 
 	for(int i=0; i<CAMERA_PAIR_NUM; i++)
 	{
@@ -439,7 +440,7 @@ int main(int argc, char** argv)
 	while (ros::ok())
 	{
 		ros::spinOnce();
-	
+/*	
 		if(!depth_img_received)
 			continue;
 
@@ -453,20 +454,20 @@ int main(int argc, char** argv)
     		
     		err_code = select_depth_image(cam_index);
 			RETURN_IF_ERR(err_code);
- //   		err_code = select_disparity_image(cam_index);
+ *///   		err_code = select_disparity_image(cam_index);
 //			RETURN_IF_ERR(err_code);
 /*    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
     		err_code = select_greyscale_image(cam_index, false);
 			RETURN_IF_ERR(err_code);
 */
-    		select_imu();
+  /*  		select_imu();
     		select_ultrasonic();
     		select_obstacle_distance();
     		select_velocity();
     		err_code = start_transfer();
     			RETURN_IF_ERR(err_code);
-	}
+*/	}
 
 	/* release data transfer */
 	err_code = stop_transfer();
