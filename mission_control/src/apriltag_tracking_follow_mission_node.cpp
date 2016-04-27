@@ -33,9 +33,13 @@ ros::ServiceClient m100_attitude_control_service;
 dji_sdk::AttitudeControl m100_control_command;
 unsigned char control_flag;
 tf::TransformListener* tf_listener;
+ros::Time last_april_time;
+geometry_msgs::PointStamped default_gimbal;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
+	follow_april_flag = true;
+    last_april_time = ros::Time::now();
     if(follow_april_flag)
     {
         gimbal->set_target(apriltag_position_msg);
@@ -50,13 +54,13 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.6;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
         target_position.point.y = (float)target_position_vector.y();
-        target_position.point.z = (float) apriltag_position_msg.point.z- 1.0; 
+        target_position.point.z = (float) apriltag_position_msg.point.z - 0.5; 
         m100->set_target_position(target_position);
 }
 catch(tf::TransformException ex)
@@ -80,12 +84,21 @@ int main(int argc, char **argv)
     States currentState = INIT_MISSION;
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
-tf_listener = new tf::TransformListener;
+    tf_listener = new tf::TransformListener;
+    
      m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
+    last_april_time = ros::Time::now();
+    
+    default_gimbal.header.frame_id  = "/body_frame";
+    default_gimbal.point.x          = 10.0;
+    default_gimbal.point.y          = 0.0;
+    default_gimbal.point.z          = 0.0;
+
+    m100->set_target_orientation(default_gimbal);
 
     while(ros::ok() && currentState != FINISHED)
     {
@@ -93,6 +106,11 @@ tf_listener = new tf::TransformListener;
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
+        if ((ros::Time::now() - last_april_time) > ros::Duration(2.5))
+        {
+            default_gimbal.header.stamp = ros::Time::now();
+            gimbal->set_target(default_gimbal);
+        }
 	//std::cout << "flight status " << int(flight_status) << "\n";
         rate.sleep();
     }
