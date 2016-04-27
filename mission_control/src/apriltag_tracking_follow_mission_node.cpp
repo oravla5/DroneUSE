@@ -119,7 +119,7 @@ States nextState(const States &current)
             }
             break;
         case TAKEOFF :
-            if((ros::Time::now() - time_start) < ros::Duration(1))
+            if((ros::Time::now() - time_start) < ros::Duration(0.3))
             {
                 return TAKEOFF;
             }
