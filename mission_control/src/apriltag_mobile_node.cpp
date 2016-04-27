@@ -36,7 +36,6 @@ tf::TransformListener* tf_listener;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-	cout << " x " << apriltag_position_msg.point.x << " y "  << apriltag_position_msg.point.y <<" z "  <<  apriltag_position_msg.point.z << endl;
     if(follow_april_flag)
     {
         gimbal->set_target(apriltag_position_msg);
@@ -59,6 +58,7 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
         target_position.point.y = (float)target_position_vector.y();
         target_position.point.z = (float) apriltag_position_msg.point.z- 1.0; 
         m100->set_target_position(target_position);
+	cout << " x "  << target_position.point.x << " y "  << target_position.point.y << " z "  << target_position.point.z << endl; 
 }
 catch(tf::TransformException ex)
 {
