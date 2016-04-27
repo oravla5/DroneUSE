@@ -122,6 +122,7 @@ int main(int argc, char **argv)
     
     //Land
     m100->land();
+    m100->disarm();
 
     while(m100->release_sdk_control() != true)
     {
