@@ -95,6 +95,7 @@ int main(int argc, char **argv)
 	home_waypoint.header.stamp = ros::Time::now();
 	m100->set_target_position(home_waypoint);
     //m100->set_target_orientation(home_waypoint);
+	bool flying = true;
 	while(flying)
 	{
 		ros::spinOnce();
