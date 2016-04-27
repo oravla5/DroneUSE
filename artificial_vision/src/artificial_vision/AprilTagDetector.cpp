@@ -21,7 +21,7 @@ using namespace april::tag;
 using namespace geometry_msgs;
 using namespace boost;
 
-AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
+AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(1.0)
 {
 	//Subscription
 	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &AprilTagDetector::callback, this);
@@ -48,12 +48,9 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	cv::Mat frame_ori = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
 	cv::Mat frame;
 
-    cv::Mat img; // Source image
-    cv::Mat cropImg; // Destination cropped image
-
-    cv::Rect roiRect = cv::Rect(195, 330, 250, 380); // ROI in source image
+	cv::Rect roiRect = cv::Rect(195, 150, 250, 180); // ROI in source image
      
-    frame = frame_ori(roiRect);
+	frame = frame_ori(roiRect);
 
 	//cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
 
@@ -74,7 +71,8 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	{
 		if(tags_detected[i].good && tags_detected[i].id == 2)
 		{
-			cv::Matx13d tvec = tags_detected[i].getPosition( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+			//cv::Matx13d tvec = tags_detected[i].getPosition( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+			cv::Matx13d tvec = tags_detected[i].getPosition( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2]-195, SCALE_FACTOR_*info_msg->K[5]-150);
 
 			PointStamped tag_pos;
 			tag_pos.header.stamp = image_msg->header.stamp;
@@ -87,16 +85,12 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			
 			tagPub_.publish(tag_pos);
 
-            #ifdef DEBUG
 			tags_detected[i].draw(frame);
-            #endif
 		}
 	}
     
-#ifdef DEBUG
 	cv::imshow("Frame", frame);
 	cv::waitKey(1);
-#endif
 
 	//cout << "TIEMPO: " << t.elapsed() << endl;
 	return;

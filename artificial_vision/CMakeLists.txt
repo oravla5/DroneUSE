@@ -151,7 +151,6 @@ target_link_libraries(apriltag_detector_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
  )
-
 #############
 ## Install ##
 #############
@@ -199,3 +198,4 @@ target_link_libraries(apriltag_detector_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
