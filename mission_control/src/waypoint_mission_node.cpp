@@ -54,7 +54,6 @@ int main(int argc, char **argv)
 	
     // Ascend
 	home_waypoint.header.stamp = ros::Time::now();
-
 	m100->set_target_position(home_waypoint);
 
 	// Wait to ascend
@@ -64,7 +63,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.5)
+		if(m100->distance_to_position(home_waypoint) < 0.2)
 			ascending = false;
         rate.sleep();
 	}
@@ -72,7 +71,9 @@ int main(int argc, char **argv)
 
 	// Go to first waypoint
 	waypoint1_waypoint.header.stamp = ros::Time::now();
-	m100->set_target_position(waypoint1_waypoint);
+    m100->set_target_position(waypoint1_waypoint);
+    m100->set_target_orientation(waypoint1_waypoint);
+    
 
 	//TODO points without stamp
 	bool flying = true;
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
+		if(m100->distance_to_position(waypoint1_waypoint) < 0.2)
 			flying = false;
         rate.sleep();
 	}
@@ -88,11 +89,12 @@ int main(int argc, char **argv)
     // Return to home
 	home_waypoint.header.stamp = ros::Time::now();
 	m100->set_target_position(home_waypoint);
+    m100->set_target_orientation(home_waypoint);
 	while(flying)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.5)
+		if(m100->distance_to_position(home_waypoint) < 0.2)
 			flying = false;
         rate.sleep();
 	}
@@ -115,6 +117,12 @@ int main(int argc, char **argv)
     
     //Land
     m100->land();
+
+    while(m100->release_sdk_control() != true)
+    {
+		ros::spinOnce();
+        rate.sleep();
+    }
 
 	return 0;
 }
