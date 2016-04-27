@@ -38,6 +38,11 @@ int main(int argc, char **argv)
 	waypoint1_waypoint.point.z = 2.0;
 	waypoint1_waypoint.header.frame_id = "/world";
 
+	geometry_msgs::PointStamped land_waypoint;
+	land_waypoint.point.x = 0.0;
+	land_waypoint.point.y = 0.0;
+	land_waypoint.point.z = 0.0;
+	land_waypoint.header.frame_id = "/world";
 	// Wait for take off
 	while(m100->get_flight_status() != 3)
     {
@@ -102,14 +107,13 @@ int main(int argc, char **argv)
 
     // Wait to descend
     bool descending = true;
-    home_waypoint.point.z = 0.0;
-    home_waypoint.header.stamp = ros::Time::now();
-	m100->set_target_position(home_waypoint);
+    land_waypoint.header.stamp = ros::Time::now();
+	m100->set_target_position(land_waypoint);
     while(descending)
     {
         ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.5)
+		if(m100->distance_to_position(land_waypoint) < 0.5)
 			descending = false;
         rate.sleep();
 
