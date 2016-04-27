@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	// Go to first waypoint
 	waypoint1_waypoint.header.stamp = ros::Time::now();
     m100->set_target_position(waypoint1_waypoint);
-    m100->set_target_orientation(waypoint1_waypoint);
+    //m100->set_target_orientation(waypoint1_waypoint);
     
 
 	//TODO points without stamp
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     // Return to home
 	home_waypoint.header.stamp = ros::Time::now();
 	m100->set_target_position(home_waypoint);
-    m100->set_target_orientation(home_waypoint);
+    //m100->set_target_orientation(home_waypoint);
 	while(flying)
 	{
 		ros::spinOnce();
