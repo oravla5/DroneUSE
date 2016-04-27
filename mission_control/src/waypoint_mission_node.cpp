@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	home_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped waypoint1_waypoint;
-	waypoint1_waypoint.point.x = 2.0;
+	waypoint1_waypoint.point.x = 3.5;
 	waypoint1_waypoint.point.y = 0.0;
 	waypoint1_waypoint.point.z = 2.0;
 	waypoint1_waypoint.header.frame_id = "/world";
