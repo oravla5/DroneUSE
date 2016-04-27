@@ -102,6 +102,7 @@ int main(int argc, char **argv)
     bool descending = true;
     home_waypoint.point.z = 0.0;
     home_waypoint.header.stamp = ros::Time::now();
+	m100->set_target_position(home_waypoint);
     while(descending)
     {
         ros::spinOnce();
