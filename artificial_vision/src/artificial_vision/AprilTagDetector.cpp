@@ -44,7 +44,6 @@ AprilTagDetector::~AprilTagDetector()
 void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfoConstPtr& info_msg)
 {
 
-	cout << "ENTRA EN EL CALLBACK" << endl;
 	//Ros image message to cv format
 	cv::Mat frame_ori = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
 	cv::Mat frame;

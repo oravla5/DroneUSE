@@ -7,7 +7,7 @@
 #include <std_msgs/UInt8.h>
 #include <mission_control/droneuse_m100.h>
 #include <mission_control/droneuse_gimbal.h>
-#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 
 using namespace std;
 using namespace DJI::onboardSDK;
@@ -32,7 +32,7 @@ uint8_t flight_status;
 ros::ServiceClient m100_attitude_control_service; 
 dji_sdk::AttitudeControl m100_control_command;
 unsigned char control_flag;
-
+tf::TransformListener* tf_listener;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
@@ -41,24 +41,31 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
         gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
 
-
+	try{
+	tf_listener->waitForTransform("/ground_frame",apriltag_position_msg.header.frame_id, apriltag_position_msg.header.stamp, ros::Duration(2.0/15));
+	tf_listener->transformPoint("/ground_frame", apriltag_position_msg.header.stamp, apriltag_position_msg,apriltag_position_msg.header.frame_id ,apriltag_position_msg);	
         geometry_msgs::PointStamped target_position;
 	tf::Vector3 target_position_vector;
         tf::Vector3 apriltag_position_vector (	apriltag_position_msg.point.x,
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
-        target_position.point.y = (float)target_position_vector.y() - 1; 
-        target_position.point.z = (float)target_position_vector.z();
-
+        target_position.point.y = (float)target_position_vector.y();
+        target_position.point.z = (float) apriltag_position_msg.point.z- 1.0; 
         m100->set_target_position(target_position);
-    }
 }
+catch(tf::TransformException ex)
+{
+ROS_ERROR("%s", ex.what());
+}
+}
+    }
+
 
 void flight_status_subscriber_callback(std_msgs::UInt8 flight_status_msg)
 {
@@ -69,11 +76,11 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_control_node");
     ros::NodeHandle nh;
-    ros::Rate rate(5);
+    ros::Rate rate(15);
     States currentState = INIT_MISSION;
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
-
+tf_listener = new tf::TransformListener;
      m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
