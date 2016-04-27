@@ -44,11 +44,11 @@ class m100Controller
         double y_maxVelocity    = 0.5;
         double z_maxVelocity    = 0.5;
         
-        double x_velocity_Kp    = 0.7;
+        double x_velocity_Kp    = 0.5;
         double x_velocity_Kd    = 0.05;
         double x_velocity_Ki    = 0.0;
         
-        double y_velocity_Kp    = 0.7;
+        double y_velocity_Kp    = 0.5;
         double y_velocity_Kd    = 0.05;
         double y_velocity_Ki    = 0.0;
         
