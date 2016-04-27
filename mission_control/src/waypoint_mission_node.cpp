@@ -29,13 +29,13 @@ int main(int argc, char **argv)
 	geometry_msgs::PointStamped home_waypoint;
 	home_waypoint.point.x = 0.0;
 	home_waypoint.point.y = 0.0;
-	home_waypoint.point.z = 2.0;
+	home_waypoint.point.z = 3.0;
 	home_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped waypoint1_waypoint;
 	waypoint1_waypoint.point.x = 3.5;
 	waypoint1_waypoint.point.y = 0.0;
-	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.point.z = 3.0;
 	waypoint1_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped land_waypoint;
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.2)
+		if(m100->distance_to_position(home_waypoint) < 1.0)
 			ascending = false;
         rate.sleep();
 	}
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(waypoint1_waypoint) < 0.2)
+		if(m100->distance_to_position(waypoint1_waypoint) < 1.0)
 			flying = false;
         rate.sleep();
 	}
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.2)
+		if(m100->distance_to_position(home_waypoint) < 1.0)
 			flying = false;
         rate.sleep();
 	}
