@@ -48,7 +48,14 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	cv::Mat frame_ori = cv_bridge::toCvCopy(image_msg, image_msg->encoding)->image;
 	cv::Mat frame;
 
-	cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
+    cv::Mat img; // Source image
+    cv::Mat cropImg; // Destination cropped image
+
+    cv::Rect roiRect = cv::Rect(195, 330, 250, 380); // ROI in source image
+     
+    frame = frame_ori(roiRect);
+
+	//cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
 
 	//cout << "FRAME ORI SIZE = " << frame_ori.size().height << " x " << frame_ori.size().width << endl;
 	//cout << "FRAME  SIZE = " << frame.size().height << " x " << frame.size().width << endl;
@@ -60,14 +67,6 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 	timer t;
 	tag_detector_->process(frame, tags_detected);
-/*
-
-	for(int i=0; i<tags_detected.size(); i++)
-		if(tags_detected[i].good && tags_detected[i].id == 2)
-			tags_detected[i].draw(frame);
-*/
-//	cv::imshow("Frame", frame);
-//	cv::waitKey(1);
 
 	//Publish tags
 
@@ -87,8 +86,17 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			tag_pos.point.z = tvec(2);
 			
 			tagPub_.publish(tag_pos);
+
+            #ifdef DEBUG
+			tags_detected[i].draw(frame);
+            #endif
 		}
 	}
+    
+#ifdef DEBUG
+	cv::imshow("Frame", frame);
+	cv::waitKey(1);
+#endif
 
 	//cout << "TIEMPO: " << t.elapsed() << endl;
 	return;
