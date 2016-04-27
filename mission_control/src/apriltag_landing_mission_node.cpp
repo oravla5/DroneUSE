@@ -14,48 +14,26 @@ using namespace std;
 using namespace DJI::onboardSDK;
 
 /// State machine of the followme mission
-typedef enum
-{
-    INIT_MISSION,
-    TAKEOFF,
-    SEARCH,
-    LAND,
-    FINISHED
-} States;
-
-States nextState(const States &current);
-void performTask(const States &current);
+//void performTask(const States &current);
 droneuse_gimbal*    gimbal;
 droneuse_m100*      m100;
-ros::Time time_start;
 bool follow_april_flag = false;
-uint8_t flight_status;
 ros::ServiceClient m100_attitude_control_service; 
 dji_sdk::AttitudeControl m100_control_command;
 unsigned char control_flag;
 ros::Time last_apriltag_time;
-
+geometry_msgs::PointStamped last_apriltag_position;
 tf::TransformListener* tf_listener;
-geometry_msgs::Pointstamped last_apriltag_postion;
-geometry_msgs::PointStamped takeoff_goal;
-geometry_msgs::PointStamped body_origin;
-geometry_msgs::PointStamped local_position;
 
 bool april_detection = false;
 
-ros::Time time_now;
-int control_rate = 10;
+int control_rate = 15;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
     last_apriltag_position = apriltag_position_msg;
-    last_apriltag_time = last_apriltag_position.header.stamp;
-    aril_detection = true;
-}
-
-void flight_status_subscriber_callback(std_msgs::UInt8 flight_status_msg)
-{
-    flight_status = flight_status_msg.data;
+    last_apriltag_time = apriltag_position_msg.header.stamp;
+    april_detection = true;
 }
 
 int main(int argc, char **argv)
@@ -63,32 +41,29 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "mission_control_node");
     ros::NodeHandle nh;
     ros::Rate rate(control_rate);
-    States currentState = INIT_MISSION;
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
     tf_listener = new tf::TransformListener;
     
-    geometry_msgs::PointStamped body_origin;
-    geometry_msgs::PointStamped takeoff_goal;
+    geometry_msgs::PointStamped home_waypoint;
+    home_waypoint.header.frame_id = "/world";
+    home_waypoint.header.stamp = ros::Time::now();
+    home_waypoint.point.x = 0.0;
+    home_waypoint.point.y = 0.0;
+    home_waypoint.point.z = 2.0;
 
-    // Take Off goal point
-    takeoff_goal.header.frame_id = "/world";
-    takeoff_goal.header.stamp = ros::Time::now();
-    takeoff_goal.point.x = 0.0;
-    takeoff_goal.point.y = 0.0;
-    takeoff_goal.point.z = -2.0;
-    // Body frame
-    body_origin.header.frame_id = "/body_frame";
-    body_origin.header.stamp = ros::Time::now();
-    body_origin.point.x = 0.0;
-    body_origin.point.y = 0.0;
-    body_origin.point.z = 0.0;
+    geometry_msgs::PointStamped default_gimbal;
+    default_gimbal.header.frame_id = "/body_frame";
+    default_gimbal.point.x = 1.0;
+    default_gimbal.point.z = 1.0;
+    default_gimbal.point.x = 0.0;
 
-    target_gimbal_orientation.frame_id = "/body_frame";
-    target_gimbal.header.stamp = ros::Time::now();
-    target_gimbal.point.x = 1.0;
-    target_gimbal.point.z = 1.0;
-    target_gimbal.point.x = 0.0;
+    
+	geometry_msgs::PointStamped waypoint1_waypoint;
+	waypoint1_waypoint.point.x = 2.0;
+	waypoint1_waypoint.point.y = 0.0;
+	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.header.frame_id = "/world";
     
     // Position where the apriltag is setted 
    
@@ -96,90 +71,45 @@ int main(int argc, char **argv)
 
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
-    ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
+    // Wait for take off
+	while(m100->get_flight_status() != 3)
+    {
+		//TODO callbacks shoudlnt have to be updated in this node, services??
+		ros::spinOnce();
+        rate.sleep();
+    }
 
-    
+    while(m100->get_sdk_control() != true)
+    {
+		ros::spinOnce();
+        rate.sleep();
+    }
+
+    default_gimbal.header.stamp = ros::Time::now();
+    gimbal->set_target(default_gimbal);
+
+	home_waypoint.header.stamp = ros::Time::now();
+	m100->set_target_position(home_waypoint);
+	
+    bool ascending = true;
+	while(ascending)
+	{
+		ros::spinOnce();
+		home_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(home_waypoint) < 0.5)
+			ascending = false;
+        rate.sleep();
+	}
+}    
+/*
     while(ros::ok() && currentState != FINISHED)
     {
       /// Execute state machine.
         ros::spinOnce();
-        time_now = ros::Time::now();
-        performTask(currentState);
-        currentState = nextState(currentState);
-	//std::cout << "flight status " << int(flight_status) << "\n";
         rate.sleep();
     }
     return 0;
 }
-
-
-States nextState(const States &current)
-{
-    switch(current)
-    {
-        case INIT_MISSION :
-            if(flight_status == 3)
-            {
-                ROS_INFO("TAKEOFF");
-                if(m100->get_sdk_control())
-                    printf("\n Control Acquired \n");
-                return TAKEOFF;
-            }
-            else
-            {
-                return INIT_MISSION;
-            }
-            break;
-        case TAKEOFF :
-            if(height < 1.9)
-            {
-                return TAKEOFF;
-            }
-            else
-            {
-                ROS_INFO("SEARCH");
-                return SEARCH;
-            }
-            break;
-
-        case SEARCH :
-            if(!(flight_status == 4))
-            {
-                return SEARCH;
-            }
-            else
-            {
-                ROS_INFO("LAND");
-                time_start = ros::Time::now();
-                return LAND;
-            }
-            break;
-
-
-        case LAND :
-            if((ros::Time::now() - time_start) < ros::Duration(10))
-            {
-                ROS_INFO("LAND");
-                return LAND;
-            }
-            else
-            {
-                if(m100->disarm())
-                    printf("\n Disarmed \n");
-                if(m100->release_sdk_control())
-                    printf("\n Control Released \n");
-                return FINISHED;
-            }
-            break;
-
-        case FINISHED :
-            return FINISHED;
-
-        default :
-            return FINISHED;
-    }
-}
-
 
 void performTask(const States &current)
 {
@@ -249,4 +179,4 @@ void performTask(const States &current)
       }
    }
 
-
+*/

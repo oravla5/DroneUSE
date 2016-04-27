@@ -26,58 +26,94 @@ int main(int argc, char **argv)
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
 
+	geometry_msgs::PointStamped home_waypoint;
+	home_waypoint.point.x = 0.0;
+	home_waypoint.point.y = 0.0;
+	home_waypoint.point.z = 2.0;
+	home_waypoint.header.frame_id = "/world";
+
+	geometry_msgs::PointStamped waypoint1_waypoint;
+	waypoint1_waypoint.point.x = 2.0;
+	waypoint1_waypoint.point.y = 0.0;
+	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.header.frame_id = "/world";
+
 	// Wait for take off
 	while(m100->get_flight_status() != 3)
+    {
 		//TODO callbacks shoudlnt have to be updated in this node, services??
 		ros::spinOnce();
-
+        rate.sleep();
+    }
 	// Get SDK control
 	while(m100->get_sdk_control() != true)
+    {
 		ros::spinOnce();
+        rate.sleep();
+    }
+	
+    // Ascend
+	home_waypoint.header.stamp = ros::Time::now();
 
-	// Ascend
-	geometry_msgs::PointStamped takeoff_waypoint;
-	takeoff_waypoint.point.x = 0.0;
-	takeoff_waypoint.point.y = 0.0;
-	takeoff_waypoint.point.z = 2.0;
-	takeoff_waypoint.header.frame_id = "/world";
-	takeoff_waypoint.header.stamp = ros::Time::now();
-
-	m100->set_target_position(takeoff_waypoint);
+	m100->set_target_position(home_waypoint);
 
 	// Wait to ascend
 	//TODO points without stamp
 	bool ascending = true;
 	while(ascending)
 	{
-		takeoff_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(takeoff_waypoint) < 0.5)
-			ascending = false;
 		ros::spinOnce();
+		home_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(home_waypoint) < 0.5)
+			ascending = false;
+        rate.sleep();
 	}
 
 
 	// Go to first waypoint
-	geometry_msgs::PointStamped waypoint1_waypoint;
-	waypoint1_waypoint.point.x = 2.0;
-	waypoint1_waypoint.point.y = 0.0;
-	waypoint1_waypoint.point.z = 2.0;
-	waypoint1_waypoint.header.frame_id = "/world";
 	waypoint1_waypoint.header.stamp = ros::Time::now();
-
 	m100->set_target_position(waypoint1_waypoint);
 
-	// Wait to ascend
 	//TODO points without stamp
 	bool flying = true;
 	while(flying)
 	{
+		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
 		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
 			flying = false;
-		ros::spinOnce();
+        rate.sleep();
 	}
 
+    // Return to home
+	home_waypoint.header.stamp = ros::Time::now();
+	m100->set_target_position(home_waypoint);
+	while(flying)
+	{
+		ros::spinOnce();
+		home_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(home_waypoint) < 0.5)
+			flying = false;
+        rate.sleep();
+	}
+
+
+    // Wait to descend
+    bool descending = true;
+    home_waypoint.point.z = 0.0;
+    home_waypoint.header.stamp = ros::Time::now();
+    while(descending)
+    {
+        ros::spinOnce();
+		home_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(home_waypoint) < 0.5)
+			descending = false;
+        rate.sleep();
+
+    }
+    
+    //Land
+    m100->land();
 
 	return 0;
 }
