@@ -139,7 +139,6 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(apriltag_detector_node src/artificial_vision/AprilTagDetectorNode.cpp
-	src/artificial_vision/AprilTagDetector.cpp
 	)
 
 ## Add cmake target dependencies of the executable
