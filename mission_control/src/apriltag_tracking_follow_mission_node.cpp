@@ -35,9 +35,26 @@ unsigned char control_flag;
 tf::TransformListener* tf_listener;
 ros::Time last_april_time;
 geometry_msgs::PointStamped default_gimbal;
+bool takeoff_flag = false;
+ros::ServiceClient send_data_service;; 
+
+void transparent_transmission_callback(dji_sdk::TransparentTransmissionData msg)
+{
+	cout << "msg" << (int)msg.data[0] << endl;
+	takeoff_flag = true;
+}
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
+	dji_sdk::SendDataToRemoteDevice sendmsg;
+	
+	std::vector<unsigned char> send_data;
+	send_data.push_back(1);
+	sendmsg.request.data = send_data;
+
+	if (send_data_service.call(sendmsg));
+		cout << "msg sent" << endl;
+
         gimbal->set_target(apriltag_position_msg);
     last_april_time = ros::Time::now();
     if(follow_april_flag)
@@ -90,6 +107,10 @@ int main(int argc, char **argv)
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
+    ros::Subscriber transparent_transmission_suscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, transparent_transmission_callback);
+
+    send_data_service       = nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
+
     last_april_time = ros::Time::now();
     
     default_gimbal.header.frame_id  = "/body_frame";
@@ -122,8 +143,10 @@ States nextState(const States &current)
     switch(current)
     {
         case INIT_MISSION :
-            if(flight_status == 3)
+            //if(flight_status == 3)
+            if(takeoff_flag)
             {
+		cout << "Takeoffff!" << endl;
                 ROS_INFO("TAKEOFF");
                 if(m100->get_sdk_control())
                     printf("\n Control Acquired \n");
@@ -195,7 +218,11 @@ void performTask(const States &current)
             break;
 
         case TAKEOFF :
-            m100->takeoff();
+            if(flight_status != 3)
+		{
+			m100->arm();
+			m100->takeoff();
+		}
             break;
 
         case FOLLOW_APRIL :
