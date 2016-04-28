@@ -38,11 +38,10 @@ geometry_msgs::PointStamped default_gimbal;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-	follow_april_flag = true;
+        gimbal->set_target(apriltag_position_msg);
     last_april_time = ros::Time::now();
     if(follow_april_flag)
     {
-        gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
 
 	try{
@@ -54,13 +53,13 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.6;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
         target_position.point.y = (float)target_position_vector.y();
-        target_position.point.z = (float) apriltag_position_msg.point.z - 0.5; 
+        target_position.point.z = (float) apriltag_position_msg.point.z - 0.2; 
         m100->set_target_position(target_position);
 }
 catch(tf::TransformException ex)
