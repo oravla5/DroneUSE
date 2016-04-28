@@ -17,11 +17,22 @@ using namespace DJI::onboardSDK;
 droneuse_gimbal*    gimbal;
 droneuse_m100*      m100;
 
+ros::ServiceClient send_data_service;
+
+void received_data_callback(dji_sdk::TransparentTransmissionData msg)
+{
+	cout << "msg " << (int)msg.data[0] << endl;
+}
+
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_control_node");
     ros::NodeHandle nh;
     ros::Rate rate(15);
+
+	ros::Suscriber received_data_suscriber = nh.suscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, received_data_callback);
+	send_data_service = nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
 
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
@@ -29,13 +40,13 @@ int main(int argc, char **argv)
 	geometry_msgs::PointStamped home_waypoint;
 	home_waypoint.point.x = 0.0;
 	home_waypoint.point.y = 0.0;
-	home_waypoint.point.z = 2.0;
+	home_waypoint.point.z = 3.0;
 	home_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped waypoint1_waypoint;
 	waypoint1_waypoint.point.x = 3.5;
 	waypoint1_waypoint.point.y = 0.0;
-	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.point.z = 3.0;
 	waypoint1_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped land_waypoint;
@@ -43,6 +54,7 @@ int main(int argc, char **argv)
 	land_waypoint.point.y = 0.0;
 	land_waypoint.point.z = 0.0;
 	land_waypoint.header.frame_id = "/world";
+
 	// Wait for take off
 	while(m100->get_flight_status() != 3)
     {
