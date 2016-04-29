@@ -24,7 +24,7 @@ unsigned char control_flag;
 ros::Time last_apriltag_time;
 geometry_msgs::PointStamped last_apriltag_position;
 tf::TransformListener* tf_listener;
-bool land_flag = false
+bool land_flag = false;
 
 bool april_detection = false;
 bool chase = false;
@@ -59,10 +59,10 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                 target_position.point.z = (float) apriltag_position_msg.point.z- 2.0; 
                 m100->set_target_position(target_position);
 
-                if(m100->distance_to_position(target_position) < 0.5)
+                if(m100->distance_to_position(target_position) < 2.5)
                 {
                     chase = false;
-                    land_flag = true;
+                    approach = true;
                 }
             }
             if(approach)
@@ -136,6 +136,7 @@ int main(int argc, char **argv)
 	m100->set_target_position(waypoint1_waypoint);
 	
     bool ascending = true;
+follow_april_flag = true;
 	while(ascending)
 	{
 		ros::spinOnce();
