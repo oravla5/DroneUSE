@@ -21,7 +21,18 @@ ros::ServiceClient send_data_service;
 
 void received_data_callback(dji_sdk::TransparentTransmissionData msg)
 {
-	cout << "msg " << (int)msg.data[0] << endl;
+	if( (int)msg.data[0]  == 1)
+	{
+		// Get SDK control
+		while(m100->get_sdk_control() != true)
+		m100->arm();
+		m100->takeoff();	
+	}	
+	if( (int)msg.data[0]  == 2)
+	{
+		m100->land();	
+		m100->disarm();
+	}	
 }
 
 
@@ -42,10 +53,28 @@ int main(int argc, char **argv)
 	home_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped waypoint1_waypoint;
-	waypoint1_waypoint.point.x = 3.5;
+	waypoint1_waypoint.point.x = 4.5;
 	waypoint1_waypoint.point.y = 0.0;
 	waypoint1_waypoint.point.z = 3.0;
 	waypoint1_waypoint.header.frame_id = "/world";
+
+	geometry_msgs::PointStamped waypoint2_waypoint;
+	waypoint2_waypoint.point.x = 4.5;
+	waypoint2_waypoint.point.y = 4.5;
+	waypoint2_waypoint.point.z = 3.0;
+	waypoint2_waypoint.header.frame_id = "/world";
+
+	geometry_msgs::PointStamped waypoint3_waypoint;
+	waypoint3_waypoint.point.x = 0.0;
+	waypoint3_waypoint.point.y = 4.5;
+	waypoint3_waypoint.point.z = 3.0;
+	waypoint3_waypoint.header.frame_id = "/world";
+
+	geometry_msgs::PointStamped waypoint4_waypoint;
+	waypoint4_waypoint.point.x = 0.0;
+	waypoint4_waypoint.point.y = 0.0;
+	waypoint4_waypoint.point.z = 3.0;
+	waypoint4_waypoint.header.frame_id = "/world";
 
 	geometry_msgs::PointStamped land_waypoint;
 	land_waypoint.point.x = 0.0;
@@ -55,17 +84,11 @@ int main(int argc, char **argv)
 
 	// Wait for take off
 	while(m100->get_flight_status() != 3)
-    {
+	    {
 		//TODO callbacks shoudlnt have to be updated in this node, services??
 		ros::spinOnce();
-        rate.sleep();
-    }
-	// Get SDK control
-	while(m100->get_sdk_control() != true)
-    {
-		ros::spinOnce();
-        rate.sleep();
-    }
+		rate.sleep();
+	    }
 	
     // Ascend
 	home_waypoint.header.stamp = ros::Time::now();
@@ -79,8 +102,10 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
 		if(m100->distance_to_position(home_waypoint) < 1.0)
+		{
 			ascending = false;
-        rate.sleep();
+		}
+		rate.sleep();
 	}
 
 
@@ -97,8 +122,58 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
 		if(m100->distance_to_position(waypoint1_waypoint) < 1.0)
+		{
+			m100->sendData(1);
 			flying = false;
-        rate.sleep();
+		}
+		rate.sleep();
+	}
+
+	waypoint2_waypoint.header.stamp = ros::Time::now();
+    m100->set_target_position(waypoint2_waypoint);
+
+	flying = true;
+	while(flying)
+	{
+		ros::spinOnce();
+		waypoint2_waypoint.header.stamp = ros::Time::now();
+		cout << m100->distance_to_position(waypoint2_waypoint) << endl;
+		if(m100->distance_to_position(waypoint2_waypoint) < 1.0)
+		{
+			m100->sendData(2);
+			flying = false;
+		}
+		rate.sleep();
+	}
+
+	waypoint3_waypoint.header.stamp = ros::Time::now();
+    m100->set_target_position(waypoint3_waypoint);
+	flying = true;
+	while(flying)
+	{
+		ros::spinOnce();
+		waypoint3_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(waypoint3_waypoint) < 1.0)
+		{
+			m100->sendData(3);
+			flying = false;
+		}
+		rate.sleep();
+	}
+
+	waypoint4_waypoint.header.stamp = ros::Time::now();
+    m100->set_target_position(waypoint4_waypoint);
+	flying = true;
+	while(flying)
+	{
+		ros::spinOnce();
+		waypoint4_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(waypoint4_waypoint) < 1.0)
+		{
+			m100->sendData(4);
+			flying = false;
+		}
+		rate.sleep();
 	}
 
     // Return to home
@@ -111,8 +186,10 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
 		if(m100->distance_to_position(home_waypoint) < 1.0)
+		{
 			flying = false;
-        rate.sleep();
+		}
+		rate.sleep();
 	}
 
 
