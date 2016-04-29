@@ -60,8 +60,10 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                 m100->set_target_position(target_position);
 
                 if(m100->distance_to_position(target_position) < 0.5)
+                {
                     chase = false;
                     land_flag = true;
+                }
             }
             if(approach)
             {
@@ -73,8 +75,10 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                 m100->set_target_position(target_position);
 
                 if(m100->distance_to_position(target_position) < 0.5)
+                {
                     approach = false;
                     land_flag = true;
+                }
             }
         }
         catch(tf::TransformException ex)
@@ -137,8 +141,10 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
 		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
+        {
 			ascending = false;
             chase = true;
+        }
         rate.sleep();
 	}
     while(land_flag == false)
