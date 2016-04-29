@@ -44,16 +44,15 @@ void transparent_transmission_callback(dji_sdk::TransparentTransmissionData msg)
 	takeoff_flag = true;
 }
 
+void received_data_callback(dji_sdk::TransparentTransmissionData msg)
+{
+	cout << "msg " << (int)msg.data[0] << endl;
+}
+
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-	dji_sdk::SendDataToRemoteDevice sendmsg;
-	
-	std::vector<unsigned char> send_data;
-	send_data.push_back(1);
-	sendmsg.request.data = send_data;
-
-	if (send_data_service.call(sendmsg));
-		cout << "msg sent" << endl;
+	if(m100->sendData(1))
+		cout << "Successs \n";
 
         gimbal->set_target(apriltag_position_msg);
     last_april_time = ros::Time::now();
@@ -70,13 +69,13 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.0;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
         target_position.point.x = (float)target_position_vector.x();
         target_position.point.y = (float)target_position_vector.y();
-        target_position.point.z = (float) apriltag_position_msg.point.z - 0.2; 
+        target_position.point.z = (float) apriltag_position_msg.point.z - 0.25; 
         m100->set_target_position(target_position);
 }
 catch(tf::TransformException ex)
@@ -107,9 +106,8 @@ int main(int argc, char **argv)
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
-    ros::Subscriber transparent_transmission_suscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, transparent_transmission_callback);
 
-    send_data_service       = nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
+	ros::Subscriber received_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, received_data_callback);	
 
     last_april_time = ros::Time::now();
     
@@ -126,7 +124,7 @@ int main(int argc, char **argv)
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
-        if ((ros::Time::now() - last_april_time) > ros::Duration(2.5))
+        if ((ros::Time::now() - last_april_time) > ros::Duration(3.0))
         {
             default_gimbal.header.stamp = ros::Time::now();
             gimbal->set_target(default_gimbal);
