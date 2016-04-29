@@ -14,17 +14,25 @@ int main(int argc, char **argv)
 {
 	init(argc, argv, "tag_detector");
 
-	VideoCapture video("/home/viki/apriltag-tracking-test.mp4");
+	VideoCapture video("/home/ubuntu/apriltag-tracking-test.mp4");
 	
 	int ex = static_cast<int>(video.get(CV_CAP_PROP_FOURCC));
 	Size S = Size((int) video.get(CV_CAP_PROP_FRAME_WIDTH), (int) video.get(CV_CAP_PROP_FRAME_HEIGHT)); 
+	
+	cout << S << endl;
 
-	VideoWriter outputVideo("/home/viki/apriltag-tracking-test-PROCESED.mp4", ex, video.get(CV_CAP_PROP_FPS), S, true); 
+	VideoWriter outputVideo("/home/ubuntu/apriltag-tracking-test-PROCESED.mkv", ex, video.get(CV_CAP_PROP_FPS), S, true); 
 
 
-	if(!video.isOpened() || !outputVideo.isOpened())
+	if(!video.isOpened())
 	{
-		cout << "Cannot open output or input file!" << endl;
+		cout << "Cannot open  input file!" << endl;
+		return -1;
+	}
+
+	if(!outputVideo.isOpened())
+	{
+		cout << "Cannot open output file!" << endl;
 		return -1;
 	}
 
