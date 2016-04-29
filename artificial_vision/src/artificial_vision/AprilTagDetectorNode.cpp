@@ -17,11 +17,11 @@ int main(int argc, char **argv)
 	VideoCapture video("/home/ubuntu/apriltag-tracking-test.mp4");
 	
 	int ex = static_cast<int>(video.get(CV_CAP_PROP_FOURCC));
-	Size S = Size((int) video.get(CV_CAP_PROP_FRAME_WIDTH), (int) video.get(CV_CAP_PROP_FRAME_HEIGHT)); 
-	
+	Size S = Size((int) (video.get(CV_CAP_PROP_FRAME_WIDTH)/3), (int) (video.get(CV_CAP_PROP_FRAME_HEIGHT)/3)); 
+
 	cout << S << endl;
 
-	VideoWriter outputVideo("/home/ubuntu/apriltag-tracking-test-PROCESED.mkv", ex, video.get(CV_CAP_PROP_FPS), S, true); 
+	VideoWriter outputVideo("/home/ubuntu/apriltag-tracking-test-PROCESED.avi", CV_FOURCC('X','V','I','D'), video.get(CV_CAP_PROP_FPS), S, true); 
 
 
 	if(!video.isOpened())
@@ -42,8 +42,14 @@ int main(int argc, char **argv)
 
 	while(true)
 	{
-		Mat frame;
-		video >> frame;
+		Mat frame_ori, frame;
+		video >> frame_ori;
+
+		cout << "Frame ori" << frame_ori.size().width << "x" << frame_ori.size().height << endl;
+
+		resize(frame_ori, frame, Size(), 1.0/3.0, 1.0/3.0);
+
+		cout << "Frame" << frame.size().width << "x" << frame.size().height << endl;
 
 		if(frame.empty())
 			break;
@@ -57,8 +63,6 @@ int main(int argc, char **argv)
 
 		outputVideo << frame;
 
-		imshow("AprilTag test", frame);
-		waitKey(1);
 	}
 
 	return 0;
