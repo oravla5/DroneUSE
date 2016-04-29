@@ -24,16 +24,64 @@ unsigned char control_flag;
 ros::Time last_apriltag_time;
 geometry_msgs::PointStamped last_apriltag_position;
 tf::TransformListener* tf_listener;
+bool land_flag = false
 
 bool april_detection = false;
+bool chase = false;
+bool approach = false;
 
-int control_rate = 15;
+int control_rate = 20;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-    last_apriltag_position = apriltag_position_msg;
-    last_apriltag_time = apriltag_position_msg.header.stamp;
-    april_detection = true;
+    if(follow_april_flag)
+    {
+        gimbal->set_target(apriltag_position_msg);
+
+        try{
+            tf_listener->waitForTransform("/ground_frame",apriltag_position_msg.header.frame_id, apriltag_position_msg.header.stamp, ros::Duration(2.0/15));
+            tf_listener->transformPoint("/ground_frame", apriltag_position_msg.header.stamp, apriltag_position_msg,apriltag_position_msg.header.frame_id ,apriltag_position_msg);	
+            geometry_msgs::PointStamped target_position;
+            tf::Vector3 target_position_vector;
+            tf::Vector3 apriltag_position_vector (	apriltag_position_msg.point.x,
+                                        apriltag_position_msg.point.y,
+                                        apriltag_position_msg.point.z);
+
+            //target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
+            target_position_vector = apriltag_position_vector;
+
+            if(chase)
+            {
+                target_position.header.frame_id = apriltag_position_msg.header.frame_id;
+                target_position.header.stamp = apriltag_position_msg.header.stamp;
+                target_position.point.x = (float)target_position_vector.x();
+                target_position.point.y = (float)target_position_vector.y();
+                target_position.point.z = (float) apriltag_position_msg.point.z- 2.0; 
+                m100->set_target_position(target_position);
+
+                if(m100->distance_to_position(target_position) < 0.5)
+                    chase = false;
+                    land_flag = true;
+            }
+            if(approach)
+            {
+                target_position.header.frame_id = apriltag_position_msg.header.frame_id;
+                target_position.header.stamp = apriltag_position_msg.header.stamp;
+                target_position.point.x = (float)target_position_vector.x();
+                target_position.point.y = (float)target_position_vector.y();
+                target_position.point.z = (float) apriltag_position_msg.point.z- 0.5; 
+                m100->set_target_position(target_position);
+
+                if(m100->distance_to_position(target_position) < 0.5)
+                    approach = false;
+                    land_flag = true;
+            }
+        }
+        catch(tf::TransformException ex)
+        {
+            ROS_ERROR("%s", ex.what());
+        }
+    }
 }
 
 int main(int argc, char **argv)
@@ -45,24 +93,16 @@ int main(int argc, char **argv)
     m100    = new droneuse_m100(nh);
     tf_listener = new tf::TransformListener;
     
-    geometry_msgs::PointStamped home_waypoint;
-    home_waypoint.header.frame_id = "/world";
-    home_waypoint.header.stamp = ros::Time::now();
-    home_waypoint.point.x = 0.0;
-    home_waypoint.point.y = 0.0;
-    home_waypoint.point.z = 2.0;
-
     geometry_msgs::PointStamped default_gimbal;
     default_gimbal.header.frame_id = "/body_frame";
-    default_gimbal.point.x = 1.0;
-    default_gimbal.point.z = 1.0;
-    default_gimbal.point.x = 0.0;
+    default_gimbal.point.x = 2.0;
+    default_gimbal.point.y = 0.0;
+    default_gimbal.point.z = 10.0;
 
-    
 	geometry_msgs::PointStamped waypoint1_waypoint;
-	waypoint1_waypoint.point.x = 2.0;
+	waypoint1_waypoint.point.x = 0.0;
 	waypoint1_waypoint.point.y = 0.0;
-	waypoint1_waypoint.point.z = 2.0;
+	waypoint1_waypoint.point.z = 4.0;
 	waypoint1_waypoint.header.frame_id = "/world";
     
     // Position where the apriltag is setted 
@@ -88,18 +128,26 @@ int main(int argc, char **argv)
     default_gimbal.header.stamp = ros::Time::now();
     gimbal->set_target(default_gimbal);
 
-	home_waypoint.header.stamp = ros::Time::now();
-	m100->set_target_position(home_waypoint);
+	waypoint1_waypoint.header.stamp = ros::Time::now();
+	m100->set_target_position(waypoint1_waypoint);
 	
     bool ascending = true;
 	while(ascending)
 	{
 		ros::spinOnce();
-		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.5)
+		waypoint1_waypoint.header.stamp = ros::Time::now();
+		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
 			ascending = false;
+            chase = true;
         rate.sleep();
 	}
+    while(land_flag == false)
+    {
+        ros::spinOnce();
+        rate.sleep();
+    }
+    m100->land();
+    m100->disarm();
 }    
 /*
     while(ros::ok() && currentState != FINISHED)
