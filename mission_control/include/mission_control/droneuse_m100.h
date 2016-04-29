@@ -11,6 +11,7 @@ class droneuse_m100
         ros::ServiceClient m100_task_control_service;
         ros::ServiceClient m100_arm_control_service;
         ros::ServiceClient m100_sdk_permission_control_service;
+	ros::ServiceClient m100_send_data_service;
 
         ros::Subscriber m100_local_position_subscriber;
         
@@ -40,6 +41,8 @@ class droneuse_m100
         bool land();
         bool arm();
         bool disarm();
+
+	bool sendData(unsigned char data);
 
         dji_sdk::LocalPosition  get_local_position();
 };
