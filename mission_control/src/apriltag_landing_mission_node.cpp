@@ -28,10 +28,12 @@ uint8_t flight_status;
 
 bool april_detection = false;
 
-int control_rate = 15;
+int control_rate = 20;
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
+	last_apriltag_time = apriltag_position_msg.header.stamp;
+	gimbal->set_target(apriltag_position_msg);
     april_detection = true;
     try
     {
@@ -41,7 +43,7 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
     }
     catch(tf::TransformException ex)
     {
-        ROS_ERROR("%s", ex.what());
+        ROS_ERROR("%s ERROR EN APRILTAG", ex.what());
     }
 }
 
@@ -68,8 +70,8 @@ int main(int argc, char **argv)
 
     geometry_msgs::PointStamped default_gimbal;
     default_gimbal.header.frame_id = "/body_frame";
-    default_gimbal.point.x = 0.0;
-    default_gimbal.point.z = 1.0;
+    default_gimbal.point.x = 2.0;
+    default_gimbal.point.z = 10.0;
     default_gimbal.point.y = 0.0;
 
     
@@ -109,26 +111,19 @@ int main(int argc, char **argv)
 	while(!april_detection)
 	{
 		ros::spinOnce();
-		home_waypoint.header.stamp = ros::Time::now();
-        m100->set_target_position(home_waypoint);
-        default_gimbal.header.stamp = ros::Time::now();
-        gimbal->set_target(default_gimbal);
-
-        rate.sleep();
+		rate.sleep();
 	}
     
     float dist2goal; 
     float altitude2goal;
 
     do{
-		ros::spinOnce();
+	ros::spinOnce();
         dist2goal = sqrt(last_apriltag_position.point.x*last_apriltag_position.point.x + last_apriltag_position.point.y*last_apriltag_position.point.y);
         if(last_apriltag_position.point.z != 0)
             altitude2goal = last_apriltag_position.point.z;
         last_apriltag_position.point.z = 0;
         m100->set_target_position(last_apriltag_position);
-        default_gimbal.header.stamp = ros::Time::now();
-        gimbal->set_target(default_gimbal);
 
         rate.sleep();
     }while(dist2goal >0.5);
@@ -137,8 +132,6 @@ int main(int argc, char **argv)
 		ros::spinOnce();
         altitude2goal = last_apriltag_position.point.z;
         m100->set_target_position(last_apriltag_position);
-        default_gimbal.header.stamp = ros::Time::now();
-        gimbal->set_target(default_gimbal);
 
         rate.sleep();
     }while(altitude2goal > 0.5);

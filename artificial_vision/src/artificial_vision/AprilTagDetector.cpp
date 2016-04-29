@@ -59,17 +59,35 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 
 	//Publish tags
 	double tag_size;
-
 	for(int i=0; i<tags_detected.size(); i++)
 	{
-		if(tags_detected[i].good)
+		if(tags_detected[i].good && tags_detected[i].id == 16)
 		{
-			if(tags_detected[i].id == 3)
-				tag_size = 0.155; 
-			else if(tags_detected[i].id == 5)
-				tag_size = 0.06;
-			else
-				continue;
+			tag_size = 0.06;
+				
+			cv::Matx13d tvec = tags_detected[i].getPosition( tag_size, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+
+			PointStamped tag_pos;
+			tag_pos.header.stamp = image_msg->header.stamp;
+			tag_pos.header.frame_id = "/camera";
+
+			//Camera system tag coordinates to 3D world coordinates
+			tag_pos.point.x = tvec(0);
+			tag_pos.point.y = tvec(1);
+			tag_pos.point.z = tvec(2);
+			
+			tagPub_.publish(tag_pos);
+			tags_detected[i].draw(frame);
+			cv::imshow("Frame", frame);
+			cv::waitKey(1);
+			return;
+		}
+	}
+	for(int i=0; i<tags_detected.size(); i++)
+	{
+		if(tags_detected[i].good && tags_detected[i].id == 14)
+		{
+		 	tag_size = 0.155; 
 				
 			cv::Matx13d tvec = tags_detected[i].getPosition( tag_size, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
 
@@ -84,16 +102,15 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 			
 			tagPub_.publish(tag_pos);
 
-            #ifdef DEBUG
 			tags_detected[i].draw(frame);
-            #endif
+			
+			cv::imshow("Frame", frame);
+			cv::waitKey(1);
+			return;
 		}
 	}
     
-#ifdef DEBUG
 	cv::imshow("Frame", frame);
 	cv::waitKey(1);
-#endif
-
 	return;
 }
