@@ -13,7 +13,7 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
     m100_task_control_service           = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
     m100_arm_control_service            = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
     m100_sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
-    
+    m100_send_data_service 		= nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
 
     m100_local_position_subscriber      = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &droneuse_m100::m100_local_position_subscriber_callback, this);
     m100_flight_status_subscriber 	= nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &droneuse_m100::m100_flight_status_subscriber_callback, this);
@@ -61,6 +61,18 @@ void droneuse_m100::disable_m100_orientation_control()
     m100_control_msgs.data = false;
 
     m100_orientation_control_state_publisher.publish(m100_control_msgs);
+}
+
+bool droneuse_m100::sendData(unsigned char data)
+{
+	dji_sdk::SendDataToRemoteDevice send_msg;
+
+	std::vector<unsigned char> send_data;
+	send_data.push_back(data);
+
+	send_msg.request.data = send_data;
+	
+	return m100_send_data_service.call(send_msg) && send_msg.response.result; 
 }
 
 bool droneuse_m100::attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw)

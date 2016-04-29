@@ -33,13 +33,31 @@ ros::ServiceClient m100_attitude_control_service;
 dji_sdk::AttitudeControl m100_control_command;
 unsigned char control_flag;
 tf::TransformListener* tf_listener;
+ros::Time last_april_time;
+geometry_msgs::PointStamped default_gimbal;
+bool takeoff_flag = false;
+ros::ServiceClient send_data_service;; 
+
+void transparent_transmission_callback(dji_sdk::TransparentTransmissionData msg)
+{
+	cout << "msg" << (int)msg.data[0] << endl;
+	takeoff_flag = true;
+}
+
+void received_data_callback(dji_sdk::TransparentTransmissionData msg)
+{
+	cout << "msg " << (int)msg.data[0] << endl;
+}
 
 void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_msg)
 {
-	cout << " x " << apriltag_position_msg.point.x << " y "  << apriltag_position_msg.point.y <<" z "  <<  apriltag_position_msg.point.z << endl;
+	if(m100->sendData(1))
+		cout << "Successs \n";
+
+        gimbal->set_target(apriltag_position_msg);
+    last_april_time = ros::Time::now();
     if(follow_april_flag)
     {
-        gimbal->set_target(apriltag_position_msg);
         m100->set_target_orientation(apriltag_position_msg);
 
 	try{
@@ -51,7 +69,7 @@ void apriltag_subscriber_callback(geometry_msgs::PointStamped apriltag_position_
                         			apriltag_position_msg.point.y,
                         			apriltag_position_msg.point.z);
 
-        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.5;
+        target_position_vector = apriltag_position_vector - apriltag_position_vector.normalized()*2.0;
 
         target_position.header.frame_id = apriltag_position_msg.header.frame_id;
         target_position.header.stamp = apriltag_position_msg.header.stamp;
@@ -81,12 +99,24 @@ int main(int argc, char **argv)
     States currentState = INIT_MISSION;
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
-tf_listener = new tf::TransformListener;
+    tf_listener = new tf::TransformListener;
+    
      m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 
     ros::Subscriber apriltag_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/tag_position",10, apriltag_subscriber_callback);
     
     ros::Subscriber flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, flight_status_subscriber_callback);
+
+	ros::Subscriber received_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, received_data_callback);	
+
+    last_april_time = ros::Time::now();
+    
+    default_gimbal.header.frame_id  = "/body_frame";
+    default_gimbal.point.x          = 10.0;
+    default_gimbal.point.y          = 0.0;
+    default_gimbal.point.z          = 0.0;
+
+    m100->set_target_orientation(default_gimbal);
 
     while(ros::ok() && currentState != FINISHED)
     {
@@ -94,6 +124,11 @@ tf_listener = new tf::TransformListener;
         ros::spinOnce();
         performTask(currentState);
         currentState = nextState(currentState);
+        if ((ros::Time::now() - last_april_time) > ros::Duration(3.0))
+        {
+            default_gimbal.header.stamp = ros::Time::now();
+            gimbal->set_target(default_gimbal);
+        }
 	//std::cout << "flight status " << int(flight_status) << "\n";
         rate.sleep();
     }
@@ -106,8 +141,10 @@ States nextState(const States &current)
     switch(current)
     {
         case INIT_MISSION :
-            if(flight_status == 3)
+            //if(flight_status == 3)
+            if(takeoff_flag)
             {
+		cout << "Takeoffff!" << endl;
                 ROS_INFO("TAKEOFF");
                 if(m100->get_sdk_control())
                     printf("\n Control Acquired \n");
@@ -120,7 +157,7 @@ States nextState(const States &current)
             }
             break;
         case TAKEOFF :
-            if((ros::Time::now() - time_start) < ros::Duration(1))
+            if((ros::Time::now() - time_start) < ros::Duration(0.3))
             {
                 return TAKEOFF;
             }
@@ -179,7 +216,11 @@ void performTask(const States &current)
             break;
 
         case TAKEOFF :
-            m100->takeoff();
+            if(flight_status != 3)
+		{
+			m100->arm();
+			m100->takeoff();
+		}
             break;
 
         case FOLLOW_APRIL :

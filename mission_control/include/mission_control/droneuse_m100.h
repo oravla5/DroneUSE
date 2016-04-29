@@ -15,6 +15,7 @@ class droneuse_m100
         ros::ServiceClient m100_task_control_service;
         ros::ServiceClient m100_arm_control_service;
         ros::ServiceClient m100_sdk_permission_control_service;
+	ros::ServiceClient m100_send_data_service;
 
         ros::Subscriber m100_local_position_subscriber;
         ros::Subscriber m100_flight_status_subscriber;
@@ -52,6 +53,8 @@ class droneuse_m100
         float distance_to_position(geometry_msgs::PointStamped position);
 	uint8_t get_flight_status();
         float distance_to_position(geometry_msgs::Point point, std::string frame_id);
+
+	bool sendData(unsigned char data);
 
         dji_sdk::LocalPosition  get_local_position();
 };

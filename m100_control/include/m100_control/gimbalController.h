@@ -27,16 +27,16 @@ class gimbalController
         bool control_enable = false;
 
         // Gimbal Mechanical Specs: http://wiki.dji.com/en/index.php/Matrice_100-DJI_Zenmuse_X3_Gimbal_with_Camera
-        double gimbal_yaw_maxRate       = 900.0;
-        double gimbal_pitch_maxRate     = 900.0;
+        double gimbal_yaw_maxRate       = 500.0;
+        double gimbal_pitch_maxRate     = 500.0;
 
         // Gimbal pitch rate PID parameters
-        double gimbal_pitchRate_Kp      = 25.0;
+        double gimbal_pitchRate_Kp      = 30.0;
         double gimbal_pitchRate_Kd      = 1.0;
         double gimbal_pitchRate_Ki      = 0.0;
 
         // Gimbal yaw rate PID parameters
-        double gimbal_yawRate_Kp        = 25.0;
+        double gimbal_yawRate_Kp        = 30.0;
         double gimbal_yawRate_Kd        = 1.0;
         double gimbal_yawRate_Ki        = 0.0;
 

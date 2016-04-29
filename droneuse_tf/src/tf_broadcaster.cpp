@@ -86,7 +86,7 @@ int main(int argc, char** argv){
       // ---------------------------------------------------------
 
       tf_world_groundFrame.setOrigin(tf::Vector3(drone->local_position.x, drone->local_position.y, drone->local_position.z));
-      //tf_world_groundFrame.setOrigin( tf::Vector3(0, 0, 0) );
+      //tf_world_groundFrame.setOrigin(tf::Vector3(3, 3, 3));
       q.setRPY(C_PI, 0, 0);
       tf_world_groundFrame.setRotation(q);
       br.sendTransform(tf::StampedTransform(tf_world_groundFrame, ros::Time::now(), "world", "ground_frame"));

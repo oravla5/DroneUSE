@@ -29,11 +29,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_control_node");
     ros::NodeHandle nh;
-    ros::Rate rate(15);
+    ros::Rate rate(20);
 
-	ros::Suscriber received_data_suscriber = nh.suscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, received_data_callback);
-	send_data_service = nh.serviceClient<dji_sdk::SendDataToRemoteDevice>("dji_sdk/send_data_to_remote_device");
-
+	ros::Subscriber received_data_suscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, received_data_callback);
     gimbal  = new droneuse_gimbal(nh);
     m100    = new droneuse_m100(nh);
 
