@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.2)
+		if(m100->distance_to_position(home_waypoint) < 1.0)
 			ascending = false;
         rate.sleep();
 	}
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		waypoint1_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(waypoint1_waypoint) < 0.2)
+		if(m100->distance_to_position(waypoint1_waypoint) < 1.0)
 			flying = false;
         rate.sleep();
 	}
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		home_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(home_waypoint) < 0.2)
+		if(m100->distance_to_position(home_waypoint) < 1.0)
 			flying = false;
         rate.sleep();
 	}
