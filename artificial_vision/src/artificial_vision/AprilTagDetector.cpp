@@ -24,10 +24,10 @@ using namespace boost;
 AprilTagDetector::AprilTagDetector(char *imageTopic) : it_(nh_), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.155), SCALE_FACTOR_(0.5)
 {
 	//Subscription
-	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 5, &AprilTagDetector::callback, this);
+	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &AprilTagDetector::callback, this);
 
 	//AprilTag position publication
-	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 10);
+	tagPub_ = nh_.advertise<PointStamped>("droneuse/tag_position", 1);
 
 	//AprilTag detector initialization
 	TagFamilyFactory::create("0", gTagFamilies_);	
@@ -49,33 +49,29 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 	cv::Mat frame;
 
 	cv::resize(frame_ori, frame, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
-
-	cout << "FRAME ORI SIZE = " << frame_ori.size().height << " x " << frame_ori.size().width << endl;
-	cout << "FRAME  SIZE = " << frame.size().height << " x " << frame.size().width << endl;
 	
 	if(frame.empty())
 		return;
 
 	vector<TagDetection> tags_detected;
 
-	timer t;
 	tag_detector_->process(frame, tags_detected);
 
-
-	for(int i=0; i<tags_detected.size(); i++)
-		if(tags_detected[i].good && tags_detected[i].id == 2)
-			tags_detected[i].draw(frame);
-
-	cv::imshow("Frame", frame);
-	cv::waitKey(1);
-
 	//Publish tags
+	double tag_size;
 
 	for(int i=0; i<tags_detected.size(); i++)
 	{
-		if(tags_detected[i].good && tags_detected[i].id == 2)
+		if(tags_detected[i].good)
 		{
-			cv::Matx13d tvec = tags_detected[i].getPosition( TAG_SIZE_, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
+			if(tags_detected[i].id == 3)
+				tag_size = 0.155; 
+			else if(tags_detected[i].id == 5)
+				tag_size = 0.06;
+			else
+				continue;
+				
+			cv::Matx13d tvec = tags_detected[i].getPosition( tag_size, SCALE_FACTOR_*info_msg->K[0], SCALE_FACTOR_*info_msg->K[4], SCALE_FACTOR_*info_msg->K[2], SCALE_FACTOR_*info_msg->K[5]);
 
 			PointStamped tag_pos;
 			tag_pos.header.stamp = image_msg->header.stamp;
@@ -90,6 +86,5 @@ void AprilTagDetector::callback(const ImageConstPtr& image_msg, const CameraInfo
 		}
 	}
 
-	cout << "TIEMPO: " << t.elapsed() << endl;
 	return;
 }
