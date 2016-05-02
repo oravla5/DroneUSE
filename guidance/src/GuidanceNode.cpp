@@ -46,9 +46,12 @@ int HEIGHT=240;
 
 DJI_lock        g_lock;
 DJI_event       g_event;
+
 Mat             g_greyscale_image_left(HEIGHT, WIDTH, CV_8UC1);
 Mat		g_greyscale_image_right(HEIGHT, WIDTH, CV_8UC1);
-Mat		g_depth(HEIGHT,WIDTH,CV_16UC1);
+
+Mat		g_depth(HEIGHT,WIDTH,CV_16SC1);
+Mat		g_depth_u(HEIGHT,WIDTH,CV_16UC1);
 Mat		depth8(HEIGHT, WIDTH, CV_8UC1);
 
 std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
@@ -157,10 +160,16 @@ int my_callback(int data_type, int data_len, char *content)
 		if ( data->m_depth_image[cam_index] ){
 			depth_img_received = true;
 			memcpy(g_depth.data, data->m_depth_image[cam_index], IMAGE_SIZE * 2);
-			g_depth.convertTo(depth8, CV_8UC1);
+
+			/*Filtering*/
+			filterSpeckles(g_depth, -16, 50, 20);
+
 			//publish depth image
+			g_depth.convertTo(depth8, CV_8UC1);
+			g_depth.convertTo(g_depth_u, CV_16UC1);
+
 			cv_bridge::CvImage depth_16;
-			g_depth.copyTo(depth_16.image);
+			g_depth_u.copyTo(depth_16.image);
 			switch((int) cam_index)
 			{
 				case 0:
@@ -393,7 +402,7 @@ int main(int argc, char** argv)
 	exposure_param para;
 	para.m_is_auto_exposure = 1;
 	para.m_step = 10;
-	para.m_expected_brightness = 120;
+	para.m_expected_brightness = 85;
 
 	for(int i=0; i<CAMERA_PAIR_NUM; i++)
 	{
@@ -406,7 +415,7 @@ int main(int argc, char** argv)
 	while (ros::ok())
 	{
 		ros::spinOnce();
-	
+/*	
 		if(!depth_img_received)
 			continue;
 
@@ -420,18 +429,18 @@ int main(int argc, char** argv)
     		
     		err_code = select_depth_image(cam_index);
 			RETURN_IF_ERR(err_code);
-/*    		err_code = select_greyscale_image(cam_index, true);
+    		err_code = select_greyscale_image(cam_index, true);
 			RETURN_IF_ERR(err_code);
     		err_code = select_greyscale_image(cam_index, false);
 			RETURN_IF_ERR(err_code);
-*/
+
     		select_imu();
     		select_ultrasonic();
     		select_obstacle_distance();
     		select_velocity();
     		err_code = start_transfer();
     			RETURN_IF_ERR(err_code);
-	}
+*/	}
 
 	/* release data transfer */
 	err_code = stop_transfer();

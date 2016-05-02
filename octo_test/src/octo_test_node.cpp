@@ -15,7 +15,7 @@ void callback(const octomap_msgs::Octomap& octomap_msg)
 	octomap::OcTree* tree = octomap_msgs::binaryMsgToMap(octomap_msg);
 	
 	cout << "Ha llegado al callback" << endl;
-	tree->writeBinary("/home/ubuntu/guidance.bt");
+	tree->writeBinary("/home/ubuntu/guidance_octomap.bt");
 	finish = true;
 	return;
 }
