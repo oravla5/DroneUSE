@@ -31,7 +31,7 @@
 int main(int argc, char** argv){
   ros::init(argc, argv, "tf_broadcaster");
   ros::NodeHandle nh;
-  ros::Rate rate(60); // 60Hz
+  ros::Rate rate(30); // 60Hz
   DJIDrone* drone = new DJIDrone(nh);
 
   tf::TransformBroadcaster br;

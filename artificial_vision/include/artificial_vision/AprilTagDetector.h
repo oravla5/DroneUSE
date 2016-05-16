@@ -19,20 +19,20 @@ struct trackedTag_{
 
 class AprilTagDetector
 {
-	ros::NodeHandle				nh_;
+	ros::NodeHandle					nh_;
 
-	image_transport::ImageTransport		it_;
-	image_transport::CameraSubscriber	imgSub_;
+	image_transport::ImageTransport			it_;
+	image_transport::CameraSubscriber		imgSub_;
 
-	ros::Publisher				tagPub_;
+	ros::Publisher					tagPub_;
 
-	cv::Ptr<april::tag::TagDetector>	tag_detector_;
-	std::vector<cv::Ptr<april::tag::TagFamily> > gTagFamilies_;
+	cv::Ptr<april::tag::TagDetector>		tag_detector_;
+	std::vector<cv::Ptr<april::tag::TagFamily> > 	gTagFamilies_;
 
-	const int				MIN_FRAME_NUM_;
-	const float				MIN_TAG_DIST_;
-	const float				TAG_SIZE_;
-	const float				SCALE_FACTOR_;
+	const int					MIN_FRAME_NUM_;
+	const float					MIN_TAG_DIST_;
+	const float					TAG_SIZE_;
+	const float					SCALE_FACTOR_;
 
 	public:
 			AprilTagDetector(char *imageTopic);

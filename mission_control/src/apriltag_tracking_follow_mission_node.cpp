@@ -213,6 +213,7 @@ void performTask(const States &current)
    switch(current)
    {
         case INIT_MISSION : 
+                follow_april_flag = true;
             break;
 
         case TAKEOFF :
