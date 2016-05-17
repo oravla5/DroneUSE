@@ -1,0 +1,34 @@
+<!-- 
+	Launch and load the Octomap server and the RViZ to use the theta star algorithm
+-->
+
+<launch>
+  
+  <!-- Static Map Arguments -->
+  <arg name="static_map_file" default="$(find theta_star)/resource/pipes.bt"/>	<!-- Octree File -->
+  <arg name="map_x_offset" default="0.0"/>										<!-- Map offsets -->
+  <arg name="map_y_offset" default="0.0"/>
+  <arg name="map_z_offset" default="0.0"/>
+  <arg name="mav_name" 				default="firefly"/> 
+  <arg name="conf_file_mav_name" 	default="firefly"/>  
+  
+  <!-- RViz configuration file -->
+  <arg name="rviz_config_file" default="$(find theta_star)/resource/$(arg conf_file_mav_name)/rviz.rviz"/>
+  
+  <!--****** Octomap Server ******-->
+  <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" respawn="true" clear_params="true" output="screen" args="$(arg static_map_file)">  
+	<param name="frame_id" type="str" value="/map" />
+  </node>
+  
+  <!--****** Octomap TF transform from /map to /world******-->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_world_tf_broadcaster" args="$(arg map_x_offset) $(arg map_y_offset) $(arg map_z_offset) 0 0 0 1 /world /map 100" />
+  
+  <!--****** Load map offsets as parameters to can be read by planner node  ******-->
+  <param name="/map/x_offset" value="$(arg map_x_offset)"/>
+  <param name="/map/y_offset" value="$(arg map_y_offset)"/>
+  <param name="/map/z_offset" value="$(arg map_z_offset)"/>
+  
+  <!--****** RViZ ******-->
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" args="-d $(arg rviz_config_file)"/>  
+ 
+</launch>

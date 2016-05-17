@@ -1,0 +1,51 @@
+<!-- 
+	Simple rqt_plot launcher with topic arguments 
+-->
+
+<launch>
+
+  <arg name="mav_name" default="euroc5"/>
+
+  <!-- Plotting -->
+  <node pkg="rqt_plot" name="plot" type="rqt_plot" respawn="false" output="screen" 
+  args="
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/x
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/y
+	  /$(arg mav_name)/trajectory_tracking/commanded_position/x
+	  /$(arg mav_name)/trajectory_tracking/commanded_position/y
+	  /$(arg mav_name)/trajectory_tracking/commanded_velocity/x
+	  /$(arg mav_name)/trajectory_tracking/commanded_velocity/y
+	  /$(arg mav_name)/trajectory_tracking/target_position/x
+	  /$(arg mav_name)/trajectory_tracking/target_position/y
+  "/>
+  
+  
+<!--
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/x
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/y
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/z
+	  /$(arg mav_name)/odometry_sensor1/odometry/twist/twist/linear/x
+	  /$(arg mav_name)/odometry_sensor1/odometry/twist/twist/linear/y
+	  /$(arg mav_name)/odometry_sensor1/odometry/twist/twist/linear/z
+-->  
+
+<!--	  
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/x
+	  /$(arg mav_name)/odometry_sensor1/odometry/twist/twist/linear/x
+	  /$(arg mav_name)/trajectory_tracking/commanded_position/x
+	  /$(arg mav_name)/trajectory_tracking/commanded_velocity/x
+	  /$(arg mav_name)/trajectory_tracking/target_position/x
+-->
+
+
+<!--
+   	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/x
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/y
+	  /$(arg mav_name)/odometry_sensor1/odometry/pose/pose/position/z
+	  /$(arg mav_name)/trajectory_tracking/target_position/x
+	  /$(arg mav_name)/trajectory_tracking/target_position/y
+	  /$(arg mav_name)/trajectory_tracking/target_position/z
+-->
+
+</launch>
+

@@ -1,0 +1,61 @@
+<!-- 
+	Main Neo launcher to test Theta* (Simulator + Trajectory Tracker + Theta Star Planning Context + Theta Star Planner)
+	
+	INSTRUCTION TO SEND GOAL POSITIONS:
+		- Execute rqt (Load topic/message publisher)
+		- Send messages (XYZ commands) by the topic /neo/goal_position to the Theta Star Planner
+-->
+
+<launch>
+	
+	<arg name="mav_name" default="euroc5"/>
+	<arg name="namespace" default="$(arg mav_name)" /> 
+
+	<!-- Simulator --> 
+	<include file="$(find euroc_motion_planning_launch)/launch/simulator_linear_mpc.launch">
+		<arg name="mav_name" 		value="$(arg mav_name)" />
+		<arg name="gazebo_paused" 	value="false" />
+	</include>
+
+	<group ns="$(arg namespace)" >  
+		<!-- Odometry topic-->
+		<arg name="odometry_topic" 		default="odometry_sensor1/odometry"/>
+		
+		<!-- Trajectory Tracker --> 
+		<include file="$(find trajectory_tracking)/launch/trajectory_tracker.launch">
+			<arg name="odometry_topic" 		value="$(arg odometry_topic)" />
+			<arg name="sim" 				value="true" />
+			<arg name="exec_rate" 			value="50.0"/>		# Node execution rate [Hz]
+			<arg name="m_x_model" 			value="3.4"/>		# Max slope at Xb axis [m/s2]
+			<arg name="m_y_model" 			value="2.7"/>		# Max slope at Yb axis [m/s2]
+			<arg name="m_z_model" 			value="2.0"/>		# Max slope at Zb axis [m/s2]
+			<arg name="To_x_model" 			value="0.2"/>		# Response delay at Xb axis [sec]
+			<arg name="To_y_model" 			value="0.2"/>		# Response delay at Xb axis [sec]
+			<arg name="To_z_model" 			value="0.2"/>		# Response delay at Xb axis [sec]
+			<arg name="H_pos_rate_limiter" 	value="2.0"/>		# Position rate limiter at XYb axis [m/s]
+			<arg name="V_pos_rate_limiter" 	value="2.0"/>		# Position rate limiter at XYb axis [m/s]
+			<arg name="H_vel_rate_limiter" 	value="1.0"/>		# Velocity rate limiter at XYb axis [m/s2]
+			<arg name="V_vel_rate_limiter" 	value="1.0"/>		# Velocity rate limiter at Zb axis [m/s2]
+		</include> 
+  
+		<!-- Planning context (Octomap + RViZ) --> 
+		<include file="$(find theta_star)/launch/theta_star_planning_context_example.launch">
+			<arg name="conf_file_mav_name" 				value="neo" />
+			<arg name="static_map_file" 				value="$(find theta_star)/resource/testbed_withoutFloor.bt" />
+			<arg name="map_x_offset" value="0.0" />
+			<arg name="map_y_offset" value="0.0" />
+			<arg name="map_z_offset" value="0.0" />
+		</include>
+  
+		<!-- Planning node (Computes path and shows it as RViZ Marker) -->
+		<include file="$(find theta_star)/launch/theta_star_server_example.launch">
+			<arg name="mav_name" value="$(arg mav_name)" />
+		</include>
+
+		<!-- Plotting --> 
+		<include file="$(find euroc_motion_planning_launch)/launch/plot.launch">
+			<arg name="mav_name" value="$(arg mav_name)" />
+		</include>
+	</group>
+ 
+</launch>

@@ -1,0 +1,77 @@
+<!-- 
+	Local Planner Main Neo launcher for simulations 
+	(Simulator + Trajectory Tracker + Global Planner + Local Planner)
+-->
+
+<launch>
+
+	<arg name="mav_name" default="euroc5"/>
+	<arg name="namespace" default="$(arg mav_name)"/>
+
+	<group ns="$(arg namespace)">
+		<!-- Odometry topic-->
+		<arg name="odometry_topic" 		default="odometry_sensor1/odometry"/>
+		
+		<!-- Yaw angular velocity -->
+		<arg name="w_yaw" default="0.4"/>
+		
+		<!-- Point Cloud topic name-->
+		<arg name="point_cloud_topic" 	default="/$(arg mav_name)/vi_sensor/camera_depth/depth/points"/>
+		
+		<!-- Frames -->
+		<arg name="world_frame"				default="/world"/>
+		<arg name="base_stabilized_frame"	default="/$(arg mav_name)/base_link_stabilized"/>
+		<arg name="point_cloud_frame"		default="/$(arg mav_name)/vi_sensor/camera_depth_optical_center_link"/>
+		
+		<!-- Global workspace -->
+		<arg name="global_ws_x_max"		default="8.0"/>		# workspace in world frame [meters]
+		<arg name="global_ws_y_max"		default="8.0"/>
+		<arg name="global_ws_z_max"		default="3.0"/>
+		<arg name="global_ws_x_min"		default="-8.0"/>
+		<arg name="global_ws_y_min"		default="-8.0"/>
+		<arg name="global_ws_z_min"		default="-0.0"/>
+
+		<!-- Local planner (Local theta* planner) --> 
+		<include file="$(find local_planner_3d)/launch/local_planner.launch">
+			<arg name="odometry_topic" 					value="$(arg odometry_topic)" />
+			<arg name="point_cloud_topic" 				value="$(arg point_cloud_topic)" />
+			<arg name="local_planner_frame" 			value="$(arg base_stabilized_frame)" />
+			<arg name="global_planner_frame" 			value="$(arg world_frame)" />
+			<arg name="visual_pointcloud_frame" 		value="$(arg point_cloud_frame)" />
+			<arg name="theta_timeout" 					value="1.0" />
+			<arg name="local_ws_x_max"					value="5.0"/>							# Theta workspace in $local_planner_frame [meters]
+			<arg name="local_ws_y_max"					value="5.0"/>
+			<arg name="local_ws_z_max"					value="2.0"/>
+			<arg name="local_ws_x_min"					value="-3.0"/>							# Best results was with 0.0, but then the current UAV pose = Wp[0] = 0.0 are outside the workspace. Other reason: If Wp[0] not free, Theta Initial position not free
+			<arg name="local_ws_y_min"					value="-5.0"/>
+			<arg name="local_ws_z_min"					value="-2.0"/>
+			<arg name="global_ws_x_max"					value="$(arg global_ws_x_max)"/>		# Theta workspace in $global_planner_frame [meters]
+			<arg name="global_ws_y_max"					value="$(arg global_ws_y_max)"/>
+			<arg name="global_ws_z_max"					value="$(arg global_ws_z_max)"/>
+			<arg name="global_ws_x_min"					value="$(arg global_ws_x_min)"/>		
+			<arg name="global_ws_y_min"					value="$(arg global_ws_y_min)"/>
+			<arg name="global_ws_z_min"					value="$(arg global_ws_z_min)"/>
+
+			<arg name="cloud_points_timeout" 			value="2.0"/>							# Time to eliminate a point that has not been seen another time [seconds]
+
+			<arg name="map_resolution" 					value="0.10"/>							# Discrete matrix resolution [meters]
+			<arg name="map_h_real_size_inflaction" 		value="0.4"/>							# Obstacles inflaction for real UAV wingspan [meters]. Optimal: [0.4, 0.16] meters
+			<arg name="map_v_real_size_inflaction" 		value="0.16"/>
+			<arg name="map_h_safe_distance_inflaction" 	value="0.8"/>							# Obstacles inflaction for safe distance [meters]. Optimal: [0.8, 1.04] meters
+			<arg name="map_v_safe_distance_inflaction" 	value="1.04"/>
+			<arg name="initial_point_factor" 			value="0.1"/>							# Weight of the goal, as a distance from initial position factor, for the Lazy theta* with Optimz.[Minor than 1]
+			<arg name="z_weight_cost" 					value="100.0"/>							# Weight of heigth changes
+			<arg name="line_of_sight_margin" 			value="0.2"/>							# Margin for line of sight checking to replan [meters]
+
+			<arg name="traj_dxy_max" 					value="0.5"/>							# Maximum horizontal position increment [m] 
+			<arg name="traj_dz_max" 					value="0.5"/>							# Maximum vertical position increment [m] 
+			<arg name="traj_vxy_m" 						value="0.25"/>							# Horizontal velocity average [m/s] 
+			<arg name="traj_vz_m" 						value="0.25"/>							# Vertical velocity average [m/s] 
+			<arg name="traj_vxy_m_1" 					value="0.15"/>							# Horizontal velocity for the first and the last wp [m/s] 
+			<arg name="traj_vz_m_1" 					value="0.15"/>							# Vertical velocity for the first and the last wp [m/s] 
+			<arg name="traj_est_wy" 					value="$(arg w_yaw)"/>					# Yaw angular velocity to estimate the necessary time to achive a yaw reference [rad/s]
+			<arg name="traj_yaw_mode" 					value="2"/>								# Trajectory yaw configuration: constant (0), at time (1), in advance (2)
+		</include>
+	</group>
+		
+</launch>

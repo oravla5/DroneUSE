@@ -1,0 +1,57 @@
+<!-- 
+	Launch Theta Star Server
+-->
+
+<launch>  
+  <arg name="mav_name" 			default="euroc5"/>
+  
+  <!-- Theta star path calculation parameters-->
+  <arg name="ws_x_max" 							default="4.0"/>		<!-- workspace in world frame [meters]-->
+  <arg name="ws_y_max" 							default="4.0"/>
+  <arg name="ws_z_max" 							default="4.0"/>
+  <arg name="ws_x_min" 							default="-4.0"/>
+  <arg name="ws_y_min" 							default="-4.0"/>
+  <arg name="ws_z_min" 							default="-0.0"/>	
+  <arg name="map_resolution" 					default="0.10"/>	<!-- Discrete matrix resolution [meters]-->
+  <arg name="map_h_real_size_inflaction" 		default="0.1"/>		<!-- Obstacles inflaction for real UAV wingspan [meters]-->
+  <arg name="map_v_real_size_inflaction" 		default="0.1"/>		<!-- Obstacles inflaction for real UAV wingspan [meters]-->
+  <arg name="map_h_safe_distance_inflaction" 	default="0.1"/>		<!-- Obstacles inflaction for safe distance [meters]-->
+  <arg name="map_v_safe_distance_inflaction" 	default="0.1"/>		<!-- Obstacles inflaction for safe distance [meters]-->
+  <arg name="initial_point_factor" 				default="0.1"/>		<!-- Weight of the goal, as a distance from initial position factor, for the Lazy theta* with Optimz.[<=1]-->
+  <arg name="z_weight_cost" 					value="4.0"/>		<!-- Weight of heigth changes -->
+
+  <!-- Result trajectory parameters-->
+  <arg name="traj_dxy_max" 		default="0.5"/>		<!-- Maximum horizontal position increment [m] -->
+  <arg name="traj_dz_max" 		default="0.5"/>		<!-- Maximum vertical position increment [m] -->
+  <arg name="traj_vxy_m" 		default="1.5"/>		<!-- Horizontal velocity average [m/s] -->
+  <arg name="traj_vz_m" 		default="1.5"/>		<!-- Vertical velocity average [m/s] -->
+  <arg name="traj_vxy_m_1" 		default="1.0"/>		<!-- Horizontal velocity for the first and the last wp [m/s] -->
+  <arg name="traj_vz_m_1" 		default="1.0"/>		<!-- Vertical velocity for the first and the last wp [m/s] -->
+  <arg name="traj_est_wy" 		default="0.8"/>		<!-- Yaw angular velocity estimated [rad/s] -->
+
+  
+  <!-- Convert args to params-->
+  <param name="/theta_star/ws_x_max" 						value="$(arg ws_x_max)"/>
+  <param name="/theta_star/ws_y_max" 						value="$(arg ws_y_max)"/>
+  <param name="/theta_star/ws_z_max" 						value="$(arg ws_z_max)"/>
+  <param name="/theta_star/ws_x_min" 						value="$(arg ws_x_min)"/>
+  <param name="/theta_star/ws_y_min" 						value="$(arg ws_y_min)"/>
+  <param name="/theta_star/ws_z_min" 						value="$(arg ws_z_min)"/>
+  <param name="/theta_star/map_resolution" 					value="$(arg map_resolution)"/>
+  <param name="/theta_star/map_h_real_size_inflaction" 		value="$(arg map_h_real_size_inflaction)"/>
+  <param name="/theta_star/map_v_real_size_inflaction" 		value="$(arg map_v_real_size_inflaction)"/>
+  <param name="/theta_star/map_h_safe_distance_inflaction" 	value="$(arg map_h_safe_distance_inflaction)"/>
+  <param name="/theta_star/map_v_safe_distance_inflaction" 	value="$(arg map_v_safe_distance_inflaction)"/>
+  <param name="/theta_star/initial_point_factor" 			value="$(arg initial_point_factor)"/>
+  <param name="/theta_star/z_weight_cost" 					value="$(arg z_weight_cost)"/>
+  <param name="/theta_star/traj_dxy_max" 					value="$(arg traj_dxy_max)"/>
+  <param name="/theta_star/traj_dz_max" 					value="$(arg traj_dz_max)"/>
+  <param name="/theta_star/traj_vxy_m" 						value="$(arg traj_vxy_m)"/>
+  <param name="/theta_star/traj_vz_m" 						value="$(arg traj_vz_m)"/>
+  <param name="/theta_star/traj_vxy_m_1" 					value="$(arg traj_vxy_m_1)"/>
+  <param name="/theta_star/traj_vz_m_1" 					value="$(arg traj_vz_m_1)"/>
+  <param name="/theta_star/traj_est_wy" 					value="$(arg traj_est_wy)"/>
+  
+  <!-- Run theta* server-->
+  <node pkg="theta_star" type="theta_star_server_example" name="theta_star_server" args="$(arg mav_name)" output="screen"/>
+</launch>
