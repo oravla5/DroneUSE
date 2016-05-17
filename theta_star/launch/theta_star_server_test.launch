@@ -1,0 +1,10 @@
+<!-- 
+	Launch Theta Star Server
+-->
+
+<launch>
+
+<include file="$(find theta_star)/launch/theta_star_planning_context_example.launch" />
+<include file="$(find theta_star)/launch/theta_star_server_example.launch" />
+
+</launch>

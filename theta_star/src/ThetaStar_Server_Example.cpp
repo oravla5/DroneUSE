@@ -86,12 +86,14 @@ int main(int argc, char **argv)
 
 	// Odometry data topic subscriber
 	char topicPath[100];
-	sprintf(topicPath, "/%s/odometry_sensor1/odometry", mavName);
+	//sprintf(topicPath, "/%s/odometry_sensor1/odometry", mavName);
+	sprintf(topicPath, "/odometry");
     ros::Subscriber odom_sub = n.subscribe(topicPath, 1, odometryCallback);
     ROS_INFO("Theta Star Example: odometry topic: %s", topicPath);
 
 	// Trajectory list topic publisher to trajectory_tracker_node
-	sprintf(topicPath, "/%s/trajectory_tracking/input_trajectory", mavName);
+	//sprintf(topicPath, "/%s/trajectory_tracking/input_trajectory", mavName);
+	sprintf(topicPath, "/trajectory_tracking/input_trajectory");
 	ros::Publisher trajectory_pub = n.advertise<trajectory_msgs::MultiDOFJointTrajectory>(topicPath, 10);
 	ROS_INFO("Theta Star Example: trajectory output topic: %s", topicPath);
 
@@ -102,12 +104,15 @@ int main(int argc, char **argv)
     ros::Publisher vis_pub_traj = n.advertise<visualization_msgs::Marker>( "visualization_marker_trajectory", 0 );
 
 	// Octomap topic subscriber
-	sprintf(topicPath, "/%s/octomap_binary", mavName);
-    ros::Subscriber sub_map = n.subscribe(topicPath, 0, CollisionMapCallBack);
+	//sprintf(topicPath, "/%s/octomap_binary", mavName);
+	sprintf(topicPath, "/octomap_binary");
+    //ros::Subscriber sub_map = n.subscribe(topicPath, 1, CollisionMapCallBack);
+    ros::Subscriber sub_map = n.subscribe(topicPath, 1, CollisionMapCallBack);
     ROS_INFO("Theta Star Example: octomap input topic: %s", topicPath);
 
 	// Goal position topic subscriber
-	sprintf(topicPath, "/%s/goal_position", mavName);
+	//sprintf(topicPath, "/%s/goal_position", mavName);
+	sprintf(topicPath, "/goal_position");
     ros::Subscriber sub_goal = n.subscribe(topicPath, 0, GoalPositionCallBack);
 	ROS_INFO("Theta Star Example: trajectory input topic: %s", topicPath);
 

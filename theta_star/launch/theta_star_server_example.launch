@@ -53,5 +53,5 @@
   <param name="/theta_star/traj_est_wy" 					value="$(arg traj_est_wy)"/>
   
   <!-- Run theta* server-->
-  <node pkg="theta_star" type="theta_star_server_example" name="theta_star_server" args="$(arg mav_name)" output="screen"/>
+  <node pkg="theta_star" type="theta_star_server_example" name="theta_star_server" args="droneUSE" output="screen"/>
 </launch>

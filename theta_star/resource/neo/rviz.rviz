@@ -85,7 +85,7 @@ Visualization Manager:
           Length: 0.5
           Name: UAV
           Radius: 0.05
-          Reference Frame: euroc5/base_link
+          Reference Frame: base_link
           Value: true
         - Class: rviz/Axes
           Enabled: true
@@ -148,7 +148,7 @@ Visualization Manager:
       Length: 0.25
       Name: Odometry
       Position Tolerance: 0.1
-      Topic: /euroc5/ground_truth/odometry
+      Topic: /odometry
       Value: true
     - Class: rviz/TF
       Enabled: false
