@@ -87,7 +87,8 @@ int main(int argc, char **argv)
 	// Odometry data topic subscriber
 	char topicPath[100];
 	//sprintf(topicPath, "/%s/odometry_sensor1/odometry", mavName);
-	sprintf(topicPath, "/odometry");
+	//sprintf(topicPath, "/odometry");
+	sprintf(topicPath, "/dji_sdk/odometry");
     ros::Subscriber odom_sub = n.subscribe(topicPath, 1, odometryCallback);
     ROS_INFO("Theta Star Example: odometry topic: %s", topicPath);
 
@@ -107,7 +108,7 @@ int main(int argc, char **argv)
 	//sprintf(topicPath, "/%s/octomap_binary", mavName);
 	sprintf(topicPath, "/octomap_binary");
     //ros::Subscriber sub_map = n.subscribe(topicPath, 1, CollisionMapCallBack);
-    ros::Subscriber sub_map = n.subscribe(topicPath, 1, CollisionMapCallBack);
+    ros::Subscriber sub_map = n.subscribe(topicPath, 0, CollisionMapCallBack);
     ROS_INFO("Theta Star Example: octomap input topic: %s", topicPath);
 
 	// Goal position topic subscriber
