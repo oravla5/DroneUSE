@@ -18,11 +18,11 @@
   
   <!--****** Octomap Server ******-->
   <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" respawn="true" clear_params="true" output="screen" args="$(arg static_map_file)">  
-	<param name="frame_id" type="str" value="/map" />
+	<param name="frame_id" type="str" value="/world" />
   </node>
   
   <!--****** Octomap TF transform from /map to /world******-->
-  <node pkg="tf" type="static_transform_publisher" name="map_to_world_tf_broadcaster" args="$(arg map_x_offset) $(arg map_y_offset) $(arg map_z_offset) 0 0 0 1 /world /map 100" />
+  <!--node pkg="tf" type="static_transform_publisher" name="map_to_world_tf_broadcaster" args="$(arg map_x_offset) $(arg map_y_offset) $(arg map_z_offset) 0 0 0 1 /world /map 100" / -->
   
   <!--****** Load map offsets as parameters to can be read by planner node  ******-->
   <param name="/map/x_offset" value="$(arg map_x_offset)"/>

@@ -243,9 +243,9 @@ int main(int argc, char **argv)
 
 	// Result Trajectory
 	trajectory_msgs::MultiDOFJointTrajectoryPtr trajectory(new trajectory_msgs::MultiDOFJointTrajectory);
-	trajectory->joint_names.push_back("base_link");  
+	trajectory->joint_names.push_back("body_frame");  
 	trajectory->header.stamp = ros::Time::now();
-	trajectory->header.frame_id = "base_link";
+	trajectory->header.frame_id = "body_frame";
 	
 	ROS_INFO("Waiting for new goal...");
 	while(ros::ok())

@@ -4,6 +4,9 @@
 
 <launch>
 
+<node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" />
+
+<include file="$(find dji_sdk)/launch/sdk_manifold.launch" />
 <include file="$(find theta_star)/launch/theta_star_planning_context_example.launch" />
 <include file="$(find theta_star)/launch/theta_star_server_example.launch" />
 

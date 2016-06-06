@@ -9,7 +9,7 @@
 #include <tf/transform_datatypes.h>
 
 // Uncomment to get the explored and non-LineOfSight visual markers
-//~ #define DEBUG 
+#define DEBUG 
 
 #define SIGHT_AHEAD_MIN_HORIZ_MOVEMENT 0.20	//[m] minimun horizontal position increment to set a sight ahead yaw
 
