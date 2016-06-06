@@ -44,6 +44,7 @@ int main(int argc, char **argv)
     
 	while(ros::ok())
 	{
+		ROS_INFO("Loop cycle... landing flag = %d",landing);
 		if (landing)
 		{
 			ROS_INFO("Publishing...");
