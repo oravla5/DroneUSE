@@ -164,6 +164,15 @@ add_executable(apriltag_mobile_node
     src/apriltag_mobile_node.cpp
     src/droneuse_m100.cpp 
     src/droneuse_gimbal.cpp)
+
+add_executable(moving_april_landing_mission_node
+    src/moving_april_landing_mission_node.cpp
+    src/droneuse_m100.cpp 
+    src/droneuse_gimbal.cpp)
+
+add_executable(tag_position_generator_node
+    src/tag_position_generator_node.cpp)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -190,6 +199,14 @@ target_link_libraries(apriltag_landing_mission_node
 )
 
 target_link_libraries(apriltag_mobile_node
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(tag_position_generator_node
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(moving_april_landing_mission_node
    ${catkin_LIBRARIES}
 )
 #############
