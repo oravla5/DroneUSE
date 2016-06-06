@@ -171,7 +171,8 @@ add_executable(moving_april_landing_mission_node
     src/droneuse_gimbal.cpp)
 
 add_executable(tag_position_generator_node
-    src/tag_position_generator_node.cpp)
+    src/tag_position_generator_node.cpp
+    src/droneuse_m100.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
