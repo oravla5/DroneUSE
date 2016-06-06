@@ -13,8 +13,9 @@ geometry_msgs::PointStamped tag_position;
 
 void local_position_callback(dji_sdk::LocalPosition msg)
 {
-    if(!landing && abs(msg.y) > 3.0)
+    if(!landing && abs(msg.z) > 3.0)
     {
+	ROS_INFO("Getting Posiiton");
         tag_position.header.frame_id = "/world";
         tag_position.header.stamp = ros::Time::now();
         tag_position.point.x = msg.x;
@@ -33,24 +34,29 @@ int main(int argc, char **argv)
     bool landing = false;
     ros::Rate rate(node_rate);
     
-    ros::Publisher tag_positionPub = nh.advertise<geometry_msgs::PointStamped>("droneuse/langing_tag_position",1);
+    ros::Publisher tag_positionPub = nh.advertise<geometry_msgs::PointStamped>("droneuse/landing_tag_position",1);
     ros::Subscriber local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position",10,local_position_callback);
     double dt = 1.0/node_rate;
     
-    double vel_x = 1.0;
+    double vel_x = 0.5;
     double vel_y = 0.0;
     double vel_z = 0.0;
     
-    while(landing)
-    {
-        ros::spinOnce();
-        tag_position.header.frame_id = "/world";
-        tag_position.header.stamp = ros::Time::now();
-        tag_position.point.x = tag_position.point.x + dt*vel_x;
-        tag_position.point.y = tag_position.point.y + dt*vel_y;
-        tag_position.point.z = tag_position.point.z + dt*vel_z;
-        rate.sleep();
-    }
+	while(ros::ok())
+	{
+		if (landing)
+		{
+			ROS_INFO("Publishing...");
+			tag_position.header.frame_id = "/world";
+			tag_position.header.stamp = ros::Time::now();
+			tag_position.point.x = tag_position.point.x + dt*vel_x;
+			tag_position.point.y = tag_position.point.y + dt*vel_y;
+			tag_position.point.z = tag_position.point.z + dt*vel_z;
+			tag_positionPub.publish(tag_position);
+		}
+		rate.sleep();
+		ros::spinOnce();
+	}
 
     return 0;
 }
