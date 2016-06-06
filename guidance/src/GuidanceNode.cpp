@@ -323,7 +323,7 @@ int main(int argc, char** argv)
     velocity_pub  	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/velocity",1);
     obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
     ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
-    position_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/position", 1);
+    position_pub	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/position", 1);
     caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/camera_info",1);
 
     /* initialize guidance */
@@ -388,6 +388,7 @@ int main(int argc, char** argv)
     select_ultrasonic();
     select_obstacle_distance();
     select_velocity();
+    select_motion();
 
     /* start data transfer */
     get_image_size(&WIDTH, &HEIGHT);
@@ -438,6 +439,7 @@ int main(int argc, char** argv)
     		select_ultrasonic();
     		select_obstacle_distance();
     		select_velocity();
+    		select_motion();
     		err_code = start_transfer();
     			RETURN_IF_ERR(err_code);
 */	}
