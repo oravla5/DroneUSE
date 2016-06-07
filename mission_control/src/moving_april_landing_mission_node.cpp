@@ -56,10 +56,12 @@ void landing_tag_subscriber_callback(geometry_msgs::PointStamped landing_tag_pos
                 target_position.header.stamp = landing_tag_position_msg.header.stamp;
                 target_position.point.x = (float)target_position_vector.x();
                 target_position.point.y = (float)target_position_vector.y();
-                target_position.point.z = (float) landing_tag_position_msg.point.z- 2.0; 
-                m100->set_target_position(target_position);
+                target_position.point.z = (float) landing_tag_position_msg.point.z; 
+                //m100->set_target_position(target_position);
+                m100->set_target_position(landing_tag_position_msg);
 
-                if(m100->distance_to_position(target_position) < 2.5)
+                //if(m100->distance_to_position(target_position) < 2.5)
+                if(m100->distance_to_position(landing_tag_position_msg) < 2.5)
                 {
                     chase = false;
                     approach = true;
@@ -73,8 +75,10 @@ void landing_tag_subscriber_callback(geometry_msgs::PointStamped landing_tag_pos
                 target_position.point.y = (float)target_position_vector.y();
                 target_position.point.z = (float) landing_tag_position_msg.point.z; 
                 m100->set_target_position(target_position);
+                m100->set_target_position(landing_tag_position_msg);
 
-                if(m100->distance_to_position(target_position) < 0.2)
+                //if(m100->distance_to_position(target_position) < 0.2)
+                if(m100->distance_to_position(landing_tag_position_msg) < 0.2)
                 {
                     approach = false;
                     land_flag = true;
@@ -106,7 +110,7 @@ int main(int argc, char **argv)
 	geometry_msgs::PointStamped waypoint1_waypoint;
 	waypoint1_waypoint.point.x = 0.0;
 	waypoint1_waypoint.point.y = 0.0;
-	waypoint1_waypoint.point.z = 8.0;
+	waypoint1_waypoint.point.z = 5.0;
 	waypoint1_waypoint.header.frame_id = "/world";
     
     // Position where the apriltag is setted 
