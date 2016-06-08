@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   sensor_msgs
-  euroc_motion_planning_msgs
   dynamic_reconfigure
 )
 
@@ -36,6 +35,6 @@ add_executable(local_planner_3d src/local_planner_3d.cpp include/local_planner_3
 target_link_libraries(local_planner_3d ${catkin_LIBRARIES} ${theta_star_LIBRARIES})
 add_dependencies(local_planner_3d ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
-add_executable(base_stabilized_pub src/base_stabilized_pub.cpp)
-target_link_libraries(base_stabilized_pub ${catkin_LIBRARIES})
-add_dependencies(base_stabilized_pub ${catkin_EXPORTED_TARGETS})
+add_executable(dummy_global_planner src/dummy_global_planner.cpp)
+target_link_libraries(dummy_global_planner ${catkin_LIBRARIES})
+add_dependencies(dummy_global_planner ${catkin_EXPORTED_TARGETS})

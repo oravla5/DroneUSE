@@ -10,7 +10,7 @@
 
 	<group ns="$(arg namespace)">
 		<!-- Odometry topic-->
-		<arg name="odometry_topic" 		default="odometry_sensor1/odometry"/>
+		<arg name="odometry_topic" default="odometry_sensor1/odometry"/>
 		
 		<!-- Yaw angular velocity -->
 		<arg name="w_yaw" default="0.4"/>

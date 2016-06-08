@@ -1,0 +1,20 @@
+<!-- 
+	Launch Theta Star Server
+-->
+
+<launch>
+
+<node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" />
+<include file="$(find dji_sdk)/launch/sdk_manifold.launch" />
+
+<!-- include file="$(find local_planner_3d)/launch/local_planner.launch" / -->
+
+<arg name="static_map_file" default="$(find theta_star)/resource/pipes.bt" />
+
+<remap from="octomap_point_cloud_centers" to="/points" />
+<node name="octomap_server" pkg="octomap_server" type="octomap_server_node" respawn="true" clear_params="true" output="screen" args="$(arg static_map_file)">
+	<param name="frame_id" type="str" value="/world" />
+</node>
+
+<node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" />
+</launch>

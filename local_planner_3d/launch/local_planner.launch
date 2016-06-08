@@ -5,35 +5,40 @@
 <launch>  
   
   <!-- Odometry topic name-->
-  <arg name="odometry_topic" 					default="odometry_sensor1/odometry"/>	  
+  <arg name="odometry_topic" 					default="/dji_sdk/odometry"/>	  
   
   <!-- Point Cloud topic name-->
-  <arg name="point_cloud_topic" 				default="/vi_sensor/camera_depth/depth/points"/>	  
+  <arg name="point_cloud_topic" 				default="/points" />	  
   
   <!-- MAV local and global planner frames -->
-  <arg name="local_planner_frame" 				default="/base_link_stabilized"/>
-  <arg name="global_planner_frame" 				default="/world"/>
-  <arg name="visual_pointcloud_frame" 			default="/vi_sensor/camera_depth_optical_center_link"/>
+  <arg name="local_planner_frame" 				default="/ground_frame" />
+  <arg name="global_planner_frame" 				default="/world" />
+  <arg name="visual_pointcloud_frame" 				default="/world" />
   
   <!-- Local planner theta* parameters-->
-  <arg name="theta_timeout"						default="0.5"/>			# timeout to return 'no solution'
+  <arg name="theta_timeout"					default="1.0"/>			# timeout to return 'no solution'
+
   <arg name="local_ws_x_max" 					default="4.0"/>			# local planner workspace in local frame [meters]
   <arg name="local_ws_y_max" 					default="4.0"/>
   <arg name="local_ws_z_max" 					default="1.0"/>
   <arg name="local_ws_x_min" 					default="-1.0"/>
   <arg name="local_ws_y_min" 					default="-4.0"/>
   <arg name="local_ws_z_min" 					default="-1.0"/>
+
   <arg name="global_ws_x_max" 					default="4.0"/>			# global planner workspace in global frame [meters]
   <arg name="global_ws_y_max" 					default="4.0"/>
   <arg name="global_ws_z_max" 					default="4.0"/>
   <arg name="global_ws_x_min" 					default="-4.0"/>
   <arg name="global_ws_y_min" 					default="-4.0"/>
   <arg name="global_ws_z_min" 					default="-0.0"/>
+
   <arg name="map_resolution" 					default="0.10"/>		# Discrete matrix resolution [meters]
-  <arg name="map_h_real_size_inflaction" 		default="0.1"/>			# Obstacles inflaction for real UAV wingspan [meters]
-  <arg name="map_v_real_size_inflaction" 		default="0.1"/>		
-  <arg name="map_h_safe_distance_inflaction" 	default="0.1"/>			# Obstacles inflaction for safe distance [meters]
-  <arg name="map_v_safe_distance_inflaction" 	default="0.1"/>		
+  <arg name="map_h_real_size_inflaction" 			default="0.25"/>			# Obstacles inflaction for real UAV wingspan [meters]
+  <arg name="map_v_real_size_inflaction" 			default="0.1"/>		
+
+  <arg name="map_h_safe_distance_inflaction" 			default="0.5"/>			# Obstacles inflaction for safe distance [meters]
+  <arg name="map_v_safe_distance_inflaction" 			default="0.5"/>		
+
   <arg name="initial_point_factor" 				default="0.1"/>			# Weight of the goal, as a distance from initial position factor, for the Lazy theta* with Optimz.[Minor than 1]
   <arg name="z_weight_cost" 					default="1.0"/>			# Weight of heigth changes 
   <arg name="line_of_sight_margin"				default="0.2"/>			# Margin for line of sight checking to replan [meters]
@@ -56,8 +61,8 @@
   <!-- Convert args to params-->
   <param name="local_planner/local_planner_frame"				value="$(arg local_planner_frame)"/>
   <param name="local_planner/global_planner_frame"				value="$(arg global_planner_frame)"/>
-  <param name="local_planner/visual_pointcloud_frame"			value="$(arg visual_pointcloud_frame)"/>
-  <param name="local_planner/theta_timeout"						value="$(arg theta_timeout)"/>
+  <param name="local_planner/visual_pointcloud_frame"				value="$(arg visual_pointcloud_frame)"/>
+  <param name="local_planner/theta_timeout"					value="$(arg theta_timeout)"/>
   <param name="local_planner/local_ws_x_max" 					value="$(arg local_ws_x_max)"/>
   <param name="local_planner/local_ws_y_max" 					value="$(arg local_ws_y_max)"/>
   <param name="local_planner/local_ws_z_max" 					value="$(arg local_ws_z_max)"/>
@@ -72,30 +77,24 @@
   <param name="local_planner/global_ws_z_min" 					value="$(arg global_ws_z_min)"/>
   <param name="local_planner/cloud_points_timeout" 				value="$(arg cloud_points_timeout)"/>
   <param name="local_planner/map_resolution" 					value="$(arg map_resolution)"/>
-  <param name="local_planner/map_h_real_size_inflaction" 		value="$(arg map_h_real_size_inflaction)"/>
-  <param name="local_planner/map_v_real_size_inflaction" 		value="$(arg map_v_real_size_inflaction)"/>
-  <param name="local_planner/map_h_safe_distance_inflaction" 	value="$(arg map_h_safe_distance_inflaction)"/>
-  <param name="local_planner/map_v_safe_distance_inflaction" 	value="$(arg map_v_safe_distance_inflaction)"/>
+  <param name="local_planner/map_h_real_size_inflaction" 			value="$(arg map_h_real_size_inflaction)"/>
+  <param name="local_planner/map_v_real_size_inflaction" 			value="$(arg map_v_real_size_inflaction)"/>
+  <param name="local_planner/map_h_safe_distance_inflaction" 			value="$(arg map_h_safe_distance_inflaction)"/>
+  <param name="local_planner/map_v_safe_distance_inflaction" 			value="$(arg map_v_safe_distance_inflaction)"/>
   <param name="local_planner/initial_point_factor" 				value="$(arg initial_point_factor)"/>
   <param name="local_planner/z_weight_cost" 					value="$(arg z_weight_cost)"/>
   <param name="local_planner/line_of_sight_margin" 				value="$(arg line_of_sight_margin)"/>
-  <param name="local_planner/traj_dxy_max" 						value="$(arg traj_dxy_max)"/>
-  <param name="local_planner/traj_dz_max" 						value="$(arg traj_dz_max)"/>
-  <param name="local_planner/traj_vxy_m" 						value="$(arg traj_vxy_m)"/>
-  <param name="local_planner/traj_vz_m" 						value="$(arg traj_vz_m)"/>
-  <param name="local_planner/traj_vxy_m_1" 						value="$(arg traj_vxy_m_1)"/>
-  <param name="local_planner/traj_vz_m_1" 						value="$(arg traj_vz_m_1)"/>
-  <param name="local_planner/traj_est_wy" 						value="$(arg traj_est_wy)"/>
+  <param name="local_planner/traj_dxy_max" 					value="$(arg traj_dxy_max)"/>
+  <param name="local_planner/traj_dz_max" 					value="$(arg traj_dz_max)"/>
+  <param name="local_planner/traj_vxy_m" 					value="$(arg traj_vxy_m)"/>
+  <param name="local_planner/traj_vz_m" 					value="$(arg traj_vz_m)"/>
+  <param name="local_planner/traj_vxy_m_1" 					value="$(arg traj_vxy_m_1)"/>
+  <param name="local_planner/traj_vz_m_1" 					value="$(arg traj_vz_m_1)"/>
+  <param name="local_planner/traj_est_wy" 					value="$(arg traj_est_wy)"/>
   <param name="local_planner/traj_yaw_mode" 					value="$(arg traj_yaw_mode)"/>
   
   <!-- Local planner theta*: persistent re-planner-->
   <node pkg="local_planner_3d" type="local_planner_3d" name="local_planner" args="$(arg odometry_topic) $(arg point_cloud_topic)" output="screen" respawn="true">
-      <param name="capability_group" value="ARCOW-PLANNER" />
   </node>
-  
-  <!-- Local planner base_link stabilized TF publisher-->
-#<node pkg="local_planner_3d" type="base_stabilized_pub" name="base_stabilized_pub" args="$(arg odometry_topic) $(arg local_planner_frame)" output="screen" respawn="true">
-#      <param name="capability_group" value="ARCOW-PLANNER" />
-#  </node>  
   
 </launch>

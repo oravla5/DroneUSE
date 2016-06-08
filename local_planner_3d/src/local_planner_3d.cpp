@@ -26,24 +26,23 @@
 #include <tf/transform_listener.h>
 #include "tf_conversions/tf_eigen.h"
 #include <sensor_msgs/PointCloud2.h>
-#include <euroc_motion_planning_msgs/Status.h>
 
 //! Un-comment to get debug info
-//~ #define PRINT_REPLANNING_TIME
-//~ #define PRINT_GLOBAL_TRAJECTORY
-//~ #define PRINT_GLOBAL_SUB_TRAJECTORY
-//~ #define PRINT_LOCAL_SUB_TRAJECTORY
-//~ #define PRINT_LOCAL_SUB_TRAJECTORY_PATCH
-//~ #define PRINT_REPLANNED_LOCAL_SUB_TRAJECTORY
-//~ #define PRINT_REPLANNED_LOCAL_SUB_TRAJECTORY_POST_PROCESSED
-//~ #define PRINT_REPLANNED_GLOBAL_SUB_TRAJECTORY
+#define PRINT_REPLANNING_TIME
+#define PRINT_GLOBAL_TRAJECTORY
+#define PRINT_GLOBAL_SUB_TRAJECTORY
+#define PRINT_LOCAL_SUB_TRAJECTORY
+#define PRINT_LOCAL_SUB_TRAJECTORY_PATCH
+#define PRINT_REPLANNED_LOCAL_SUB_TRAJECTORY
+#define PRINT_REPLANNED_LOCAL_SUB_TRAJECTORY_POST_PROCESSED
+#define PRINT_REPLANNED_GLOBAL_SUB_TRAJECTORY
 
 /// Changed to use rqt_reconfigure
 //~ //! Un-comment to publish the theta* (local) occupation map matrix as RViz markers
-//~ #define PUBLISH_OCCUPATION_MAP
+#define PUBLISH_OCCUPATION_MAP
 //~ 
 //~ //! Un-comment to publish the theta* auxiliar (global) occupation map matrix as RViz markers
-//~ #define PUBLISH_AUX_OCCUPATION_MAP
+#define PUBLISH_AUX_OCCUPATION_MAP
 //~ 
 //~ //! Un-comment to publish the point cloud transformed to the world frame and filtered??????
 //~ #define PUBLISH_POINTCLOUD_AT_WORLD
@@ -52,10 +51,10 @@
 #define POINTCLOUD_RATE 5.0
 
 /// Local planner states for global planner feedback
-#define STARTING	euroc_motion_planning_msgs::Status::STARTING
-#define WAITING 	euroc_motion_planning_msgs::Status::WAITING
-#define RUNNING 	euroc_motion_planning_msgs::Status::RUNNING
-#define ERROR	 	euroc_motion_planning_msgs::Status::ERROR
+//#define STARTING	euroc_motion_planning_msgs::Status::STARTING
+//#define WAITING 	euroc_motion_planning_msgs::Status::WAITING
+//#define RUNNING 	euroc_motion_planning_msgs::Status::RUNNING
+//#define ERROR	 	euroc_motion_planning_msgs::Status::ERROR
 
 /// Maximum replanning errors to set status as ERROR. Note: 2 seg * 5 Hz --> 10 replanning fails
 #define MAX_REPLANNING_ERRORS 2*POINTCLOUD_RATE
@@ -155,8 +154,8 @@ int main(int argc, char **argv)
     sprintf(topicPath, "trajectory_tracking/input_trajectory");
 	ros::Publisher trajectory_pub = n.advertise<Trajectory>(topicPath, 1);
 	// Output topic: local_planner status feedback to global planner
-    sprintf(topicPath, "local_planner/status");
-	ros::Publisher status_pub = n.advertise<euroc_motion_planning_msgs::Status>(topicPath, 10);
+	// sprintf(topicPath, "local_planner/status");
+	// ros::Publisher status_pub = n.advertise<euroc_motion_planning_msgs::Status>(topicPath, 10);
 	// Debug output topic: Path solution visualization topic
     sprintf(topicPath, "local_planner/vis_marker_path");
     ros::Publisher vis_pub = n.advertise<visualization_msgs::Marker>( topicPath, 1);
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
 	ros::Publisher cloud_in_world_pub = n.advertise<PointCloud>(topicPath, 1);
 
 	//! Feedback topic initialization
-	ROS_INFO("Waiting for a subscriber for status topic..");
+	/*ROS_INFO("Waiting for a subscriber for status topic..");
 	while(ros::ok())
 	{
 		if(status_pub.getNumSubscribers())
@@ -181,11 +180,11 @@ int main(int argc, char **argv)
 	status.header.frame_id = '0';
 	status.state = STARTING;
 	status_pub.publish(status);
-	int replanning_errors_number = 0;			// Errors replanning in each global trajectory, if > MAX_REPLANNING_ERRORS --> Set status to ERROR
+	*/int replanning_errors_number = 0;			// Errors replanning in each global trajectory, if > MAX_REPLANNING_ERRORS --> Set status to ERROR
 	bool local_planner_fail = false;
 
 	//! Read parameters
-	string local_planner_frame = "/robot_name/base_link";
+	string local_planner_frame = "/ground_frame";
 	string global_planner_frame = "/world";
 	string visual_pointcloud_frame = "/robot_name/vi_sensor/camera_depth_optical_center_link";
 	double theta_timeout = 0.5;
@@ -283,22 +282,22 @@ int main(int argc, char **argv)
 	bool executing_global_traj = false;
     // Global Sub-trajectory (only with unexecuted waypoints)
 	TrajectoryPtr global_sub_trajectory(new Trajectory);
-	global_sub_trajectory->joint_names.push_back("base_link");  
+	global_sub_trajectory->joint_names.push_back("ground_frame");  
 	global_sub_trajectory->header.stamp = ros::Time::now();
 	global_sub_trajectory->header.frame_id = global_planner_frame;
 	// Local Sub-trajectory (= Global Sub-trajectory transformed to the sensors frame)
 	TrajectoryPtr local_sub_trajectory(new Trajectory);
-	local_sub_trajectory->joint_names.push_back("base_link");  
+	local_sub_trajectory->joint_names.push_back("ground_frame");  
 	local_sub_trajectory->header.stamp = ros::Time::now();
 	local_sub_trajectory->header.frame_id = local_planner_frame; 
 	// Local Sub-trajectory PATCH to avoid obstacles
 	TrajectoryPtr local_sub_trajectory_patch(new Trajectory);
-	local_sub_trajectory_patch->joint_names.push_back("base_link");  
+	local_sub_trajectory_patch->joint_names.push_back("ground_frame");  
 	local_sub_trajectory_patch->header.stamp = ros::Time::now();
 	local_sub_trajectory_patch->header.frame_id = global_planner_frame;
     // Replanned Global Sub-trajectory 
 	TrajectoryPtr replanned_global_sub_trajectory(new Trajectory);
-	replanned_global_sub_trajectory->joint_names.push_back("base_link");  
+	replanned_global_sub_trajectory->joint_names.push_back("ground_frame");  
 	replanned_global_sub_trajectory->header.stamp = ros::Time::now();
 	replanned_global_sub_trajectory->header.frame_id = global_planner_frame;
     
@@ -414,9 +413,9 @@ int main(int argc, char **argv)
 	ROS_INFO("Local Planner: Ready!");
 	
 	//! Feedback topic to WAITING state
-	status.header.stamp = ros::Time::now();
-	status.state = WAITING;
-	status_pub.publish(status);
+	//status.header.stamp = ros::Time::now();
+	//status.state = WAITING;
+	//status_pub.publish(status);
 	
 	/*************************** WHILE CYCLE *************************/
 	ros::Rate rate(POINTCLOUD_RATE);
@@ -457,9 +456,9 @@ int main(int argc, char **argv)
 			#endif
 			
 			//! Feedback topic to RUNNING state
-			status.header.stamp = ros::Time::now();
-			status.state = RUNNING;
-			status_pub.publish(status);
+			//status.header.stamp = ros::Time::now();
+			//status.state = RUNNING;
+			//status_pub.publish(status);
 		}
 		
 		
@@ -883,16 +882,20 @@ int main(int argc, char **argv)
 			if(!local_planner_fail)
 			{
 				//! Feedback topic to WAITING state
-				status.header.stamp = ros::Time::now();
-				status.state = WAITING;
-				status_pub.publish(status);
+				//status.header.stamp = ros::Time::now();
+				//status.state = WAITING;
+				//status_pub.publish(status);
+				printf(PRINTF_GREEN "WAITING\n" PRINTF_REGULAR);
+			
 			}
 			else
 			{
 				//! Feedback topic to ERROR state
-				status.header.stamp = ros::Time::now();
-				status.state = ERROR;
-				status_pub.publish(status);
+				//status.header.stamp = ros::Time::now();
+				//status.state = ERROR;
+				//status_pub.publish(status);
+				printf(PRINTF_GREEN "ERROR\n" PRINTF_REGULAR);
+			
 			}
 			
 			// Check and Changes Dynamic Reconfigure Parameters
