@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     droneuse_m100*      m100 = new droneuse_m100(nh);
     geometry_msgs::PointStamped tag_position;
     
-    double vel_x = 0.3;
+    double vel_x = 1;
     double vel_y = 0.0;
     double vel_z = 0.0;
     

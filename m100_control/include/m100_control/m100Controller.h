@@ -40,21 +40,21 @@ class m100Controller
         dji_sdk::AttitudeControl m100_control_command;
 
         // PID controller parameters
-        double x_maxVelocity    = 0.5;
+        double x_maxVelocity    = 3;
         double y_maxVelocity    = 0.5;
-        double z_maxVelocity    = 0.5;
+        double z_maxVelocity    = 1.0;
         
-        double x_velocity_Kp    = 0.5;
-        double x_velocity_Kd    = 0.05;
-        double x_velocity_Ki    = 0.0;
+        double x_velocity_Kp    = 1.0;
+        double x_velocity_Kd    = 0.1;
+        double x_velocity_Ki    = 0.07;
         
         double y_velocity_Kp    = 0.5;
         double y_velocity_Kd    = 0.05;
         double y_velocity_Ki    = 0.0;
         
-        double z_velocity_Kp    = 0.5;
-        double z_velocity_Kd    = 0.05;
-        double z_velocity_Ki    = 0.0;
+        double z_velocity_Kp    = 1.5;
+        double z_velocity_Kd    = 0.1;
+        double z_velocity_Ki    = 0.1;
         
         //double max_velocity     = 1.0;
 
