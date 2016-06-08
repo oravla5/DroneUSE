@@ -174,6 +174,9 @@ add_executable(tag_position_generator_node
     src/tag_position_generator_node.cpp
     src/droneuse_m100.cpp)
 
+add_executable(time_response_identification_mission_node
+    src/time_response_identification_mission_node.cpp
+    src/droneuse_m100.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -209,6 +212,10 @@ target_link_libraries(tag_position_generator_node
 
 target_link_libraries(moving_april_landing_mission_node
    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(time_response_identification_mission_node
+    ${catkin_LIBRARIES}
 )
 #############
 ## Install ##
