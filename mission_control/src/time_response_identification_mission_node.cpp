@@ -47,8 +47,6 @@ int main(int argc, char **argv)
     ros::Publisher referencePub = nh.advertise<dji_sdk::Velocity>("droneuse/reference_velocity",1);
     // Position where the apriltag is setted 
    
-     m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
-
     sleep(3);
     while(m100->get_sdk_control() != true)
     {
@@ -64,26 +62,10 @@ int main(int argc, char **argv)
 
     while(m100->takeoff() != true)
     {
-		ros::spinOnce();
+	ros::spinOnce();
         rate.sleep();
     }
 
-
-	waypoint1_waypoint.header.stamp = ros::Time::now();
-	m100->set_target_position(waypoint1_waypoint);
-	
-    bool ascending = true;
-	while(ascending)
-	{
-		ros::spinOnce();
-		waypoint1_waypoint.header.stamp = ros::Time::now();
-		if(m100->distance_to_position(waypoint1_waypoint) < 0.5)
-        {
-			ascending = false;
-        }
-        rate.sleep();
-	}
-    
 
     unsigned char ctrl_flag =   DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                                 DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_VELOCITY |
@@ -92,28 +74,86 @@ int main(int argc, char **argv)
                                 DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
 
     dji_sdk::Velocity reference_velocity_msg;
-    reference_velocity_msg.vx = 1.0;
+    reference_velocity_msg.vx = 0.0;
     reference_velocity_msg.vy = 0.0;
-    reference_velocity_msg.vz = 0.0;
+    reference_velocity_msg.vz = 1.0;
 
-    ros::Duration hold_time(5.0);
+    ros::Duration hold_time(20.0);
     ros::Time time_init = ros::Time::now(); 
     ros::Time currentTime = ros::Time::now();
     ros::Duration duration = currentTime - time_init;
-    m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0);
     while (duration < hold_time)
     {
         ros::spinOnce();
-        ros::Time currentTime = ros::Time::now();
-        duration = currentTime - time_init;
-        reference_velocity_msg.header.stamp = currentTime;
-        referencePub.publish(reference_velocity_msg);
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
         rate.sleep();
         
     }
     
-    m100->attitude_control(ctrl_flag, 0.0, 0.0, 0.0, 0.0);
-    sleep(2);
+    reference_velocity_msg.vx = 0.0;
+    reference_velocity_msg.vy = 0.0;
+    reference_velocity_msg.vz = 0.0;
+
+    time_init = ros::Time::now(); 
+    currentTime = ros::Time::now();
+    duration = currentTime - time_init;
+    while (duration < hold_time)
+    {
+        ros::spinOnce();
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
+        rate.sleep();
+    }
+
+    reference_velocity_msg.vx = 1.0;
+    reference_velocity_msg.vy = 0.0;
+    reference_velocity_msg.vz = 0.0;
+
+    time_init = ros::Time::now(); 
+    currentTime = ros::Time::now();
+    duration = currentTime - time_init;
+    while (duration < hold_time)
+    {
+        ros::spinOnce();
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
+        rate.sleep();
+    }
+    reference_velocity_msg.vx = 0.0;
+    reference_velocity_msg.vy = 0.0;
+    reference_velocity_msg.vz = 0.0;
+
+    time_init = ros::Time::now(); 
+    currentTime = ros::Time::now();
+    duration = currentTime - time_init;
+    while (duration < hold_time)
+    {
+        ros::spinOnce();
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
+        rate.sleep();
+    }
 
     reference_velocity_msg.vx = 0.0;
     reference_velocity_msg.vy = 1.0;
@@ -122,19 +162,38 @@ int main(int argc, char **argv)
     time_init = ros::Time::now(); 
     currentTime = ros::Time::now();
     duration = currentTime - time_init;
-    m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0);
     while (duration < hold_time)
     {
         ros::spinOnce();
-        ros::Time currentTime = ros::Time::now();
-        duration = currentTime - time_init;
-        reference_velocity_msg.header.stamp = currentTime;
-        referencePub.publish(reference_velocity_msg);
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
         rate.sleep();
     }
 
-    m100->attitude_control(ctrl_flag, 0.0, 0.0, 0.0, 0.0);
-    sleep(2);
+    reference_velocity_msg.vx = 0.0;
+    reference_velocity_msg.vy = 0.0;
+    reference_velocity_msg.vz = 0.0;
+
+    time_init = ros::Time::now(); 
+    currentTime = ros::Time::now();
+    duration = currentTime - time_init;
+    while (duration < hold_time)
+    {
+        ros::spinOnce();
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
+        rate.sleep();
+    }
 
     reference_velocity_msg.vx = 0.0;
     reference_velocity_msg.vy = 0.0;
@@ -143,19 +202,39 @@ int main(int argc, char **argv)
     time_init = ros::Time::now(); 
     currentTime = ros::Time::now();
     duration = currentTime - time_init;
-    m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0);
     while (duration < hold_time)
     {
         ros::spinOnce();
-        ros::Time currentTime = ros::Time::now();
-        m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0);
-        duration = currentTime - time_init;
-        reference_velocity_msg.header.stamp = currentTime;
-        referencePub.publish(reference_velocity_msg);
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
         rate.sleep();
     }
-    m100->attitude_control(ctrl_flag, 0.0, 0.0, 0.0, 0.0);
-    sleep(2);
+
+    reference_velocity_msg.vx = 0.0;
+    reference_velocity_msg.vy = 0.0;
+    reference_velocity_msg.vz = 0.0;
+
+    time_init = ros::Time::now(); 
+    currentTime = ros::Time::now();
+    duration = currentTime - time_init;
+    while (duration < hold_time)
+    {
+        ros::spinOnce();
+	if(m100->attitude_control(ctrl_flag, reference_velocity_msg.vx, reference_velocity_msg.vy, reference_velocity_msg.vz, 0.0))
+        {
+		ros::Time currentTime = ros::Time::now();
+		duration = currentTime - time_init;
+		reference_velocity_msg.header.stamp = currentTime;
+		referencePub.publish(reference_velocity_msg);
+	}
+        rate.sleep();
+    }
+
     m100->land();
     m100->disarm();
     return 0;
