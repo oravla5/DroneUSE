@@ -21,6 +21,12 @@ int main(int argc, char **argv)
 		
 	std::vector<Vector3> positions;
 
+	Quaternion rotation;
+	rotation.x = 0;
+	rotation.y = 0;
+	rotation.z = 0;
+	rotation.w = 1;	
+
 	Vector3 position;
 	position.x = 3.0;
 	position.y = 3.0;
@@ -49,9 +55,11 @@ int main(int argc, char **argv)
 
 		Transform transform;
 		transform.translation = positions[i];
+		transform.rotation = rotation;
 	
 		Waypoint wp;
 		wp.transforms.push_back(transform);	
+		wp.time_from_start = ros::Duration(10*(i+1));
 		
 		global_trajectory->points.push_back(wp); 
 	}
