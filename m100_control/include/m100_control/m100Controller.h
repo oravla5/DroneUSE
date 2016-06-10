@@ -56,17 +56,21 @@ class m100Controller
         //double z_velocity_Kd    = 0.1;
         //double z_velocity_Ki    = 0.1;
         
-        double x_velocity_Kp    = 1.92;
-        double x_velocity_Kd    = 1.8;
-        double x_velocity_Ki    = 0.36;
+	double Kxy_p 		= 0.35;
+	double Kxy_d 		= 0.6;
+	double Kxy_i 		= 0.6;
+        double x_velocity_Kp    = 1.92*Kxy_p;
+        double x_velocity_Kd    = 1.80*Kxy_d;
+        double x_velocity_Ki    = 0.36*Kxy_i;
         
-        double y_velocity_Kp    = 1.92;
-        double y_velocity_Kd    = 1.8;
-        double y_velocity_Ki    = 0.36;
+        double y_velocity_Kp    = 1.92*Kxy_p;
+        double y_velocity_Kd    = 1.80*Kxy_d;
+        double y_velocity_Ki    = 0.36*Kxy_i;
         
-        double z_velocity_Kp    = 4.0;
-        double z_velocity_Kd    = 2.0;
-        double z_velocity_Ki    = 0.0;
+	double Kz 		= 0.55;
+        double z_velocity_Kp    = 4.0*Kz;
+        double z_velocity_Kd    = 2.0*Kz;
+        double z_velocity_Ki    = 0.0*Kz;
         //double max_velocity     = 1.0;
 
         double yaw_maxRate      = 30.0;

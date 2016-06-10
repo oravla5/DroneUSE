@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     droneuse_m100*      m100 = new droneuse_m100(nh);
     geometry_msgs::PointStamped tag_position;
     
-    double vel_x = 1;
+    double vel_x = 1.0;
     double vel_y = 0.0;
     double vel_z = 0.0;
     
@@ -43,17 +43,17 @@ int main(int argc, char **argv)
 			tag_positionPub.publish(tag_position);
 		}
 
-        if (!landing && m100->get_local_position().z>3.0)
-        {
-            landing = true;
-            tag_position.header.frame_id = "/world";
+        	if (!landing && m100->get_local_position().z>3.0)
+        	{
+            		landing = true;
+            		tag_position.header.frame_id = "/world";
 			tag_position.header.stamp = ros::Time::now();
-			tag_position.point.x = m100->get_local_position().x;
+			tag_position.point.x = m100->get_local_position().x + 1.0;
 			tag_position.point.y = m100->get_local_position().y;
-			tag_position.point.z = 0.0;
+			tag_position.point.z = 0.5;
 			tag_positionPub.publish(tag_position);
 
-        }
+        	}
 		rate.sleep();
 		ros::spinOnce();
 	}

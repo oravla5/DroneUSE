@@ -54,14 +54,14 @@ void landing_tag_subscriber_callback(geometry_msgs::PointStamped landing_tag_pos
             {
                 target_position.header.frame_id = landing_tag_position_msg.header.frame_id;
                 target_position.header.stamp = landing_tag_position_msg.header.stamp;
-                target_position.point.x = (float)target_position_vector.x();
-                target_position.point.y = (float)target_position_vector.y();
-                target_position.point.z = (float) landing_tag_position_msg.point.z; 
-                //m100->set_target_position(target_position);
-                m100->set_target_position(landing_tag_position_msg);
+                target_position.point.x = (float) landing_tag_position_msg.point.x;
+                target_position.point.y = (float) landing_tag_position_msg.point.y;
+                target_position.point.z = (float) landing_tag_position_msg.point.z - 2.5; 
+                m100->set_target_position(target_position);
+                //m100->set_target_position(landing_tag_position_msg);
 
-                //if(m100->distance_to_position(target_position) < 2.5)
-                if(m100->distance_to_position(landing_tag_position_msg) < 2.5)
+                if(m100->distance_to_position(target_position) < 0.5)
+                //if(m100->distance_to_position(landing_tag_position_msg) < 2.5)
                 {
                     chase = false;
                     approach = true;
@@ -71,14 +71,14 @@ void landing_tag_subscriber_callback(geometry_msgs::PointStamped landing_tag_pos
             {
                 target_position.header.frame_id = landing_tag_position_msg.header.frame_id;
                 target_position.header.stamp = landing_tag_position_msg.header.stamp;
-                target_position.point.x = (float)target_position_vector.x();
-                target_position.point.y = (float)target_position_vector.y();
-                target_position.point.z = (float) landing_tag_position_msg.point.z; 
+                target_position.point.x = (float) landing_tag_position_msg.point.x;
+                target_position.point.y = (float) landing_tag_position_msg.point.y;
+                target_position.point.z = (float) landing_tag_position_msg.point.z - 0.5; 
                 m100->set_target_position(target_position);
-                m100->set_target_position(landing_tag_position_msg);
+                //m100->set_target_position(landing_tag_position_msg);
 
-                //if(m100->distance_to_position(target_position) < 0.2)
-                if(m100->distance_to_position(landing_tag_position_msg) < 0.2)
+                if(m100->distance_to_position(target_position) < 0.2)
+                //if(m100->distance_to_position(landing_tag_position_msg) < 0.2)
                 {
                     approach = false;
                     land_flag = true;
