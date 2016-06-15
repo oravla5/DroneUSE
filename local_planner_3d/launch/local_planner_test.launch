@@ -11,7 +11,6 @@
 
 <arg name="static_map_file" default="$(find theta_star)/resource/pipes.bt" />
 
-<remap from="octomap_point_cloud_centers" to="/points" />
 <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" respawn="true" clear_params="true" output="screen" args="$(arg static_map_file)">
 	<param name="frame_id" type="str" value="/world" />
 </node>

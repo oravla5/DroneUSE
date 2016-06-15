@@ -13,23 +13,23 @@
   <!-- MAV local and global planner frames -->
   <arg name="local_planner_frame" 				default="/ground_frame" />
   <arg name="global_planner_frame" 				default="/world" />
-  <arg name="visual_pointcloud_frame" 				default="/world" />
+  <arg name="visual_pointcloud_frame" 				default="/ground_frame" />
   
   <!-- Local planner theta* parameters-->
   <arg name="theta_timeout"					default="1.0"/>			# timeout to return 'no solution'
 
   <arg name="local_ws_x_max" 					default="4.0"/>			# local planner workspace in local frame [meters]
   <arg name="local_ws_y_max" 					default="4.0"/>
-  <arg name="local_ws_z_max" 					default="1.0"/>
+  <arg name="local_ws_z_max" 					default="3.0"/>
   <arg name="local_ws_x_min" 					default="-1.0"/>
   <arg name="local_ws_y_min" 					default="-4.0"/>
   <arg name="local_ws_z_min" 					default="-1.0"/>
 
-  <arg name="global_ws_x_max" 					default="4.0"/>			# global planner workspace in global frame [meters]
-  <arg name="global_ws_y_max" 					default="4.0"/>
-  <arg name="global_ws_z_max" 					default="4.0"/>
-  <arg name="global_ws_x_min" 					default="-4.0"/>
-  <arg name="global_ws_y_min" 					default="-4.0"/>
+  <arg name="global_ws_x_max" 					default="25.0"/>			# global planner workspace in global frame [meters]
+  <arg name="global_ws_y_max" 					default="25.0"/>
+  <arg name="global_ws_z_max" 					default="6.0"/>
+  <arg name="global_ws_x_min" 					default="-25.0"/>
+  <arg name="global_ws_y_min" 					default="-25.0"/>
   <arg name="global_ws_z_min" 					default="-0.0"/>
 
   <arg name="map_resolution" 					default="0.10"/>		# Discrete matrix resolution [meters]

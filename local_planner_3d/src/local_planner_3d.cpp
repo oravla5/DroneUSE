@@ -100,7 +100,8 @@ void globalTrajectoryCallBack(const Trajectory::ConstPtr& global_trajectory_msg)
 {
 	global_trajectory = *global_trajectory_msg;
 	global_traj_received = true;
-	ROS_INFO("Local Planner: New global trajectory received!!");
+	//ROS_INFO("Local Planner: New global trajectory received!!");
+	cout << "Local Planner: New global trajectory received!!" << endl;
 }			
 
 
@@ -186,7 +187,7 @@ int main(int argc, char **argv)
 	//! Read parameters
 	string local_planner_frame = "/ground_frame";
 	string global_planner_frame = "/world";
-	string visual_pointcloud_frame = "/robot_name/vi_sensor/camera_depth_optical_center_link";
+	string visual_pointcloud_frame = "/world";
 	double theta_timeout = 0.5;
 	double local_ws_x_max = 0.0;
 	double local_ws_y_max = 0.0;
@@ -419,18 +420,22 @@ int main(int argc, char **argv)
 	
 	/*************************** WHILE CYCLE *************************/
 	ros::Rate rate(POINTCLOUD_RATE);
+	cout << "Antes del while" << endl;
 	while(ros::ok())
 	{	
 		/************************ POINT CLOUD WAITING **********************/
+		cout << "Dentro  del while" << endl;
 		do{
 			// sleep
 			rate.sleep();
 			
 			// Reading odometry, point cloud and/or new global trajectory
 			ros::spinOnce();
+			cout << "Dentro  del do" << endl;
         }while(!pointcloud_received && ros::ok());
 		
 		pointcloud_received = false;
+		cout << "Despues del while del pointcloud" << endl;
 		
 		/******************** GLOBAL TRAJECTORY CHECKING *******************/
 		// Check if a new global trajectory has been received and execute it! (TOTAL PRIORITY)
@@ -442,6 +447,7 @@ int main(int argc, char **argv)
 			local_planner_fail = false;
 			
 			// send the new global trajectory to the trajectory tracker
+			cout << "Se publica la trayectoria" << endl;
 			trajectory_pub.publish(global_trajectory);
 			
 			// init global sub-trajectory to start replanning
@@ -493,8 +499,9 @@ int main(int argc, char **argv)
 			// Get the transform from /world to /local at the point cloud stamp (lastest available)
 			try
 			{
+			  tf_listener.waitForTransform(local_planner_frame, global_planner_frame, cloud_time_stamp, ros::Duration(0.5));
 			  tf_listener.lookupTransform(local_planner_frame, global_planner_frame, cloud_time_stamp, global2local);
-			  //~ tf_listener.lookupTransform(local_planner_frame, global_planner_frame, ros::Time(0), global2local);
+			  //tf_listener.lookupTransform(local_planner_frame, global_planner_frame, ros::Time(0), global2local);
 			}
 			catch (tf::TransformException &ex) {
 			  ROS_ERROR("%s",ex.what());
@@ -558,6 +565,7 @@ int main(int argc, char **argv)
 				// Get last connected waypoint inside the local workspace
 				while(workspace.isInside(local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation) && local_sub_trajectory->points.size() > 1)
 				{
+					cout << "Esta dentro del workspace" << endl;
 					last_wp_inside_id++;
 					
 					// If the last waypoint of the trajectory is inside stop to not try to access to a non-existing wp
@@ -567,7 +575,7 @@ int main(int argc, char **argv)
 				if(last_wp_inside_id>0)
 					last_wp_inside_id--;
 					
-				//ROS_INFO("Last wp inside the ws: %d/%d: [%f, %f, %f]", last_wp_inside_id+1, local_sub_trajectory->points.size(), local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.x, local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.y, local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.z);
+				ROS_INFO("Last wp inside the ws: %d/%d: [%f, %f, %f]", last_wp_inside_id+1, local_sub_trajectory->points.size(), local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.x, local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.y, local_sub_trajectory->points[last_wp_inside_id].transforms[0].translation.z);
 								
 				// Origin, middle and goal waypoints
 				int origin = 0;
@@ -586,8 +594,11 @@ int main(int argc, char **argv)
 				while(target<=last_wp_inside_id)
 				{	
 					bool existLineOfSight = soft_lineOfSight_checker(theta, local_sub_trajectory->points[middle].transforms[0].translation, local_sub_trajectory->points[target].transforms[0].translation, map_resolution, lofs_margin);
-					//ROS_INFO("Checking lineOfSight between %d/%d and %d/%d: %d", middle+1, local_sub_trajectory->points.size(), target+1, local_sub_trajectory->points.size(), existLineOfSight);
+					ROS_INFO("Checking lineOfSight between %d/%d and %d/%d: %d", middle+1, local_sub_trajectory->points.size(), target+1, local_sub_trajectory->points.size(), existLineOfSight);
 					
+					if(existLineOfSight)
+						ROS_INFO("Line of Sight exists!");
+
 					// If not exist LOF --> Exist replanning and continue checking until get a LofS correctly (stop checking if it is the last wp in the ws)
 					if(!existLineOfSight)
 						existLocalReplanning = true;

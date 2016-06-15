@@ -38,3 +38,7 @@ add_dependencies(local_planner_3d ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gen
 add_executable(dummy_global_planner src/dummy_global_planner.cpp)
 target_link_libraries(dummy_global_planner ${catkin_LIBRARIES})
 add_dependencies(dummy_global_planner ${catkin_EXPORTED_TARGETS})
+
+add_executable(pointcloud_publisher src/pointcloud_publisher.cpp)
+target_link_libraries(pointcloud_publisher ${catkin_LIBRARIES})
+add_dependencies(pointcloud_publisher ${catkin_EXPORTED_TARGETS})
