@@ -13,7 +13,7 @@
   <!-- MAV local and global planner frames -->
   <arg name="local_planner_frame" 				default="/ground_frame" />
   <arg name="global_planner_frame" 				default="/world" />
-  <arg name="visual_pointcloud_frame" 				default="/ground_frame" />
+  <arg name="visual_pointcloud_frame" 				default="/guidance_front" />
   
   <!-- Local planner theta* parameters-->
   <arg name="theta_timeout"					default="1.0"/>			# timeout to return 'no solution'

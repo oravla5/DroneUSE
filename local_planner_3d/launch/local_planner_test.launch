@@ -15,5 +15,8 @@
 	<param name="frame_id" type="str" value="/world" />
 </node>
 
+<node name="guidanceNode" pkg="guidance" type="guidanceNode" respawn="true" output="screen" />
+<include file="/home/ubuntu/droneUSE_ws/launch/depth_to_pointcloud.launch" />
+
 <node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" />
 </launch>

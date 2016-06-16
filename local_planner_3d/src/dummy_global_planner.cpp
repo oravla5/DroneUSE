@@ -28,21 +28,21 @@ int main(int argc, char **argv)
 	rotation.w = 1;	
 
 	Vector3 position;
-	position.x = 1.0;
+	position.x = 0.0;
 	position.y = 0.0;
-	position.z = 3.0;
+	position.z = 2.0;
 	
 	positions.push_back(position);
 
 	position.x = 1.0;
-	position.y = 1.0;
-	position.z = 3.0;
+	position.y = 0.0;
+	position.z = 2.0;
 
 	positions.push_back(position);
 
-	position.x = 1.0;
-	position.y = 1.0;
-	position.z = 1.0;
+	position.x = 1.5;
+	position.y = 0.0;
+	position.z = 2.0;
 
 	positions.push_back(position);
 
