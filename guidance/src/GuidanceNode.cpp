@@ -23,6 +23,9 @@
 #include <sensor_msgs/LaserScan.h> //obstacle distance & ultrasonic
 #include <sensor_msgs/CameraInfo.h>
 
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+
 ros::Publisher depth_image_pub;
 ros::Publisher left_image_pub;
 ros::Publisher right_image_pub;
@@ -31,7 +34,8 @@ ros::Publisher obstacle_distance_pub;
 ros::Publisher velocity_pub;
 ros::Publisher ultrasonic_pub;
 ros::Publisher position_pub;
-ros::Publisher caminfo_pub;
+ros::Publisher cam_info_left_pub;
+ros::Publisher cam_info_right_pub;
 
 
 using namespace cv;
@@ -79,6 +83,72 @@ std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
 	return out << s;
 }
 
+std::string camera_params_left;
+std::string camera_params_right;
+
+static const char CAM_YML_NAME[]    = "camera_name";
+static const char WIDTH_YML_NAME[]  = "image_width";
+static const char HEIGHT_YML_NAME[] = "image_height";
+static const char K_YML_NAME[]      = "camera_matrix";
+static const char D_YML_NAME[]      = "distortion_coefficients";
+static const char R_YML_NAME[]      = "rectification_matrix";
+static const char P_YML_NAME[]      = "projection_matrix";
+static const char DMODEL_YML_NAME[] = "distortion_model";
+
+// struct to parse camera calibration YAML 
+struct SimpleMatrix
+{
+    int rows;
+    int cols;
+    double* data;
+
+    SimpleMatrix(int rows, int cols, double* data)
+        : rows(rows), cols(cols), data(data)
+    {}
+};
+
+void transfer_SimpleMatrix_from_YML_to_ROSmsg(const YAML::Node& node, SimpleMatrix& m)
+{
+    int rows, cols;
+    rows = node["rows"].as<int>();
+    cols = node["cols"].as<int>();
+    const YAML::Node& data = node["data"];
+    for (int i = 0; i < rows*cols; ++i)
+    {
+        m.data[i] = data[i].as<double>();
+    }
+}
+
+void read_params_from_yaml_and_fill_cam_info_msg(std::string& file_name, sensor_msgs::CameraInfo& cam_info)
+{
+    std::ifstream fin(file_name.c_str());
+    YAML::Node doc = YAML::Load(fin);
+
+    cam_info.width = doc[WIDTH_YML_NAME].as<int>();
+    cam_info.height = doc[HEIGHT_YML_NAME].as<int>();
+
+    SimpleMatrix K_(3, 3, &cam_info.K[0]);
+    transfer_SimpleMatrix_from_YML_to_ROSmsg(doc[K_YML_NAME], K_);
+    SimpleMatrix R_(3, 3, &cam_info.R[0]);
+    transfer_SimpleMatrix_from_YML_to_ROSmsg(doc[R_YML_NAME], R_);
+    SimpleMatrix P_(3, 4, &cam_info.P[0]);
+    transfer_SimpleMatrix_from_YML_to_ROSmsg(doc[P_YML_NAME], P_);
+
+    cam_info.distortion_model = doc[DMODEL_YML_NAME].as<std::string>();
+
+    const YAML::Node& D_node = doc[D_YML_NAME];
+    int D_rows, D_cols;
+    D_rows = D_node["rows"].as<int>();
+    D_cols = D_node["cols"].as<int>();
+    const YAML::Node& D_data = D_node["data"];
+    cam_info.D.resize(D_rows*D_cols);
+ for (int i = 0; i < D_rows*D_cols; ++i)
+    {
+        cam_info.D[i] = D_data[i].as<float>();
+    }
+}
+
+
 int my_callback(int data_type, int data_len, char *content)
 {
     g_lock.enter();
@@ -86,6 +156,7 @@ int my_callback(int data_type, int data_len, char *content)
     /* image data */
     if (e_image == data_type && NULL != content)
     {        
+	ros::Time time_in_loop = ros::Time::now();
         image_data* data = (image_data*)content;
 
 		if ( data->m_greyscale_image_left[cam_index] ){
@@ -96,31 +167,30 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
-					cam_info.header.frame_id = "guidance_down";
 					left_8.header.frame_id  = "guidance_down";
 					break;
 				case 1:
-					cam_info.header.frame_id = "guidance_front";
 					left_8.header.frame_id  = "guidance_front";
 					break;
 				case 2:
-					cam_info.header.frame_id = "guidance_right";
 					left_8.header.frame_id  = "guidance_right";
 					break;
 				case 3:
-					cam_info.header.frame_id = "guidance_back";
 					left_8.header.frame_id  = "guidance_back";
 					break;
 				case 4:
-					cam_info.header.frame_id = "guidance_left";
 					left_8.header.frame_id  = "guidance_left";
 					break;
 			}	
-			left_8.header.stamp	= ros::Time::now();
-			cam_info.header.stamp = left_8.header.stamp;
+			left_8.header.stamp	= time_in_loop;
 			left_8.encoding		= sensor_msgs::image_encodings::MONO8;
 			left_image_pub.publish(left_8.toImageMsg());
-			caminfo_pub.publish(cam_info);
+
+			sensor_msgs::CameraInfo g_cam_info_left;
+			g_cam_info_left.header.stamp = time_in_loop;
+			g_cam_info_left.header.frame_id = "guidance_front";
+			read_params_from_yaml_and_fill_cam_info_msg(camera_params_left, g_cam_info_left);
+			cam_info_left_pub.publish(g_cam_info_left);
 		}
 
 		if ( data->m_greyscale_image_right[cam_index] ){
@@ -131,30 +201,29 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
-					cam_info.header.frame_id = "guidance_down";
 					right_8.header.frame_id  = "guidance_down";
 					break;
 				case 1:
-					cam_info.header.frame_id = "guidance_front";
 					right_8.header.frame_id  = "guidance_front";
 					break;
 				case 2:
-					cam_info.header.frame_id = "guidance_right";
 					right_8.header.frame_id  = "guidance_right";
 					break;
 				case 3:
-					cam_info.header.frame_id = "guidance_back";
 					right_8.header.frame_id  = "guidance_back";
 					break;
 				case 4:
-					cam_info.header.frame_id = "guidance_left";
 					right_8.header.frame_id  = "guidance_left";
 					break;
 			}	
-			right_8.header.stamp	 = ros::Time::now();
-			cam_info.header.stamp	 = right_8.header.stamp;
+			right_8.header.stamp	 = time_in_loop;
 			right_8.encoding  	 = sensor_msgs::image_encodings::MONO8;
 			right_image_pub.publish(right_8.toImageMsg());
+			sensor_msgs::CameraInfo g_cam_info_right;
+			g_cam_info_right.header.stamp = time_in_loop;
+			g_cam_info_right.header.frame_id = "guidance_front";
+			read_params_from_yaml_and_fill_cam_info_msg(camera_params_right, g_cam_info_right);
+			cam_info_right_pub.publish(g_cam_info_right);
 		}
 
 		if ( data->m_depth_image[cam_index] ){
@@ -173,33 +242,26 @@ int my_callback(int data_type, int data_len, char *content)
 			switch((int) cam_index)
 			{
 				case 0:
-					cam_info.header.frame_id = "guidance_down";
 					depth_16.header.frame_id  = "guidance_down";
 					break;
 				case 1:
-					cam_info.header.frame_id = "guidance_front";
 					depth_16.header.frame_id  = "guidance_front";
 					break;
 				case 2:
-					cam_info.header.frame_id = "guidance_right";
 					depth_16.header.frame_id  = "guidance_right";
 					break;
 				case 3:
-					cam_info.header.frame_id = "guidance_back";
 					depth_16.header.frame_id  = "guidance_back";
 					break;
 				case 4:
-					cam_info.header.frame_id = "guidance_left";
 					depth_16.header.frame_id  = "guidance_left";
 					break;
 			}	
 			depth_16.header.stamp	  = ros::Time::now();
-			cam_info.header.stamp	  = depth_16.header.stamp;
 			depth_16.encoding	  = sensor_msgs::image_encodings::MONO16;
 			sensor_msgs::ImagePtr depth_image = depth_16.toImageMsg();
 			depth_image->encoding = sensor_msgs::image_encodings::TYPE_16UC1; 
 			depth_image_pub.publish(depth_image);
-			caminfo_pub.publish(cam_info);
                 }
     }
 
@@ -315,6 +377,9 @@ int main(int argc, char** argv)
     /* initialize ros */
     ros::init(argc, argv, "GuidanceNode");
     ros::NodeHandle my_node;
+   
+    my_node.getParam("/left_param_file", camera_params_left);
+    my_node.getParam("/right_param_file", camera_params_right);
 
     depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/depth_image",1);
     left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/left/image_raw",1);
@@ -324,7 +389,8 @@ int main(int argc, char** argv)
     obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
     ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
     position_pub	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/position", 1);
-    caminfo_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/camera_info",1);
+    cam_info_right_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/right/camera_info",1);
+    cam_info_left_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/left/camera_info",1);
 
     /* initialize guidance */
     reset_config();
@@ -353,36 +419,13 @@ int main(int argc, char** argv)
 	err_code = set_image_frequecy(e_frequecy_20);
 	RETURN_IF_ERR(err_code);
 
-	/*CameraInfo data*/
-        cam_info.height = HEIGHT;
-        cam_info.width = WIDTH;
-
-        cam_info.distortion_model = "plumb_bob";
-        cam_info.D.push_back(-0.001980888066537227);
-        cam_info.D.push_back(-0.02147700025762941);
-        cam_info.D.push_back(0.0006841015603197759);
-        cam_info.D.push_back(-0.00108815737201456);
-        cam_info.D.push_back(0.0);
-
-        cam_info.K = {247.35757622530616, 0.0, 153.29506251287017, 0.0, 247.39002468328675, 116.8939252668646, 0.0, 0.0, 1.0};
-        cam_info.R = {0.9995417232106595, 0.0032279128371214463, -0.0300985737167282, -0.0032132327445043023, 0.9999946938578694, 0.0005360890183786829, 0.03010014445804239, -0.0004391296185950722, 0.9995467915354354};
-        cam_info.P = {251.2699111385827, 0.0, 163.1802978515625, 0.0, 0.0, 251.2699111385827, 116.94859886169434, 0.0, 0.0, 0.0, 1.0, 0.0};
-        cam_info.binning_x = 0;
-        cam_info.binning_x = 0;
-
-        cam_info.roi.x_offset = 0;
-        cam_info.roi.y_offset = 0;
-        cam_info.roi.height = 0;
-        cam_info.roi.width = 0;
-        cam_info.roi.do_rectify = false;
-
     /* select data */
- /*   err_code = select_greyscale_image(cam_index, true);
+    err_code = select_greyscale_image(cam_index, true);
 	RETURN_IF_ERR(err_code);
     err_code = select_greyscale_image(cam_index, false);
 	RETURN_IF_ERR(err_code);
-   */ err_code = select_depth_image(cam_index);
-	RETURN_IF_ERR(err_code);
+   // err_code = select_depth_image(cam_index);
+	//RETURN_IF_ERR(err_code);
 
     select_imu();
     select_ultrasonic();
