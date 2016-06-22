@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package( OpenCV REQUIRED)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -114,18 +115,22 @@ catkin_package(
 ## Build ##
 ###########
 
+link_directories(${PROJECT_SOURCE_DIR}/lib)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  3dparty/aruco/include
   include/
   include/cv2cg/
   include/cv2cg/apriltag/
   include/artificial_vision/
 )
-
+aux_source_directory(
+    3dparty/aruco/src aruco_src
+    )
 ## Declare a C++ library
 # add_library(artificial_vision
 #   src/${PROJECT_NAME}/artificial_vision.cpp
@@ -142,14 +147,25 @@ add_executable(apriltag_detector_node src/artificial_vision/AprilTagDetectorNode
 	src/artificial_vision/AprilTagDetector.cpp
 	)
 
+add_executable(landing_tagMap_tracker_node src/artificial_vision/landingTagMapTrackerNode.cpp
+    src/artificial_vision/landingTagMapTracker.cpp
+    ${aruco_src}
+	)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(apriltag_detector_node ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(landing_tagMap_tracker_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apriltag_detector_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
+ )
+
+target_link_libraries(landing_tagMap_tracker_node
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
  )
 #############
 ## Install ##

@@ -217,6 +217,32 @@ struct TagDetection {
   		return tvec;
 	}
 
+	void getPose(float tag_size, float fx, float fy, float px, float py, cv::Mat &tvec, cv::Mat &rvec)
+	{
+		float s = tag_size/2.;
+
+	  	cv::Mat objPts(1,4, CV_32FC3);
+		objPts.at<cv::Point3f>(0,0) = cv::Point3f(-s, -s, 0); 
+		objPts.at<cv::Point3f>(0,1) = cv::Point3f( s, -s, 0); 
+		objPts.at<cv::Point3f>(0,2) = cv::Point3f( s,  s, 0); 
+		objPts.at<cv::Point3f>(0,3) = cv::Point3f(-s,  s, 0); 
+
+		cv::Mat imgPts(1,4, CV_32FC2);
+		imgPts.at<cv::Point2f>(0,0) = cv::Point2f(p[0][0], p[0][1]); 
+		imgPts.at<cv::Point2f>(0,1) = cv::Point2f(p[1][0], p[1][1]); 
+		imgPts.at<cv::Point2f>(0,2) = cv::Point2f(p[2][0], p[2][1]); 
+		imgPts.at<cv::Point2f>(0,3) = cv::Point2f(p[3][0], p[3][1]); 
+
+  		float camv[9] = {fx, 0, px, 0, fy, py, 0, 0, 1};
+
+  		cv::Mat cameraMatrix(3,3,CV_32F, camv);
+
+  		float distv[4] = {0,0,0,0};
+  		cv::Mat distParam(1,4, CV_32F, distv);
+
+  		cv::gpu::solvePnPRansac(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
+	}
+
 	bool overlapsTooMuch(const TagDetection &other)
 	{
 		// Compute a sort of "radius" of the two targets. We'll do this by
