@@ -142,9 +142,13 @@ void landingTagMapTracker::imgSub_callback(const ImageConstPtr& image_msg, const
         //for(size_t kk=0;kk<detected_aruco_markers.size(); kk++)
         //    std::cout << "Marker " << kk << ": Family " << detected_aruco_markers[kk].family << " Id " << detected_aruco_markers[kk].id << std::endl;
 
-        cv::Mat tvec_pnp, rvec_pnp;
-        markerMapCfg.calculateExtrinsics(detected_aruco_markers, 0.0, cam_parameters.CameraMatrix, cam_parameters.Distorsion, tvec_pnp, rvec_pnp);
-
+        std::pair <cv::Mat, cv::Mat> result; 
+	result = markerMapCfg.calculateExtrinsics(detected_aruco_markers, 0.0, cam_parameters.CameraMatrix, cam_parameters.Distorsion);
+std::cout << "El tamano de rvec es: " << result.first.size() << std::endl;
+cv::Mat rvec_pnp, tvec_pnp;
+result.first.copyTo(rvec_pnp);
+result.second.copyTo(tvec_pnp);
+std::cout << "rvec esta vacio?: " << result.second.empty() << std::endl;
         if(!(tvec_pnp.empty() || rvec_pnp.empty()))     // Has any marker of the map been detected?
         {
             geometry_msgs::PoseStamped tag_pose;
@@ -160,8 +164,9 @@ void landingTagMapTracker::imgSub_callback(const ImageConstPtr& image_msg, const
             tf::Vector3 tag_position(tag_pose.pose.position.x,tag_pose.pose.position.y,tag_pose.pose.position.z);
             
             cv::Matx33d rot_mat;
+std::cout << "Antes de rodrigues"; 
             cv::Rodrigues(rvec_pnp, rot_mat);
-
+std::cout << "Despues de rodrigues"; 
             tf::Matrix3x3 rot_mat_tf(   rot_mat(0,0),rot_mat(0,1),rot_mat(0,2),
                                         rot_mat(1,0),rot_mat(1,1),rot_mat(1,2),
                                         rot_mat(2,0),rot_mat(2,1),rot_mat(2,2));

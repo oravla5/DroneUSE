@@ -32,9 +32,10 @@ or implied, of Rafael Muñoz Salinas.
 //#include "opencv2/gpu/gpu.hpp"
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"
-
+#include "UtilHelper.h"
 #include <fstream>
 #include "dictionary.h"
+using namespace UtilHelper;
 using namespace std;
 using namespace cv;
 namespace aruco {
@@ -448,35 +449,13 @@ void MarkerMap::fromStream(std::istream &str){
     for(size_t i=0;i<size();i++) at(i).fromStream(str);
     str>>dictionary;
 }
-pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion  ) throw(cv::Exception){
-    vector<cv::Point2f> p2d;
-    MarkerMap m_meters;
-    if (isExpressedInPixels())
-        m_meters=convertToMeters_markerSize(markerSize);
-    else m_meters=*this;
-    vector<cv::Point3f> p3d;
-    Marker3DInfo map_marker;
-    for(auto marker:markers){
-        if ( checkMarker(marker, map_marker) ){//is the marker part of the map?
-            for(auto p:marker)  p2d.push_back(p);
-            for(auto p:map_marker)  p3d.push_back(p);
-        }
-    }
 
-    cv::Mat rvec,tvec;
-    if (p2d.size()!=0)//no points in the vector
-        cv::solvePnPRansac(p3d,p2d,CameraMatrix,Distorsion,rvec,tvec);
-    return make_pair(rvec,tvec);
-
-}
-
-void MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion, cv::Mat &tvec, cv::Mat &rvec  ) throw(cv::Exception){
-    vector<cv::Point2f> p2d;
+pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion ) throw(cv::Exception){
     cv::Mat objPts(1,4*markers.size(),CV_32FC3);
     cv::Mat imgPts(1,4*markers.size(),CV_32FC2);
-    size_t nTags = 0;
-    vector<cv::Point3f> p3d;
     Marker3DInfo map_marker;
+    size_t nTags = 0;
+
     for(auto marker:markers){
         if ( checkMarker(marker, map_marker) )//is the marker part of the map?
         {
@@ -492,13 +471,22 @@ void MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,f
             nTags++;
         }
     }
-    objPts.resize(nTags);
-    objPts.resize(nTags);
-
+    std::cout << "Coincidences: " << nTags << std::endl;	
+    cv::Mat objPts_pnp(1,4*nTags,CV_32FC3);
+    cv::Mat imgPts_pnp(1,4*nTags,CV_32FC2);
+    for(size_t kk=0; kk<(4*nTags); kk++)
+    {
+	imgPts_pnp.at<cv::Point2f>(0,kk) = imgPts.at<cv::Point2f>(0,kk);
+	objPts_pnp.at<cv::Point3f>(0,kk) = objPts.at<cv::Point3f>(0,kk);
+    }
+	pair<cv::Mat,cv::Mat> result;
+	cv::Mat rvec, tvec;
     if (nTags>0)//no points in the vector
     {
-        cv::gpu::solvePnPRansac(objPts,imgPts,CameraMatrix,Distorsion,rvec,tvec);
+        cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
     }
+	result = make_pair(rvec,tvec);
+   return result;
 }
 //void MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion, cv::Mat &tvec, cv::Mat &rvec  ) throw(cv::Exception){
 //    vector<cv::Point2f> p2d;
