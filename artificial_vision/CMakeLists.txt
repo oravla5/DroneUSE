@@ -15,7 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package( OpenCV REQUIRED)
+find_package( OpenCV REQUIRED )
+find_package( cmake_modules REQUIRED ) 
+find_package( Eigen REQUIRED )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
@@ -105,10 +107,11 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES artificial_vision
-#  CATKIN_DEPENDS roscpp std_msgs
-#  DEPENDS system_lib
+  DEPENDS Eigen
+  INCLUDE_DIRS include
+  LIBRARIES artificial_vision
+  CATKIN_DEPENDS roscpp std_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -122,6 +125,8 @@ link_directories(${PROJECT_SOURCE_DIR}/lib)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+  3dparty/kalman_filter
   3dparty/aruco/include
   include/
   include/cv2cg/
@@ -147,15 +152,23 @@ add_executable(apriltag_detector_node src/artificial_vision/AprilTagDetectorNode
 	src/artificial_vision/AprilTagDetector.cpp
 	)
 
-add_executable(landing_tagMap_tracker_node src/artificial_vision/landingTagMapTrackerNode.cpp
-    src/artificial_vision/landingTagMapTracker.cpp
+add_executable(tagMap_detector_node src/artificial_vision/tagMapDetectorNode.cpp
+    src/artificial_vision/tagMapDetector.cpp
     ${aruco_src}
 	)
+
+add_executable(landingPlatform_tracker_node src/artificial_vision/landingPlatformTrackerNode.cpp
+    src/artificial_vision/landingPlatformTracker.cpp
+    ${aruco_src}
+	)
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(apriltag_detector_node ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(landing_tagMap_tracker_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(tagMap_detector_node ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(landingPlatform_tracker_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apriltag_detector_node
@@ -163,10 +176,20 @@ target_link_libraries(apriltag_detector_node
    ${OpenCV_LIBRARIES}
  )
 
-target_link_libraries(landing_tagMap_tracker_node
+target_link_libraries(tagMap_detector_node
     ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES}
  )
+
+target_link_libraries(landingPlatform_tracker_node
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${Eigen_LIBRARIES}
+ )
+
+#add_definitions(
+#    ${EIGEN_DEFINITIONS}
+# )
 #############
 ## Install ##
 #############

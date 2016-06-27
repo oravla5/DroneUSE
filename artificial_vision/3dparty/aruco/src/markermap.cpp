@@ -459,15 +459,20 @@ pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Ma
     for(auto marker:markers){
         if ( checkMarker(marker, map_marker) )//is the marker part of the map?
         {
-            imgPts.at<cv::Point2f>(0,nTags*4)   = cv::Point2f(marker.at(0).x,marker.at(0).y);
-            imgPts.at<cv::Point2f>(0,nTags*4+1) = cv::Point2f(marker.at(1).x,marker.at(1).y);
-            imgPts.at<cv::Point2f>(0,nTags*4+2) = cv::Point2f(marker.at(2).x,marker.at(2).y);
-            imgPts.at<cv::Point2f>(0,nTags*4+3) = cv::Point2f(marker.at(3).x,marker.at(3).y);
+//            imgPts.at<cv::Point2f>(0,nTags*4)   = cv::Point2f(marker.at(0).x,marker.at(0).y);
+            imgPts.at<cv::Point2f>(0,nTags*4)   = cv::Point2f(marker[3].x, marker[3].y);
+//            imgPts.at<cv::Point2f>(0,nTags*4+1) = cv::Point2f(marker.at(1).x,marker.at(1).y);
+            imgPts.at<cv::Point2f>(0,nTags*4+1) = cv::Point2f(marker[2].x, marker[2].y);
+//            imgPts.at<cv::Point2f>(0,nTags*4+2) = cv::Point2f(marker.at(2).x,marker.at(2).y);
+            imgPts.at<cv::Point2f>(0,nTags*4+2) = cv::Point2f(marker[1].x, marker[1].y);
+//            imgPts.at<cv::Point2f>(0,nTags*4+3) = cv::Point2f(marker.at(3).x,marker.at(3).y);
+            imgPts.at<cv::Point2f>(0,nTags*4+3) = cv::Point2f(marker[0].x, marker[0].y);
 
-            objPts.at<cv::Point3f>(0,nTags*4)   = cv::Point3f(map_marker.at(0).x, map_marker.at(0).y, map_marker.at(0).z);
-            objPts.at<cv::Point3f>(0,nTags*4+1) = cv::Point3f(map_marker.at(1).x, map_marker.at(1).y, map_marker.at(1).z);
-            objPts.at<cv::Point3f>(0,nTags*4+2) = cv::Point3f(map_marker.at(2).x, map_marker.at(2).y, map_marker.at(2).z);
-            objPts.at<cv::Point3f>(0,nTags*4+3) = cv::Point3f(map_marker.at(3).x, map_marker.at(3).y, map_marker.at(3).z);
+            // Marker Board Center Coordinates (.yml file gives the bottom-left corner coordinates)
+            objPts.at<cv::Point3f>(0,nTags*4)   = cv::Point3f(map_marker.at(0).x - mapSize_meters.x/2, map_marker.at(0).y - mapSize_meters.y/2, map_marker.at(0).z);
+            objPts.at<cv::Point3f>(0,nTags*4+1) = cv::Point3f(map_marker.at(1).x - mapSize_meters.x/2, map_marker.at(1).y - mapSize_meters.y/2, map_marker.at(1).z);
+            objPts.at<cv::Point3f>(0,nTags*4+2) = cv::Point3f(map_marker.at(2).x - mapSize_meters.x/2, map_marker.at(2).y - mapSize_meters.y/2, map_marker.at(2).z);
+            objPts.at<cv::Point3f>(0,nTags*4+3) = cv::Point3f(map_marker.at(3).x - mapSize_meters.x/2, map_marker.at(3).y - mapSize_meters.y/2, map_marker.at(3).z);
             nTags++;
         }
     }
@@ -476,36 +481,41 @@ pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Ma
     cv::Mat imgPts_pnp(1,4*nTags,CV_32FC2);
     for(size_t kk=0; kk<(4*nTags); kk++)
     {
-	imgPts_pnp.at<cv::Point2f>(0,kk) = imgPts.at<cv::Point2f>(0,kk);
-	objPts_pnp.at<cv::Point3f>(0,kk) = objPts.at<cv::Point3f>(0,kk);
+        imgPts_pnp.at<cv::Point2f>(0,kk) = imgPts.at<cv::Point2f>(0,kk);
+        objPts_pnp.at<cv::Point3f>(0,kk) = objPts.at<cv::Point3f>(0,kk);
     }
 	pair<cv::Mat,cv::Mat> result;
-	cv::Mat rvec, tvec;
+	cv::Mat rvec;
+    cv::Mat tvec;
     if (nTags>0)//no points in the vector
     {
-        cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
+        //cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
+        cv::solvePnPRansac(objPts_pnp, imgPts_pnp, CameraMatrix,Distorsion, rvec, tvec);
     }
 	result = make_pair(rvec,tvec);
-   return result;
+    return result;
 }
-//void MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion, cv::Mat &tvec, cv::Mat &rvec  ) throw(cv::Exception){
-//    vector<cv::Point2f> p2d;
-//    MarkerMap m_meters;
-//    if (isExpressedInPixels())
-//        m_meters=convertToMeters_markerSize(markerSize);
-//    else m_meters=*this;
-//    vector<cv::Point3f> p3d;
-//    Marker3DInfo map_marker;
-//    for(auto marker:markers){
-//        if ( checkMarker(marker, map_marker) ){//is the marker part of the map?
-//            for(auto p:marker)  p2d.push_back(p);
-//            for(auto p:map_marker)  p3d.push_back(p);
-//        }
-//    }
-//
-//    if (p2d.size()!=0)//no points in the vector
-//    {
-//        cv::gpu::solvePnPRansac(p3d,p2d,CameraMatrix,Distorsion,rvec,tvec);
-//    }
-//}
+
+
+
+void MarkerMap::calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion, cv::Mat &tvec, cv::Mat &rvec  ) throw(cv::Exception){
+    vector<cv::Point2f> p2d;
+    MarkerMap m_meters;
+    if (isExpressedInPixels())
+        m_meters=convertToMeters_markerSize(markerSize);
+    else m_meters=*this;
+    vector<cv::Point3f> p3d;
+    Marker3DInfo map_marker;
+    for(auto marker:markers){
+        if ( checkMarker(marker, map_marker) ){//is the marker part of the map?
+            for(auto p:marker)  p2d.push_back(p);
+            for(auto p:map_marker)  p3d.push_back(p);
+        }
+    }
+
+    if (p2d.size()!=0)//no points in the vector
+    {
+        cv::solvePnPRansac(p3d,p2d,CameraMatrix,Distorsion,rvec,tvec);
+    }
+}
 };

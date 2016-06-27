@@ -133,8 +133,9 @@ public:
 
     //calculates the camera location w.r.t. the map using the information provided
     //returns the <rvec,tvec>
-  pair<cv::Mat,cv::Mat> calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion ) throw(cv::Exception);
+    pair<cv::Mat,cv::Mat> calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion ) throw(cv::Exception);
 
+    void calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion, cv::Mat &tvec, cv::Mat &rvec  ) throw(cv::Exception);
 //    void calculateExtrinsics(const std::vector<aruco::Marker> &markers ,float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion ) throw(cv::Exception);
     //returns string indicating the dictionary
     std::string getDictionary()const{return dictionary;}
