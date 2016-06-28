@@ -1,6 +1,19 @@
+<!-- 
+	Launch Theta Star Server
+-->
+
 <launch>
-    <node pkg="guidance" type="guidanceNode" name="guidanceNode" output="screen"> 
-		<param name="left_param_file" value="$(find guidance)/calibration_files/camera_params_left.yaml" />
-		<param name="right_param_file" value="$(find guidance)/calibration_files/camera_params_right.yaml" />
-    </node>
+
+#SDK and TF tree
+<node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" />
+<include file="$(find dji_sdk)/launch/sdk_manifold.launch" />
+
+#Run guidance node
+<node name="guidanceNode" pkg="guidance" type="guidanceNode" respawn="true" />
+
+#Depth to pointcloud
+<include file="/home/ubuntu/droneUSE_ws/launch/depth_to_pointcloud.launch" />
+
+#Obstacled data fusion
+<node name="obstacleNode" pkg="guidance" type="obstacleNode" respawn="true" output="screen" />
 </launch>

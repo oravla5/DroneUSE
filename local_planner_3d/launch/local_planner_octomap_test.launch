@@ -7,7 +7,7 @@
 <node pkg="droneuse_tf" type="tf_broadcaster" name="tf_system" output="screen" respawn="true" />
 <include file="$(find dji_sdk)/launch/sdk_manifold.launch" />
 
-<!-- include file="$(find local_planner_3d)/launch/local_planner.launch" / -->
+<include file="$(find local_planner_3d)/launch/local_planner.launch" />
 
 <arg name="static_map_file" default="$(find theta_star)/resource/pipes.bt" />
 

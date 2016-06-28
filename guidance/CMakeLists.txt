@@ -7,14 +7,19 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   geometry_msgs
+  message_filters
+  pcl_conversions
+  pcl_ros
 )
 find_package(OpenCV REQUIRED)
+find_package(Boost REQUIRED)
 
 catkin_package(
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 MESSAGE("System is: " ${CMAKE_SYSTEM_PROCESSOR})
@@ -39,9 +44,12 @@ endif ()
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(guidanceNode ${PROJECT_SOURCE_DIR}/src/GuidanceNode.cpp ${PROJECT_SOURCE_DIR}/src/DJI_utility.cpp)
-add_executable(guidanceNodeTest ${PROJECT_SOURCE_DIR}/src/GuidanceNodeTest.cpp)
+add_executable(obstacleNode ${PROJECT_SOURCE_DIR}/src/ObstacleNode.cpp)
+#add_executable(guidanceNodeTest ${PROJECT_SOURCE_DIR}/src/GuidanceNodeTest.cpp)
 #add_executable(guidanceNodeCalibration ${PROJECT_SOURCE_DIR}/src/GuidanceNodeCalibration.cpp ${PROJECT_SOURCE_DIR}/src/DJI_utility.cpp)
 
+add_dependencies(obstacleNode $catkin_EXPORTED_TARGETS)
 target_link_libraries(guidanceNode DJI_guidance usb-1.0 yaml-cpp ${catkin_LIBRARIES} ${OpenCV_LIBS})
-target_link_libraries(guidanceNodeTest ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(obstacleNode ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+#target_link_libraries(guidanceNodeTest ${catkin_LIBRARIES} ${OpenCV_LIBS})
 #target_link_libraries(guidanceNodeCalibration DJI_guidance usb-1.0 yaml-cpp ${catkin_LIBRARIES} ${OpenCV_LIBS})

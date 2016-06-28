@@ -8,7 +8,7 @@
   <arg name="odometry_topic" 					default="/dji_sdk/odometry"/>	  
   
   <!-- Point Cloud topic name-->
-  <arg name="point_cloud_topic" 				default="/points" />	  
+  <arg name="point_cloud_topic" 				default="/droneuse/obstacles" />	  
   
   <!-- MAV local and global planner frames -->
   <arg name="local_planner_frame" 				default="/ground_frame" />

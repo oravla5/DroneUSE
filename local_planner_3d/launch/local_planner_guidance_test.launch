@@ -1,0 +1,7 @@
+<launch>
+
+<include file="$(find local_planner_3d)/launch/local_planner.launch" />
+<include file="$(find guidance)/launch/guidance.launch" />
+
+<node name="rviz" pkg="rviz" type="rviz" respawn="false" output="screen" />
+</launch>

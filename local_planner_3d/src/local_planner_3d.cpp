@@ -78,16 +78,18 @@ void odometryCallback(const nav_msgs::Odometry::ConstPtr& odom_msg)
 PointCloud cloud_in_sensor;	// Save as PCL data (pcl::PointCloud<pcl::PointXYZ>::points[].x,y,z)
 bool pointcloud_received =false;
 ros::Time cloud_time_stamp;
-void PointCloudCallBack(const sensor_msgs::PointCloud2ConstPtr& input)
+//void PointCloudCallBack(const sensor_msgs::PointCloud2ConstPtr& input)
+void PointCloudCallBack(const PointCloud::ConstPtr& input)
 {
 	// Save the timeStamp to get the TF transforms at the same time instant
-    cloud_time_stamp = input->header.stamp;
+	pcl_conversions::fromPCL(input->header.stamp, cloud_time_stamp);
 	
     // - Not filter the pointcloud  (CPU LOAD: 60% running only the callback)
     // - Copy directly 			  	(CPU LOAD: 20%, Filter apply to the cloud transformed to the world)
 	// Convert to PCL data type
-	pcl::fromROSMsg (*input, cloud_in_sensor);
+	//pcl::fromROSMsg (*input, cloud_in_sensor);
     
+	cloud_in_sensor = *input;
 	// Set flag true to sincronizate with TF
     pointcloud_received = true;
 }
