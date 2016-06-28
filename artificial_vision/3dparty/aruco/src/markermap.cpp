@@ -485,11 +485,11 @@ pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Ma
         objPts_pnp.at<cv::Point3f>(0,kk) = objPts.at<cv::Point3f>(0,kk);
     }
 	pair<cv::Mat,cv::Mat> result;
-	cv::Mat rvec;
-    cv::Mat tvec;
+	cv::Mat rvec(3,1,CV_32FC1);
+	cv::Mat tvec(3,1,CV_32FC1);
     if (nTags>0)//no points in the vector
     {
-        //cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
+//        cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
         cv::solvePnPRansac(objPts_pnp, imgPts_pnp, CameraMatrix,Distorsion, rvec, tvec);
     }
 	result = make_pair(rvec,tvec);

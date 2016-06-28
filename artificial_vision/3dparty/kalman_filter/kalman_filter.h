@@ -6,8 +6,8 @@
 #include <ros/ros.h>
 //#include <Eigen/LU>
 
-#define KF_IMAGE_POS_VAR 0.02
-#define KF_VEL_NOISE_VAR 0.6  
+#define KF_IMAGE_POS_VAR 0.01
+#define KF_VEL_NOISE_VAR 0.3  
 
 //Anonymous namespace is used to avoid multiple definition compiler errors when calling KalmanFilter static functions from other files
 namespace{
