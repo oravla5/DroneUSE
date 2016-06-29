@@ -119,7 +119,7 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
         if(!(tvec_pnp.empty() || rvec_pnp.empty()))     // Has any marker of the map been detected?
         { 
             geometry_msgs::PointStamped tagMap_pos;
-            tagMap_pos.header.stamp = ros::Time::now();
+            tagMap_pos.header.stamp = image_msg->header.stamp;
             tagMap_pos.header.frame_id = "/camera";
             tagMap_pos.point.x = tvec_pnp.at<double>(0,0);
             tagMap_pos.point.y = tvec_pnp.at<double>(0,1);

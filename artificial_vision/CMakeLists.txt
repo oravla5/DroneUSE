@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   image_geometry
+  message_filters
+  geometry_msgs
+  sensor_msgs
   tf
 )
 
@@ -18,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package( OpenCV REQUIRED )
 find_package( cmake_modules REQUIRED ) 
 find_package( Eigen REQUIRED )
+find_package(Boost REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
@@ -126,6 +130,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   3dparty/kalman_filter
   3dparty/aruco/include
   include/
@@ -162,6 +167,9 @@ add_executable(landingPlatform_tracker_node src/artificial_vision/landingPlatfor
     ${aruco_src}
 	)
 
+add_executable(landingPlatform_display_node src/artificial_vision/landingPlatformDisplay_node.cpp
+    ${aruco_src}
+	)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(apriltag_detector_node ${catkin_EXPORTED_TARGETS})
@@ -169,6 +177,8 @@ add_dependencies(apriltag_detector_node ${catkin_EXPORTED_TARGETS})
 add_dependencies(tagMap_detector_node ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(landingPlatform_tracker_node ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(landingPlatform_display_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(apriltag_detector_node
@@ -185,6 +195,12 @@ target_link_libraries(landingPlatform_tracker_node
     ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES}
     ${Eigen_LIBRARIES}
+ )
+
+target_link_libraries(landingPlatform_display_node
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${Boost_LIBRARIES}
  )
 
 #add_definitions(

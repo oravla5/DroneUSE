@@ -102,7 +102,7 @@ struct KalmanFilter
 
 		// Convariance matrix prediction
 		P = F*P*F.transpose() + Q;
-		
+        tStamp = tStamp + ros::Duration(_dt);
 		updated = false;
 	}
 	
