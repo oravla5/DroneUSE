@@ -10,6 +10,6 @@
 <node pkg="rosbag" type="play" name="rosbag_player" args="$(arg bag_folder)$(arg bag_file)" />
 <!--arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" -->
 <node pkg="artificial_vision" type="landingPlatform_display_node" name="landingPlatform_display_node" required="true" output="screen" />
-<arg name="image_topic" default="/droneuse/videoFootage" />
+<arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" />
 <node pkg="image_view" type="image_view" name="image_viewer" args="image:=$(arg image_topic)"/>
 </launch>
