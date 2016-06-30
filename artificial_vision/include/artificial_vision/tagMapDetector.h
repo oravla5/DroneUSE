@@ -13,6 +13,7 @@
 
 #include <kalman_filter.h>
 
+#include <tf/transform_listener.h>
 /*
 struct trackedTag_{
 	AprilTags::TagDetection *tag;
@@ -39,7 +40,7 @@ class tagMapDetector
     // The file name where the Tag Map configuration is stored
     std::string                                     markerMapCfg_file; 
     aruco::CameraParameters                         cam_parameters;
-
+	tf::TransformListener* 		tf_listener;
     
     // Class Parameters
 	const int					MIN_FRAME_NUM_;

@@ -27,15 +27,15 @@ void callback(const ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConst
 {
     if(cam_parameters.CameraMatrix.empty() || cam_parameters.Distorsion.empty())
     {
-        float cameraMatrix_components[9] = {float(info_msg->K[0]), float(info_msg->K[1]), float(info_msg->K[2]),
-                                            float(info_msg->K[3]), float(info_msg->K[4]), float(info_msg->K[5]), 
-                                            float(info_msg->K[6]), float(info_msg->K[7]), float(info_msg->K[8])}; 
+        float cameraMatrix_components[9] = {float(2.0*info_msg->K[0]), 		float(info_msg->K[1]), 		float(2.0*info_msg->K[2]),
+                                            float(info_msg->K[3]), 		float(1.5*info_msg->K[4]), 	float(1.5*info_msg->K[5]), 
+                                            float(info_msg->K[6]), 		float(info_msg->K[7]), 		float(info_msg->K[8])}; 
 
-        float cameraDistor_components[9] = {float(info_msg->D[0]),float(info_msg->D[1]),float(info_msg->D[2]),float(info_msg->D[3])};
+        float cameraDistor_components[4] = {float(info_msg->D[0]),float(info_msg->D[1]),float(info_msg->D[2]),float(info_msg->D[3])};
 
         cv::Mat cameraMatrix(3,3,CV_32F, cameraMatrix_components);
         cv::Mat distorsion(1,4,CV_32F, cameraDistor_components);
-        cv::Size imgSize(info_msg->height, info_msg->width);
+        cv::Size imgSize(info_msg->width, info_msg->height);
         cam_parameters.setParams(cameraMatrix, distorsion, imgSize);
     }
 

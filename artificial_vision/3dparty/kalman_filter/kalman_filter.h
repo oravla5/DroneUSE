@@ -6,11 +6,9 @@
 #include <ros/ros.h>
 //#include <Eigen/LU>
 
-#define KF_IMAGE_POS_VAR 0.01
-#define KF_VEL_NOISE_VAR 0.3  
+#define KF_IMAGE_POS_VAR 0.1
+#define KF_VEL_NOISE_VAR 0.5  
 
-//Anonymous namespace is used to avoid multiple definition compiler errors when calling KalmanFilter static functions from other files
-namespace{
 struct KalmanFilter
 {
 	// State vector: [x (m), y (m), z(m), vx (m/s), vy (m/s), vz(m/s)]
@@ -153,5 +151,4 @@ struct KalmanFilter
 	
 };
 
-}
 #endif

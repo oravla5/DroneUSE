@@ -66,14 +66,17 @@ void landingPlatformTracker::landingPlatformPosUpdate(double dt)
         // Tag Map Position Publishing
         geometry_msgs::PointStamped tagMap_pos;
         tagMap_pos.header.stamp = position_kf.tStamp;
-        tagMap_pos.header.frame_id = "/camera";
+        tagMap_pos.header.frame_id = "/body_frame";
         tagMap_pos.point.x = estimated_position.x;
         tagMap_pos.point.y = estimated_position.y;
         tagMap_pos.point.z = estimated_position.z;
         positionPub_.publish(tagMap_pos);
+//	std::cout << "tagMap_position_kf x " << tagMap_pos.point.x << std::endl;
+//	std::cout << "tagMap_position_kf y " << tagMap_pos.point.y << std::endl;
+//	std::cout << "tagMap_position_kf z " << tagMap_pos.point.z << std::endl;
         
     }
-    else if( ros::Duration( position_kf.tStamp - last_detection_time ) < MAX_ELAPSED_TIME_ )
+    else if( ros::Duration( ros::Time::now() - last_detection_time ) < MAX_ELAPSED_TIME_ )
     {
         // Kalman Filter Update
         position_kf.predict(dt);
@@ -84,7 +87,7 @@ void landingPlatformTracker::landingPlatformPosUpdate(double dt)
         // Tag Map Position Publishing
         geometry_msgs::PointStamped tagMap_pos;
         tagMap_pos.header.stamp = position_kf.tStamp;
-        tagMap_pos.header.frame_id = "/camera";
+        tagMap_pos.header.frame_id = "/body_frame";
         tagMap_pos.point.x = estimated_position.x;
         tagMap_pos.point.y = estimated_position.y;
         tagMap_pos.point.z = estimated_position.z;

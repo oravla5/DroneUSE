@@ -477,21 +477,18 @@ pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Ma
         }
     }
     std::cout << "Coincidences: " << nTags << std::endl;	
-    cv::Mat objPts_pnp(1,4*nTags,CV_32FC3);
-    cv::Mat imgPts_pnp(1,4*nTags,CV_32FC2);
-    for(size_t kk=0; kk<(4*nTags); kk++)
-    {
-        imgPts_pnp.at<cv::Point2f>(0,kk) = imgPts.at<cv::Point2f>(0,kk);
-        objPts_pnp.at<cv::Point3f>(0,kk) = objPts.at<cv::Point3f>(0,kk);
-    }
 	pair<cv::Mat,cv::Mat> result;
 	cv::Mat rvec(3,1,CV_32FC1);
 	cv::Mat tvec(3,1,CV_32FC1);
     if (nTags>0)//no points in the vector
     {
 //        cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
-        cv::solvePnPRansac(objPts_pnp, imgPts_pnp, CameraMatrix,Distorsion, rvec, tvec);
+        cv::gpu::solvePnPRansac(objPts,imgPts,CameraMatrix,Distorsion,rvec,tvec);
+//        cv::solvePnPRansac(objPts_pnp, imgPts_pnp, CameraMatrix,Distorsion, rvec, tvec);
     }
+//std::cout << "coordinate x: " << tvec.at<float>(0) << std::endl;
+//std::cout << "coordinate y: " << tvec.at<float>(1) << std::endl;
+//std::cout << "coordinate z: " << tvec.at<float>(2) << std::endl;
 	result = make_pair(rvec,tvec);
     return result;
 }

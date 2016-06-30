@@ -1,15 +1,17 @@
 <launch>
-<!-- arg name="board_folder" default="/home/ubuntu/droneUSE_ws/src/artificial_vision/apriltag_board/" -->
-<arg name="board_folder" default="/home/alvaro/droneUSE_ws/src/artificial_vision/apriltag_board/" />
+
+<arg name="board_folder" default="/home/ubuntu/droneUSE_ws/src/artificial_vision/apriltag_board/" />
 <arg name="board_file" default="landing_platform_board2.yml" />
 <node pkg="artificial_vision" type="tagMap_detector_node" name="tagMap_detector_node" args="$(arg board_folder)$(arg board_file)" required="true" output="screen" />
+
 <node pkg="artificial_vision" type="landingPlatform_tracker_node" name="landingPlatform_tracker_node" required="true" output="screen" />
-<!--arg name="bag_folder" default="/home/ubuntu/bag_files/" -->
-<arg name="bag_folder" default="/home/alvaro/droneUSE_ws/" />
+
+<arg name="bag_folder" default="/home/ubuntu/bag_files/" />
 <arg name="bag_file" default="tagMap_recording.bag" />
-<node pkg="rosbag" type="play" name="rosbag_player" args="$(arg bag_folder)$(arg bag_file)" />
-<!--arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" -->
+<!-- node pkg="rosbag" type="play" name="rosbag_player" args="$(arg bag_folder)$(arg bag_file)" -->
+
 <node pkg="artificial_vision" type="landingPlatform_display_node" name="landingPlatform_display_node" required="true" output="screen" />
 <arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" />
 <node pkg="image_view" type="image_view" name="image_viewer" args="image:=$(arg image_topic)"/>
 </launch>
+
