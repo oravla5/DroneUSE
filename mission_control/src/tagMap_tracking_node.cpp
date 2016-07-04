@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 {
     	ros::init(argc, argv, "tagMap_tracking_node");
     	ros::NodeHandle nh;
-    	//ros::Subscriber langing_point_subscriber = nh.subscribe< PointStamped >("droneuse/landing_platform_position",1, landing_point_subscriber_callback);
+    	ros::Subscriber langing_point_subscriber = nh.subscribe< PointStamped >("droneuse/landing_platform_position",1, landing_point_subscriber_callback);
 	// Default Gimbal Orientation
 	default_gimbal_target.header.frame_id = "/body_frame";
 	default_gimbal_target.point.x = 6.0;
@@ -60,11 +60,11 @@ int main(int argc, char **argv)
 
 
 	ros::Duration(5.0).sleep();
-std::cout << "frame wp 1" << waypoint[0].header.frame_id << endl;
+	std::cout << "frame wp 1" << waypoint[0].header.frame_id << endl;
 	std::cout << "x " << waypoint[0].point.x << endl;
 	std::cout << "y " << waypoint[0].point.y << endl;
 	std::cout << "z " << waypoint[0].point.z << endl;
-std::cout << "frame wp 2 " << waypoint[1].header.frame_id << endl;
+	std::cout << "frame wp 2 " << waypoint[1].header.frame_id << endl;
 	std::cout << "x " << waypoint[1].point.x << endl;
 	std::cout << "y " << waypoint[1].point.y << endl;
 	std::cout << "z " << waypoint[1].point.z << endl;
@@ -112,7 +112,7 @@ std::cout << "frame wp 2 " << waypoint[1].header.frame_id << endl;
 	}
 
 	// Get drone control and start the mission
-std::cout << "getting control" << std::endl;
+	std::cout << "getting control" << std::endl;
 	if(m100->get_sdk_control())
 	{
 		MISSION_ON = true;
@@ -183,20 +183,20 @@ void m100_target_update()
 	{
 		if( (ros::Time::now() - last_target_time) > no_target_time )
 		{
-			cout << "hovering" << endl;
 			m100->hover();
 		}
 		else if(!m100_target.empty())
 		{
-			if(m100->distance_to_position(m100_target[0]) < 0)
+			if(m100->distance_to_position(m100_target[0]) < 1)
 			{
 				CHASE = false;
 				LANDING = true;
 			}
 			else
 			{
-				m100_target[0].point.z = m100_target[0].point.z - 1.5;
+				m100_target[0].point.z = m100_target[0].point.z - 0.92;
 				m100->set_target_position(m100_target[0]);
+				cout << "chasing... " << endl;
 
 //				if( fabs(m100_target[0].point.x) < 0.1 && fabs(m100_target[0].point.y) < 0.1 )
 //					m100->set_target_orientation(m100_target[0]);
