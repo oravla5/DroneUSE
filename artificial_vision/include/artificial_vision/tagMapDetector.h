@@ -43,10 +43,7 @@ class tagMapDetector
 	tf::TransformListener* 		tf_listener;
     
     // Class Parameters
-	const int					MIN_FRAME_NUM_;
-	const float					MIN_TAG_DIST_;
-	const float					TAG_SIZE_;
-	const float					SCALE_FACTOR_;
+	float					SCALE_FACTOR;
 
 	public:
 			tagMapDetector(char *imageTopic, string marker_map_cfg_file);

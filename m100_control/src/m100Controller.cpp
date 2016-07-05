@@ -45,6 +45,33 @@ m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
     m100_position_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_position_control_state",10, &m100Controller::m100_position_control_state_subscriber_callback, this);
     m100_orientation_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_orientation_control_state",10, &m100Controller::m100_orientation_control_state_subscriber_callback, this);
 
+
+	// Get Controller Parameters
+
+	// X Velocity Controller Parameters
+	ros::param::get("m100_controller/x_maxVelocity", x_maxVelocity);
+	ros::param::get("m100_controller/x_velocity_Kp", x_velocity_Kp);
+	ros::param::get("m100_controller/x_velocity_Kd", x_velocity_Kd);
+	ros::param::get("m100_controller/x_velocity_Ki", x_velocity_Ki);
+
+	// Y Velocity Controller Parameters
+	ros::param::get("m100_controller/y_maxVelocity", y_maxVelocity);
+	ros::param::get("m100_controller/y_velocity_Kp", y_velocity_Kp);
+	ros::param::get("m100_controller/y_velocity_Kd", y_velocity_Kd);
+	ros::param::get("m100_controller/y_velocity_Ki", y_velocity_Ki);
+
+	// Z Velocity Controller Parameters
+	ros::param::get("m100_controller/z_maxVelocity", z_maxVelocity);
+	ros::param::get("m100_controller/z_velocity_Kp", z_velocity_Kp);
+	ros::param::get("m100_controller/z_velocity_Kd", z_velocity_Kd);
+	ros::param::get("m100_controller/z_velocity_Ki", z_velocity_Ki);
+
+	// Yaw Rate Controller Parameters
+	ros::param::get("m100_controller/yaw_maxRate", yaw_maxRate);
+	ros::param::get("m100_controller/yaw_rate_Kp", yaw_rate_Kp);
+	ros::param::get("m100_controller/yaw_rate_Kd", yaw_rate_Kd);
+	ros::param::get("m100_controller/yaw_rate_Ki", yaw_rate_Ki);
+
     m100_velocity_x_pid     = new PID(x_maxVelocity, -x_maxVelocity, x_velocity_Kp, x_velocity_Kd, x_velocity_Ki);
     m100_velocity_y_pid     = new PID(y_maxVelocity, -y_maxVelocity, y_velocity_Kp, y_velocity_Kd, y_velocity_Ki);
     m100_velocity_z_pid     = new PID(z_maxVelocity, -z_maxVelocity, z_velocity_Kp, z_velocity_Kd, z_velocity_Ki);
@@ -67,9 +94,8 @@ bool m100Controller::m100_controller_update()
             tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
 
-// TODO: check the need for a minus sign on velocity y
             velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
-            velocity_y   = -m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
+            velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
             velocity_z   = -m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
         }
         catch(tf::TransformException ex)

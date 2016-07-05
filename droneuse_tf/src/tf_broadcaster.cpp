@@ -85,7 +85,7 @@ int main(int argc, char** argv){
       // ground_frame: Nort-Est-Down, origin at m100's local_position
       // ---------------------------------------------------------
 
-      tf_world_groundFrame.setOrigin(tf::Vector3(drone->local_position.x, drone->local_position.y, drone->local_position.z));
+	      tf_world_groundFrame.setOrigin(tf::Vector3(drone->local_position.x, -drone->local_position.y, drone->local_position.z));
       //tf_world_groundFrame.setOrigin(tf::Vector3(3, 3, 3));
       q.setRPY(C_PI, 0, 0);
       tf_world_groundFrame.setRotation(q);

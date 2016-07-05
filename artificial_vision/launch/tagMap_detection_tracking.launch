@@ -2,8 +2,20 @@
 
 <arg name="board_folder" default="/home/ubuntu/droneUSE_ws/src/artificial_vision/apriltag_board/" />
 <arg name="board_file" default="landing_platform_board2.yml" />
+
+<!-- AprilTag Map Detector Node -->
+<arg name="scale_factor" 		default="0.3"/> 	# Image Scale Factor 
+<param name="artificial_vision/scale_factor" 	value="$(arg scale_factor)"/>
+
 <node pkg="artificial_vision" type="tagMap_detector_node" name="tagMap_detector_node" args="$(arg board_folder)$(arg board_file)" required="true" output="screen" />
 
+<!-- AprilTag Map Tracker Node -->
+<arg name="img_pos_cov" 		default="0.05"/> 	# Detected Position Covariance 
+<arg name="pred_velx_cov" 		default="0.05"/>	# Predicted x Velocity Covariance
+<arg name="pred_vely_cov" 		default="0.05"/>	# Predicted y Velocity Covariance
+<param name="artificial_vision/img_pos_cov" 	value="$(arg img_pos_cov)"/>
+<param name="artificial_vision/pred_velx_cov" 	value="$(arg pred_velx_cov)"/>
+<param name="artificial_vision/pred_vely_cov" 	value="$(arg pred_vely_cov)"/>
 <node pkg="artificial_vision" type="landingPlatform_tracker_node" name="landingPlatform_tracker_node" required="true" output="screen" />
 
 <arg name="bag_folder" default="/home/ubuntu/bag_files/" />

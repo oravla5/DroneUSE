@@ -26,7 +26,7 @@ using namespace boost;
 
 #define C_PI (double) 3.141592653589793
 
-tagMapDetector::tagMapDetector(char *imageTopic, string marker_map_cfg_file) : it_(nh_), markerMapCfg_file(marker_map_cfg_file), MIN_FRAME_NUM_(3), MIN_TAG_DIST_(1000), TAG_SIZE_(0.06), SCALE_FACTOR_(0.5)
+tagMapDetector::tagMapDetector(char *imageTopic, string marker_map_cfg_file) : it_(nh_), markerMapCfg_file(marker_map_cfg_file) 
 {
 	//Subscription
 	imgSub_ = it_.subscribeCamera("/dji_sdk/image_raw", 1, &tagMapDetector::imgSub_callback, this);
@@ -47,6 +47,8 @@ tagMapDetector::tagMapDetector(char *imageTopic, string marker_map_cfg_file) : i
 	// Tag16h5 size in pixel = 213
 	// Tag16h5 size in meters = 0.06
 	markerMapCfg = markerMapCfg.convertToMeters_pixelSize(float(0.06/213.0));
+	SCALE_FACTOR = 0.5;
+	ros::param::get("artificial_vision/scale_factor", SCALE_FACTOR);
 
 	tf_listener = new tf::TransformListener;
 
@@ -62,9 +64,9 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
 {
     if(cam_parameters.CameraMatrix.empty() || cam_parameters.Distorsion.empty())
     {
-        float cameraMatrix_components[9] = {float(2.0*info_msg->K[0]*SCALE_FACTOR_), 	float(info_msg->K[1]*SCALE_FACTOR_), 	 float(2.0*info_msg->K[2]*SCALE_FACTOR_),
-                                            float(info_msg->K[3]*SCALE_FACTOR_), 	float(1.5*info_msg->K[4]*SCALE_FACTOR_), float(1.5*info_msg->K[5]*SCALE_FACTOR_), 
-                                            float(info_msg->K[6]*SCALE_FACTOR_), 	float(info_msg->K[7]*SCALE_FACTOR_),	 float(info_msg->K[8]*SCALE_FACTOR_)}; 
+        float cameraMatrix_components[9] = {float(2.0*info_msg->K[0]*SCALE_FACTOR), 	float(info_msg->K[1]*SCALE_FACTOR), 	 float(2.0*info_msg->K[2]*SCALE_FACTOR),
+                                            float(info_msg->K[3]*SCALE_FACTOR), 	float(1.5*info_msg->K[4]*SCALE_FACTOR), float(1.5*info_msg->K[5]*SCALE_FACTOR), 
+                                            float(info_msg->K[6]*SCALE_FACTOR), 	float(info_msg->K[7]*SCALE_FACTOR),	 float(info_msg->K[8]*SCALE_FACTOR)}; 
 
         float cameraDistor_components[4] = {float(info_msg->D[0]),float(info_msg->D[1]),float(info_msg->D[2]),float(info_msg->D[3])};
 //        float cameraDistor_components[4] = {0.0,0.0,0.0,0.0};
@@ -82,7 +84,7 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
 	cv::Mat frame;
 
 
-	cv::resize(frame_ori, frame_scaled, cv::Size(), SCALE_FACTOR_, SCALE_FACTOR_); 
+	cv::resize(frame_ori, frame_scaled, cv::Size(), SCALE_FACTOR, SCALE_FACTOR); 
 	frame = frame_scaled;
 
 	vector<TagDetection> tags_detected;

@@ -60,9 +60,16 @@ int main(int argc, char **argv)
 
 
 	ros::Duration(5.0).sleep();
+	//std::cout << "frame wp 1" << waypoint[0].header.frame_id << endl;
+	//std::cout << "x " << waypoint[0].point.x << endl;
+	//std::cout << "y " << waypoint[0].point.y << endl;
+	//std::cout << "z " << waypoint[0].point.z << endl;
+	//std::cout << "frame wp 2 " << waypoint[1].header.frame_id << endl;
+	//std::cout << "x " << waypoint[1].point.x << endl;
+	//std::cout << "y " << waypoint[1].point.y << endl;
+	//std::cout << "z " << waypoint[1].point.z << endl;
 
 	// Hold until getting frames transformations
-/*
 	bool init = false;
 	while(!init)
 	{
@@ -84,11 +91,21 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		rate.sleep();
 	}
-*/
+
+	//std::cout << "frame wp 1" << waypoint[0].header.frame_id << endl;
+	//std::cout << "x " << waypoint[0].point.x << endl;
+	//std::cout << "y " << waypoint[0].point.y << endl;
+	//std::cout << "z " << waypoint[0].point.z << endl;
+	//std::cout << "frame wp 2 " << waypoint[1].header.frame_id << endl;
+	//std::cout << "x " << waypoint[1].point.x << endl;
+	//std::cout << "y " << waypoint[1].point.y << endl;
+	//std::cout << "z " << waypoint[1].point.z << endl;
+
 	// Hold until taking off 
 	// flight_status == 3 means drone has taken off
 	while(m100->get_flight_status() != 3)
 	{
+		gimbal_target_update();
 		ros::spinOnce();
 		rate.sleep();
 		std::cout << " waiting to take off" << std::endl;
@@ -98,45 +115,18 @@ int main(int argc, char **argv)
 	std::cout << "getting control" << std::endl;
 	if(m100->get_sdk_control())
 	{
-		/*MISSION_ON = true;
+		MISSION_ON = true;
 		TAKEOFF = true;
 		while(ros::ok() && MISSION_ON)
 		{	
+			rate.sleep();
+			ros::spinOnce();
 			gimbal_target_update();
 			m100_target_update();
-			rate.sleep();
-			ros::spinOnce();
 		}
-*/
-		
-		waypoint[0].header.stamp = ros::Time::now();
-		m100->set_target_position(waypoint[0]);
-		while(m100->distance_to_position(waypoint[0]) > 0.4)
-		{
-			gimbal_target_update();
-			rate.sleep();
-			ros::spinOnce();
-		}
-		waypoint[1].header.stamp = ros::Time::now();
-		m100->set_target_position(waypoint[1]);
-		while(m100->distance_to_position(waypoint[1]) > 0.4)
-		{
-			gimbal_target_update();
-			rate.sleep();
-			ros::spinOnce();
-		}
-		m100->hover();
-		MISSION_ON = true;
-		CHASE = true;
-		while(ros::ok() && MISSION_ON)
-		{	
-			gimbal_target_update();
-			m100_target_update();
-			rate.sleep();
-			ros::spinOnce();
-		}
+
 	}
-	
+
     return 0;
 }
 
@@ -157,17 +147,17 @@ std::vector<PointStamped> generateWP()
 {
 	std::vector<PointStamped> wp_list;
 	PointStamped wp;
-	wp.header.frame_id = "/world";
+	wp.header.frame_id = "/body_frame";
 	wp.header.stamp = ros::Time::now();
 	// wp 1
-	wp.point.x = 0.0;
-	wp.point.y = 0.0;
-	wp.point.z = 3.0;
+	wp.point.x = 0.1;
+	wp.point.y = 0.1;
+	wp.point.z = -3.0;
 	wp_list.push_back(wp);
 	// wp 2
 	wp.point.x = 2.0;
-	wp.point.y = 0.0;
-	wp.point.z = 3.0;
+	wp.point.y = 0.1;
+	wp.point.z = -3.0;
 	wp_list.push_back(wp);
 	return wp_list;
 }
@@ -224,7 +214,7 @@ void m100_target_update()
 		}
 		else if(!m100_target.empty())
 		{
-			if(fabs(m100_target[0].point.x) < 0.2 && fabs(m100_target[0].point.y) < 0.1 && fabs(m100_target[0].point.z) < 0.4)
+			if(m100->distance_to_position(m100_target[0]) < 0.45)
 			{
 				m100->land();	
 				m100->disarm();
