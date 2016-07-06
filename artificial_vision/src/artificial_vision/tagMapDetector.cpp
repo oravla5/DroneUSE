@@ -17,6 +17,7 @@
 #include <markermap.h>
 
 #include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 using namespace ros;
 using namespace std;
 using namespace sensor_msgs;
@@ -51,6 +52,7 @@ tagMapDetector::tagMapDetector(char *imageTopic, string marker_map_cfg_file) : i
 	ros::param::get("artificial_vision/scale_factor", SCALE_FACTOR);
 
 	tf_listener = new tf::TransformListener;
+	
 
 	return;
 }
@@ -64,8 +66,8 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
 {
     if(cam_parameters.CameraMatrix.empty() || cam_parameters.Distorsion.empty())
     {
-        float cameraMatrix_components[9] = {float(2.0*info_msg->K[0]*SCALE_FACTOR), 	float(info_msg->K[1]*SCALE_FACTOR), 	 float(2.0*info_msg->K[2]*SCALE_FACTOR),
-                                            float(info_msg->K[3]*SCALE_FACTOR), 	float(1.5*info_msg->K[4]*SCALE_FACTOR), float(1.5*info_msg->K[5]*SCALE_FACTOR), 
+        float cameraMatrix_components[9] = {2.0*float(info_msg->K[0]*SCALE_FACTOR), 	2.0*float(info_msg->K[1]*SCALE_FACTOR), 	 2.0*float(info_msg->K[2]*SCALE_FACTOR),
+                                            1.5*float(info_msg->K[3]*SCALE_FACTOR), 	1.5*float(info_msg->K[4]*SCALE_FACTOR), 1.5*float(info_msg->K[5]*SCALE_FACTOR), 
                                             float(info_msg->K[6]*SCALE_FACTOR), 	float(info_msg->K[7]*SCALE_FACTOR),	 float(info_msg->K[8]*SCALE_FACTOR)}; 
 
         float cameraDistor_components[4] = {float(info_msg->D[0]),float(info_msg->D[1]),float(info_msg->D[2]),float(info_msg->D[3])};
@@ -131,10 +133,17 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
 	float pos_x = tvec_pnp.at<float>(0,0);
 	float pos_y = tvec_pnp.at<float>(0,1);
 	float pos_z = tvec_pnp.at<float>(0,2);
+	
 	float tagMap_dist = sqrt(pos_x*pos_x + pos_y*pos_y + pos_z*pos_z);
 	// Check tagMap detection and its distance to the camera 
         if(!(tvec_pnp.empty() || rvec_pnp.empty()) && (tagMap_dist < 20.0) && (tagMap_dist > 0.1))     // Has any marker of the map been detected?
         { 
+
+	tf_camera_apriltagMap.setOrigin( tf::Vector3(tvec_pnp.at<float>(0,0), tvec_pnp.at<float>(0,1), tvec_pnp.at<float>(0,2)) );
+	q.setRPY(rvec_pnp.at<float>(0,0), rvec_pnp.at<float>(0,1), rvec_pnp.at<float>(0,2));
+	tf_camera_apriltagMap.setRotation(q);
+	br.sendTransform(tf::StampedTransform(tf_camera_apriltagMap, image_msg->header.stamp, "camera", "apriltag_map"));
+
             geometry_msgs::PointStamped tagMap_pos;
             tagMap_pos.header.stamp = image_msg->header.stamp;
             tagMap_pos.header.frame_id = "/camera";
@@ -143,7 +152,7 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
             tagMap_pos.point.z = pos_z;
 		try
 		{
-			tf_listener->waitForTransform("/body_frame", "/camera",image_msg->header.stamp, ros::Duration(0.7));
+			tf_listener->waitForTransform("/body_frame", "/camera",image_msg->header.stamp, ros::Duration(3.0/20));
 			tf_listener->transformPoint("/body_frame", tagMap_pos, tagMap_pos);
 			float gimbal_req_yaw = atan2(tagMap_pos.point.y, tagMap_pos.point.x)*180/C_PI;
 			float gimbal_req_roll = atan2(tagMap_pos.point.z, tagMap_pos.point.x)*180/C_PI;

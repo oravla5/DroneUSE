@@ -4,7 +4,7 @@
 <arg name="board_file" default="landing_platform_board2.yml" />
 
 <!-- AprilTag Map Detector Node -->
-<arg name="scale_factor" 		default="0.3"/> 	# Image Scale Factor 
+<arg name="scale_factor" 		default="0.7"/> 	# Image Scale Factor 
 <param name="artificial_vision/scale_factor" 	value="$(arg scale_factor)"/>
 
 <node pkg="artificial_vision" type="tagMap_detector_node" name="tagMap_detector_node" args="$(arg board_folder)$(arg board_file)" required="true" output="screen" />

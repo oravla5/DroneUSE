@@ -4,20 +4,20 @@
 	<arg name="Kxy_d" 					default="0.6"/>
 	<arg name="Kxy_i" 					default="0.6"/>
 
-	<arg name"xy_maxVelocity" 				default="1.0"/> 
-	<arg name"xy_velocity_Kp" 				default="0.5"/> 	<!--default="1.92*$(arg Kxy_p)" -->
-	<arg name"xy_velocity_Kd" 				default="0.05"/> 	<!--default="1.8*$(arg Kxy_d)" -->
-	<arg name"xy_velocity_Ki" 				default="0.0"/> 	<!--default="0.36*$(arg Kxy_i)" --> 
+	<arg name="xy_maxVelocity" 				default="1.0"/> 
+	<arg name="xy_Velocity_Kp" 				default="0.5"/> 	<!--default="1.92*$(arg Kxy_p)" -->
+	<arg name="xy_Velocity_Kd" 				default="0.05"/> 	<!--default="1.8*$(arg Kxy_d)" -->
+	<arg name="xy_Velocity_Ki" 				default="0.0"/> 	<!--default="0.36*$(arg Kxy_i)" --> 
 
-	<arg name"z_maxVelocity" 				default="0.5"/>
-	<arg name"z_velocity_Kp" 				default="0.5"/>		<!-- "4.0" -->	 
-	<arg name"z_velocity_Kd" 				default="0.05"/>	<!-- "2.0" --> 
-	<arg name"z_velocity_Ki" 				default="0.0"/> 	<!-- "0.0" -->
+	<arg name="z_maxVelocity" 				default="0.5"/>
+	<arg name="z_Velocity_Kp" 				default="0.5"/>		<!-- "4.0" -->	 
+	<arg name="z_Velocity_Kd" 				default="0.05"/>	<!-- "2.0" --> 
+	<arg name="z_Velocity_Ki" 				default="0.0"/> 	<!-- "0.0" -->
 
-	<arg name"yaw_maxRate" 					default="30.0"/>
-	<arg name"yaw_rate_Kp" 					default="1.0"/>
-	<arg name"yaw_rate_Kd" 					default="0.05"/>
-	<arg name"yaw_rate_Ki" 					default="0.0"/>
+	<arg name="yaw_maxRate" 					default="30.0"/>
+	<arg name="yaw_rate_Kp" 					default="1.0"/>
+	<arg name="yaw_rate_Kd" 					default="0.05"/>
+	<arg name="yaw_rate_Ki" 					default="0.0"/>
 
 
 	<param name="m100_controller/x_maxVelocity"		value="$(arg xy_maxVelocity)"/>
@@ -42,46 +42,6 @@
 
 	<node pkg="m100_control" type="m100_controller_node" name="m100_controller_node" output="screen">
 	</node>
-
-	<arg name="Kxy_p" 					default="0.35"/>
-	<arg name="Kxy_d" 					default="0.6"/>
-	<arg name="Kxy_i" 					default="0.6"/>
-
-	<arg name"xy_maxVelocity" 				default="1.0"/> 
-	<arg name"xy_velocity_Kp" 				default="0.5"/> 	<!--default="1.92*$(arg Kxy_p)" -->
-	<arg name"xy_velocity_Kd" 				default="0.05"/> 	<!--default="1.8*$(arg Kxy_d)" -->
-	<arg name"xy_velocity_Ki" 				default="0.0"/> 	<!--default="0.36*$(arg Kxy_i)" --> 
-
-	<arg name"z_maxVelocity" 				default="0.5"/>
-	<arg name"z_velocity_Kp" 				default="0.5"/>		<!-- "4.0" -->	 
-	<arg name"z_velocity_Kd" 				default="0.05"/>	<!-- "2.0" --> 
-	<arg name"z_velocity_Ki" 				default="0.0"/> 	<!-- "0.0" -->
-
-	<arg name"yaw_maxRate" 					default="30.0"/>
-	<arg name"yaw_rate_Kp" 					default="1.0"/>
-	<arg name"yaw_rate_Kd" 					default="0.05"/>
-	<arg name"yaw_rate_Ki" 					default="0.0"/>
-
-
-	<param name="m100_controller/x_maxVelocity"		value="$(arg xy_maxVelocity)"/>
-	<param name="m100_controller/x_Velocity_Kp"		value="$(arg xy_Velocity_Kp)"/>
-	<param name="m100_controller/x_Velocity_Kd"		value="$(arg xy_Velocity_Kd)"/>
-	<param name="m100_controller/x_Velocity_Ki"		value="$(arg xy_Velocity_Ki)"/>
-
-	<param name="m100_controller/y_maxVelocity"		value="$(arg xy_maxVelocity)"/>
-	<param name="m100_controller/y_Velocity_Kp"		value="$(arg xy_Velocity_Kp)"/>
-	<param name="m100_controller/y_Velocity_Kd"		value="$(arg xy_Velocity_Kd)"/>
-	<param name="m100_controller/y_Velocity_Ki"		value="$(arg xy_Velocity_Ki)"/>
-
-	<param name="m100_controller/z_maxVelocity"		value="$(arg z_maxVelocity)"/>
-	<param name="m100_controller/z_Velocity_Kp"		value="$(arg z_Velocity_Kp)"/>
-	<param name="m100_controller/z_Velocity_Kd"		value="$(arg z_Velocity_Kd)"/>
-	<param name="m100_controller/z_Velocity_Ki"		value="$(arg z_Velocity_Ki)"/>
-
-	<param name="m100_controller/yaw_maxRate"		value="$(arg yaw_maxRate)"/>
-	<param name="m100_controller/yaw_Rate_Kp"		value="$(arg yaw_Rate_Kp)"/>
-	<param name="m100_controller/yaw_Rate_Kd"		value="$(arg yaw_Rate_Kd)"/>
-	<param name="m100_controller/yaw_Rate_Ki"		value="$(arg yaw_Rate_Ki)"/>
 
 	<node pkg="m100_control" type="gimbal_controller_node" name="gimbal_controller_node" output="screen">
 	</node>

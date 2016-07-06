@@ -155,10 +155,10 @@ public:
     int nMarkers;
     cv::Point2i mapSize_pixels;
     cv::Point2d mapSize_meters;
+
 private:
     //dictionary it belongs to (if any)
     std::string dictionary;
-
 
 private:
     /**Saves the board info to a file

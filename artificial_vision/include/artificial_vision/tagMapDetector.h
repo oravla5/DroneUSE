@@ -14,6 +14,7 @@
 #include <kalman_filter.h>
 
 #include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
 /*
 struct trackedTag_{
 	AprilTags::TagDetection *tag;
@@ -41,6 +42,9 @@ class tagMapDetector
     std::string                                     markerMapCfg_file; 
     aruco::CameraParameters                         cam_parameters;
 	tf::TransformListener* 		tf_listener;
+	tf::TransformBroadcaster 	br;
+	tf::Quaternion			q;
+	tf::Transform 			tf_camera_apriltagMap;
     
     // Class Parameters
 	float					SCALE_FACTOR;

@@ -483,7 +483,7 @@ pair<cv::Mat,cv::Mat> MarkerMap::calculateExtrinsics(const std::vector<aruco::Ma
     if (nTags>0)//no points in the vector
     {
 //        cv::gpu::solvePnPRansac(objPts_pnp,imgPts_pnp,CameraMatrix,Distorsion,rvec,tvec);
-        cv::gpu::solvePnPRansac(objPts,imgPts,CameraMatrix,Distorsion,rvec,tvec);
+	cv::gpu::solvePnPRansac(objPts,imgPts,CameraMatrix,Distorsion,rvec,tvec);
 //        cv::solvePnPRansac(objPts_pnp, imgPts_pnp, CameraMatrix,Distorsion, rvec, tvec);
     }
 //std::cout << "coordinate x: " << tvec.at<float>(0) << std::endl;
