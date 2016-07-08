@@ -1,0 +1,475 @@
+/*
+ * GuidanceNode.cpp
+ *
+ *  Created on: Apr 29, 2015
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
+#include "DJI_guidance.h"
+#include "DJI_utility.h"
+
+#include <geometry_msgs/TransformStamped.h> //IMU
+#include <geometry_msgs/Vector3Stamped.h> //velocity
+#include <sensor_msgs/LaserScan.h> //obstacle distance & ultrasonic
+#include <sensor_msgs/CameraInfo.h>
+
+using namespace cv;
+
+ros::Publisher depth_image_pub;
+ros::Publisher left_image_pub;
+ros::Publisher right_image_pub;
+ros::Publisher imu_pub;
+ros::Publisher obstacle_distance_pub;
+ros::Publisher velocity_pub;
+ros::Publisher ultrasonic_pub;
+ros::Publisher position_pub;
+ros::Publisher cam_info_left_pub;
+ros::Publisher cam_info_right_pub;
+ros::Publisher cam_info_pub;
+
+e_vbus_index cam_index = e_vbus1;
+bool depth_img_received = false;
+
+sensor_msgs::CameraInfo g_cam_info_right;
+sensor_msgs::CameraInfo g_cam_info_left;
+sensor_msgs::CameraInfo g_cam_info;
+
+int WIDTH=320;
+int HEIGHT=240;
+#define IMAGE_SIZE (HEIGHT * WIDTH)
+#define DEPTH_SCALE 128	//Value to scale depth image matrix (see DJI API) 
+
+DJI_lock        g_lock;
+DJI_event       g_event;
+
+Mat             g_greyscale_image_left(HEIGHT, WIDTH, CV_8UC1);
+Mat		g_greyscale_image_right(HEIGHT, WIDTH, CV_8UC1);
+
+Mat		g_depth(HEIGHT,WIDTH,CV_16SC1);
+Mat		g_depth_f(HEIGHT,WIDTH,CV_16UC1);
+
+std::ostream& operator<<(std::ostream& out, const e_sdk_err_code value){
+	const char* s = 0;
+	static char str[100]={0};
+#define PROCESS_VAL(p) case(p): s = #p; break;
+	switch(value){
+		PROCESS_VAL(e_OK);     
+		PROCESS_VAL(e_load_libusb_err);     
+		PROCESS_VAL(e_sdk_not_inited);
+		PROCESS_VAL(e_disparity_not_allowed);
+		PROCESS_VAL(e_image_frequency_not_allowed);
+		PROCESS_VAL(e_config_not_ready);
+		PROCESS_VAL(e_online_flag_not_ready);
+		PROCESS_VAL(e_stereo_cali_not_ready);
+		PROCESS_VAL(e_libusb_io_err);
+		PROCESS_VAL(e_timeout);
+	default:
+		strcpy(str, "Unknown error");
+		s = str;
+		break;
+	}
+#undef PROCESS_VAL
+
+	return out << s;
+}
+
+
+int my_callback(int data_type, int data_len, char *content)
+{
+    g_lock.enter();
+
+    /* image data */
+    if (e_image == data_type && NULL != content)
+    {        
+	ros::Time time_in_loop = ros::Time::now();
+        image_data* data = (image_data*)content;
+
+		if ( data->m_greyscale_image_left[cam_index] ){
+			memcpy(g_greyscale_image_left.data, data->m_greyscale_image_left[cam_index], IMAGE_SIZE);
+			// publish left greyscale image
+			cv_bridge::CvImage left_8;
+			g_greyscale_image_left.copyTo(left_8.image);
+			switch((int) cam_index)
+			{
+				case 0:
+					left_8.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					left_8.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					left_8.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					left_8.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					left_8.header.frame_id  = "guidance_left";
+					break;
+			}	
+			left_8.header.stamp	= time_in_loop;
+			left_8.encoding		= sensor_msgs::image_encodings::MONO8;
+			left_image_pub.publish(left_8.toImageMsg());
+
+			g_cam_info_left.header.stamp = time_in_loop;
+			cam_info_left_pub.publish(g_cam_info_left);
+		}
+
+		if ( data->m_greyscale_image_right[cam_index] ){
+			memcpy(g_greyscale_image_right.data, data->m_greyscale_image_right[cam_index], IMAGE_SIZE);
+			// publish right greyscale image
+			cv_bridge::CvImage right_8;
+			g_greyscale_image_right.copyTo(right_8.image);
+			switch((int) cam_index)
+			{
+				case 0:
+					right_8.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					right_8.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					right_8.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					right_8.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					right_8.header.frame_id  = "guidance_left";
+					break;
+			}	
+			right_8.header.stamp	 = time_in_loop;
+			right_8.encoding  	 = sensor_msgs::image_encodings::MONO8;
+			right_image_pub.publish(right_8.toImageMsg());
+			g_cam_info_right.header.stamp = time_in_loop;
+			cam_info_right_pub.publish(g_cam_info_right);
+		}
+
+		if ( data->m_depth_image[cam_index] ){
+			depth_img_received = true;
+			memcpy(g_depth.data, data->m_depth_image[cam_index], IMAGE_SIZE * 2);
+
+			/*Filtering*/
+			filterSpeckles(g_depth, -16, 50, 20);
+
+			//publish depth image
+			g_depth.convertTo(g_depth_f, CV_32FC1);
+			g_depth_f = g_depth_f / DEPTH_SCALE;
+
+			cv_bridge::CvImage depth_32;
+			g_depth_f.copyTo(depth_32.image);
+			switch((int) cam_index)
+			{
+				case 0:
+					depth_32.header.frame_id  = "guidance_down";
+					break;
+				case 1:
+					depth_32.header.frame_id  = "guidance_front";
+					break;
+				case 2:
+					depth_32.header.frame_id  = "guidance_right";
+					break;
+				case 3:
+					depth_32.header.frame_id  = "guidance_back";
+					break;
+				case 4:
+					depth_32.header.frame_id  = "guidance_left";
+					break;
+			}	
+			depth_32.header.stamp	  = ros::Time::now();
+			g_cam_info.header.stamp = depth_32.header.stamp;
+			//depth_32.encoding	  = sensor_msgs::image_encodings::MONO16;
+			sensor_msgs::ImagePtr depth_image = depth_32.toImageMsg();
+			depth_image->encoding = sensor_msgs::image_encodings::TYPE_32FC1; 
+			depth_image_pub.publish(depth_image);
+			cam_info_pub.publish(g_cam_info);
+                }
+    }
+
+    /* imu */
+    if ( e_imu == data_type && NULL != content )
+    {
+        imu *imu_data = (imu*)content;
+        printf( "frame index: %d, stamp: %d\n", imu_data->frame_index, imu_data->time_stamp );
+        printf( "imu: [%f %f %f %f %f %f %f]\n", imu_data->acc_x, imu_data->acc_y, imu_data->acc_z, imu_data->q[0], imu_data->q[1], imu_data->q[2], imu_data->q[3] );
+ 	
+    	// publish imu data
+		geometry_msgs::TransformStamped g_imu;
+		g_imu.header.frame_id = "guidance";
+		g_imu.header.stamp    = ros::Time::now();
+		g_imu.transform.translation.x = imu_data->acc_x;
+		g_imu.transform.translation.y = imu_data->acc_y;
+		g_imu.transform.translation.z = imu_data->acc_z;
+		g_imu.transform.rotation.w = imu_data->q[0];
+		g_imu.transform.rotation.x = imu_data->q[1];
+		g_imu.transform.rotation.y = imu_data->q[2];
+		g_imu.transform.rotation.z = imu_data->q[3];
+		imu_pub.publish(g_imu);
+    }
+    /* velocity */
+    if ( e_velocity == data_type && NULL != content )
+    {
+        velocity *vo = (velocity*)content;
+        printf( "frame index: %d, stamp: %d\n", vo->frame_index, vo->time_stamp );
+        printf( "vx:%f vy:%f vz:%f\n", 0.001f * vo->vx, 0.001f * vo->vy, 0.001f * vo->vz );
+	
+		// publish velocity
+		geometry_msgs::Vector3Stamped g_vo;
+		g_vo.header.frame_id = "guidance";
+		g_vo.header.stamp    = ros::Time::now();
+		g_vo.vector.x = 0.001f * vo->vx;
+		g_vo.vector.y = 0.001f * vo->vy;
+		g_vo.vector.z = 0.001f * vo->vz;
+		velocity_pub.publish(g_vo);
+    }
+
+    /* obstacle distance */
+    if ( e_obstacle_distance == data_type && NULL != content )
+    {
+        obstacle_distance *oa = (obstacle_distance*)content;
+        printf( "frame index: %d, stamp: %d\n", oa->frame_index, oa->time_stamp );
+        printf( "obstacle distance:" );
+        for ( int i = 0; i < CAMERA_PAIR_NUM; ++i )
+        {
+            printf( " %f ", 0.01f * oa->distance[i] );
+        }
+		printf( "\n" );
+
+		// publish obstacle distance
+		sensor_msgs::LaserScan g_oa;
+		g_oa.ranges.resize(CAMERA_PAIR_NUM);
+		g_oa.header.frame_id = "guidance";
+		g_oa.header.stamp    = ros::Time::now();
+		for ( int i = 0; i < CAMERA_PAIR_NUM; ++i )
+			g_oa.ranges[i] = 0.01f * oa->distance[i];
+		obstacle_distance_pub.publish(g_oa);
+	}
+
+    /* ultrasonic */
+    if ( e_ultrasonic == data_type && NULL != content )
+    {
+        ultrasonic_data *ultrasonic = (ultrasonic_data*)content;
+        printf( "frame index: %d, stamp: %d\n", ultrasonic->frame_index, ultrasonic->time_stamp );
+        for ( int d = 0; d < CAMERA_PAIR_NUM; ++d )
+        {
+            printf( "ultrasonic distance: %f, reliability: %d\n", ultrasonic->ultrasonic[d] * 0.001f, (int)ultrasonic->reliability[d] );
+        }
+	
+		// publish ultrasonic data
+		sensor_msgs::LaserScan g_ul;
+		g_ul.ranges.resize(CAMERA_PAIR_NUM);
+		g_ul.intensities.resize(CAMERA_PAIR_NUM);
+		g_ul.header.frame_id = "guidance";
+		g_ul.header.stamp    = ros::Time::now();
+		for ( int d = 0; d < CAMERA_PAIR_NUM; ++d ){
+			g_ul.ranges[d] = 0.001f * ultrasonic->ultrasonic[d];
+			g_ul.intensities[d] = 1.0 * ultrasonic->reliability[d];
+		}
+		ultrasonic_pub.publish(g_ul);
+    }
+	
+	if(e_motion == data_type && NULL!=content){
+		motion* m=(motion*)content;
+		printf("frame index: %d, stamp: %d\n", m->frame_index, m->time_stamp);
+		printf("(px,py,pz)=(%.2f,%.2f,%.2f)\n", m->position_in_global_x, m->position_in_global_y, m->position_in_global_z);
+
+		// publish position
+		geometry_msgs::Vector3Stamped g_pos;
+		g_pos.header.frame_id = "guidance";
+		g_pos.header.stamp = ros::Time::now();
+		g_pos.vector.x = m->position_in_global_x;
+		g_pos.vector.y = m->position_in_global_y;
+		g_pos.vector.z = m->position_in_global_z;
+		position_pub.publish(g_pos);
+	}
+	
+    g_lock.leave();
+    g_event.set_event();
+
+    return 0;
+}
+
+#define RETURN_IF_ERR(err_code) { if( err_code ){ release_transfer(); \
+std::cout<<"Error: "<<(e_sdk_err_code)err_code<<" at "<<__LINE__<<","<<__FILE__<<std::endl; return -1;}}
+
+int main(int argc, char** argv)
+{
+
+    /* initialize ros */
+    ros::init(argc, argv, "GuidanceNode");
+    ros::NodeHandle my_node;
+
+    depth_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/depth_image",1);
+    left_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/left/image_raw",1);
+    right_image_pub	= my_node.advertise<sensor_msgs::Image>("/guidance/right/image_raw",1);
+    imu_pub  		= my_node.advertise<geometry_msgs::TransformStamped>("/guidance/imu",1);
+    velocity_pub  	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/velocity",1);
+    obstacle_distance_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/obstacle_distance",1);
+    ultrasonic_pub	= my_node.advertise<sensor_msgs::LaserScan>("/guidance/ultrasonic", 1);
+    position_pub	= my_node.advertise<geometry_msgs::Vector3Stamped>("/guidance/position", 1);
+    cam_info_right_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/right/camera_info",1);
+    cam_info_left_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/left/camera_info",1);
+    cam_info_pub		= my_node.advertise<sensor_msgs::CameraInfo>("/guidance/camera_info",1);
+
+    /* initialize guidance */
+    reset_config();
+    int err_code = init_transfer();
+    RETURN_IF_ERR(err_code);
+
+
+	int online_status[CAMERA_PAIR_NUM];
+	err_code = get_online_status(online_status);
+	RETURN_IF_ERR(err_code);
+    std::cout<<"Sensor online status: ";
+	for (int i=0; i<CAMERA_PAIR_NUM; i++)
+        std::cout<<online_status[i]<<" ";
+    std::cout<<std::endl;
+
+	// get cali param
+	stereo_cali cali[CAMERA_PAIR_NUM];
+	err_code = get_stereo_cali(cali);
+	RETURN_IF_ERR(err_code);
+    std::cout<<"cu\tcv\tfocal\tbaseline\n";
+	for (int i=0; i<CAMERA_PAIR_NUM; i++)
+	{
+        std::cout<<cali[i].cu<<"\t"<<cali[i].cv<<"\t"<<cali[i].focal<<"\t"<<cali[i].baseline<<std::endl;
+	}
+	
+	err_code = set_image_frequecy(e_frequecy_20);
+	RETURN_IF_ERR(err_code);
+
+	//CAMERA INFO MESSAGES
+	g_cam_info_right.height = 240;
+	g_cam_info_right.width = 320;
+	g_cam_info_right.distortion_model = "plumb_bob";
+	g_cam_info_right.D.push_back(0.025557); 
+	g_cam_info_right.D.push_back(-0.006332); 
+	g_cam_info_right.D.push_back(0.000798); 
+	g_cam_info_right.D.push_back(0.001992); 
+	g_cam_info_right.D.push_back(0.000000); 
+
+	g_cam_info_right.K = {241.499063, 0.000000, 164.755828, 0.000000, 240.956808, 117.309944, 0.000000, 0.000000, 1.000000};
+	g_cam_info_right.R = {0.999962, -0.000419, 0.008748, 0.000438, 0.999998, -0.002173, -0.008747, 0.002176, 0.999959};
+	g_cam_info_right.P = {247.853084, 0.000000, 161.956247, -37.017914, 0.000000, 247.853084, 118.337358, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
+	g_cam_info_right.binning_x = 0;
+	g_cam_info_right.binning_y = 0;
+	g_cam_info_right.roi.height = 0;
+	g_cam_info_right.roi.width = 0;
+	g_cam_info_right.roi.do_rectify = false;
+
+	g_cam_info_right.header.frame_id = "guidance_front";
+
+	g_cam_info = g_cam_info_right;
+		
+	//CAMERA INFO MESSAGE LEFT
+	g_cam_info_left.height = 240;
+	g_cam_info_left.width = 320;
+	g_cam_info_left.distortion_model = "plumb_bob";
+	g_cam_info_left.D.push_back(0.020348); 
+	g_cam_info_left.D.push_back(0.001636); 
+	g_cam_info_left.D.push_back(0.002177); 
+	g_cam_info_left.D.push_back(0.002003);
+	g_cam_info_left.D.push_back(0.000000); 
+
+	g_cam_info_left.K = {242.056746, 0.000000, 166.892839, 0.000000, 241.642363, 118.493609, 0.000000, 0.000000, 1.000000};
+	g_cam_info_left.R = {0.999861, -0.000620, 0.016663, 0.000584, 0.999997, 0.002180, -0.016664, -0.002170, 0.999859};
+	g_cam_info_left.P = {247.853084, 0.000000, 161.956247, 0.000000, 0.000000, 247.853084, 118.337358, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000};
+	g_cam_info_left.binning_x = 0;
+	g_cam_info_left.binning_y = 0;
+	g_cam_info_left.roi.height = 0;
+	g_cam_info_left.roi.width = 0;
+	g_cam_info_left.roi.do_rectify = false;
+
+	g_cam_info_left.header.frame_id = "guidance_front";
+		
+
+    /* select data */
+    err_code = select_greyscale_image(cam_index, true);
+	RETURN_IF_ERR(err_code);
+    err_code = select_greyscale_image(cam_index, false);
+	RETURN_IF_ERR(err_code);
+    err_code = select_depth_image(cam_index);
+	RETURN_IF_ERR(err_code);
+
+    select_imu();
+    select_ultrasonic();
+    select_obstacle_distance();
+    select_velocity();
+    select_motion();
+
+    /* start data transfer */
+    get_image_size(&WIDTH, &HEIGHT);
+    std::cout<<"(width, height)="<<WIDTH<<", "<<HEIGHT<<std::endl;
+    err_code = set_sdk_event_handler(my_callback);
+    RETURN_IF_ERR(err_code);
+
+    err_code = start_transfer();
+    RETURN_IF_ERR(err_code);
+	
+	// for setting exposure
+	exposure_param para;
+	para.m_is_auto_exposure = 1;
+	para.m_step = 10;
+	para.m_expected_brightness = 85;
+
+	for(int i=0; i<CAMERA_PAIR_NUM; i++)
+	{
+        para.m_camera_pair_index = i;
+	set_exposure_param(&para);
+	}
+
+	
+	std::cout << "start_transfer" << std::endl;
+
+	while (ros::ok())
+	{
+		ros::spinOnce();
+/*	
+		if(!depth_img_received)
+			continue;
+
+		depth_img_received = false;
+		cam_index = static_cast<e_vbus_index>(cam_index + 1); 
+		if(cam_index > 4)
+			cam_index = e_vbus5;
+		err_code = stop_transfer();
+			RETURN_IF_ERR(err_code);
+    		reset_config();
+    		
+    		err_code = select_depth_image(cam_index);
+			RETURN_IF_ERR(err_code);
+    		err_code = select_greyscale_image(cam_index, true);
+			RETURN_IF_ERR(err_code);
+    		err_code = select_greyscale_image(cam_index, false);
+			RETURN_IF_ERR(err_code);
+	
+    		select_imu();
+    		select_ultrasonic();
+    		select_obstacle_distance();
+    		select_velocity();
+    		select_motion();
+    		err_code = start_transfer();
+    			RETURN_IF_ERR(err_code);
+*/	}
+
+	/* release data transfer */
+	err_code = stop_transfer();
+	RETURN_IF_ERR(err_code);
+	//make sure the ack packet from GUIDANCE is received
+	sleep(10000);
+	std::cout << "release_transfer" << std::endl;
+	err_code = release_transfer();
+	RETURN_IF_ERR(err_code);
+
+    return 0;
+}
