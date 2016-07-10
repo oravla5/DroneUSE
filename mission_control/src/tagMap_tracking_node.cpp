@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 	ros::Duration(5.0).sleep();
 
 	// Hold until getting frames transformations
-/*
+
 	bool init = false;
 	while(!init)
 	{
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		rate.sleep();
 	}
-*/
+
 	// Hold until taking off 
 	// flight_status == 3 means drone has taken off
 	while(m100->get_flight_status() != 3)
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	std::cout << "getting control" << std::endl;
 	if(m100->get_sdk_control())
 	{
-		/*MISSION_ON = true;
+		MISSION_ON = true;
 		TAKEOFF = true;
 		while(ros::ok() && MISSION_ON)
 		{	
@@ -107,8 +107,7 @@ int main(int argc, char **argv)
 			rate.sleep();
 			ros::spinOnce();
 		}
-*/
-		
+/*		
 		waypoint[0].header.stamp = ros::Time::now();
 		m100->set_target_position(waypoint[0]);
 		while(m100->distance_to_position(waypoint[0]) > 0.4)
@@ -127,7 +126,6 @@ int main(int argc, char **argv)
 		}
 		m100->hover();
 		MISSION_ON = true;
-		CHASE = true;
 		while(ros::ok() && MISSION_ON)
 		{	
 			gimbal_target_update();
@@ -135,7 +133,10 @@ int main(int argc, char **argv)
 			rate.sleep();
 			ros::spinOnce();
 		}
+*/
 	}
+	m100->land();	
+	m100->disarm();
 	
     return 0;
 }
@@ -157,17 +158,32 @@ std::vector<PointStamped> generateWP()
 {
 	std::vector<PointStamped> wp_list;
 	PointStamped wp;
-	wp.header.frame_id = "/world";
+	wp.header.frame_id = "/body_frame";
 	wp.header.stamp = ros::Time::now();
 	// wp 1
 	wp.point.x = 0.0;
 	wp.point.y = 0.0;
-	wp.point.z = 3.0;
+	wp.point.z = -3.0;
 	wp_list.push_back(wp);
 	// wp 2
-	wp.point.x = 2.0;
+	wp.point.x = 3.0;
 	wp.point.y = 0.0;
-	wp.point.z = 3.0;
+	wp.point.z = -3.0;
+	wp_list.push_back(wp);
+	// wp 3
+	wp.point.x = 3.0;
+	wp.point.y = 3.0;
+	wp.point.z = -3.0;
+	wp_list.push_back(wp);
+	// wp 4
+	wp.point.x = 0.0;
+	wp.point.y = 3.0;
+	wp.point.z = -3.0;
+	wp_list.push_back(wp);
+	// wp 5
+	wp.point.x = 0.0;
+	wp.point.y = 0.0;
+	wp.point.z = -3.0;
 	wp_list.push_back(wp);
 	return wp_list;
 }
@@ -262,8 +278,9 @@ void m100_target_update()
 		else 
 		{
 			m100->hover();		
-			CHASE = true;
+			CHASE = false;
 			TAKEOFF = false; 
+			MISSION_ON = false;
 		}
 		
 	}

@@ -12,8 +12,8 @@
 <node name="guidanceNode" pkg="guidance" type="guidanceNode" respawn="true" />
 
 #Depth to pointcloud
-<include file="/home/ubuntu/droneUSE_ws/launch/depth_to_pointcloud.launch" />
+<!-- include file="/home/ubuntu/droneUSE_ws/launch/depth_to_pointcloud.launch" /-->
 
 #Obstacled data fusion
-<node name="obstacleNode" pkg="guidance" type="obstacleNode" respawn="true" output="screen" />
+<!--node name="obstacleNode" pkg="guidance" type="obstacleNode" respawn="true" output="screen" /-->
 </launch>
