@@ -128,18 +128,20 @@ bool droneuse_m100::hover()
 
 	dji_sdk::AttitudeControl m100_control_command;
 	m100_control_command.request.flag       = hover_ctrl_flag;
-    m100_control_command.request.x      = float(0.0);
-    m100_control_command.request.y      = float(0.0);
-    m100_control_command.request.z      = float(0.0);
-    m100_control_command.request.yaw    = float(0.0);
+	    m100_control_command.request.x      = 0.0;
+	    m100_control_command.request.y      = 0.0;
+	    m100_control_command.request.z      = 0.0;
+	    m100_control_command.request.yaw    = 0.0;
     return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
 }
 
 bool droneuse_m100::hover(float height)
 {
     if(!sdk_control)
+    {
         get_sdk_control();
-
+	ros::Duration(2.0).sleep();
+    }
     // Control Flag Structure: http://download.dji-innovations.com/downloads/dev/OnboardSDK/Onboard_API_introduction_version_1.0.1_en.pdfww
 	disable_m100_position_control();
 	unsigned char hover_ctrl_flag = DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
@@ -150,12 +152,20 @@ bool droneuse_m100::hover(float height)
 
 	dji_sdk::AttitudeControl m100_control_command;
 	m100_control_command.request.flag       = hover_ctrl_flag;
-    m100_control_command.request.x      = float(0.0);
-    m100_control_command.request.y      = float(0.0);
-    m100_control_command.request.z      = height;
-    m100_control_command.request.yaw    = float(0.0);
-    return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
-    
+	m100_control_command.request.x      	= 0.0;
+	m100_control_command.request.y      	= 0.0;
+	m100_control_command.request.z      	= height;
+	m100_control_command.request.yaw	= 0.0;
+
+	ros::Rate rate(loop_rate);
+	while(fabs(get_local_position().z - height) > 0.2)
+	{
+		m100_attitude_control_service.call(m100_control_command);
+		ros::spinOnce();
+		rate.sleep();
+	}
+	return true;
+  
 }
 
 bool droneuse_m100::get_sdk_control()
@@ -235,8 +245,10 @@ bool droneuse_m100::land()
 
 bool droneuse_m100::custom_land()
 {
-    if(!sdk_control)
-        get_sdk_control();
+	if(!sdk_control)
+		get_sdk_control();
+
+	ros::Rate rate(loop_rate);
     
     unsigned char land_ctrl_flag = DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                                     DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_THRUST |
@@ -246,23 +258,24 @@ bool droneuse_m100::custom_land()
 
 	dji_sdk::AttitudeControl m100_control_command;
 	m100_control_command.request.flag       = land_ctrl_flag;
-    m100_control_command.request.x      = float(0.0);
-    m100_control_command.request.y      = float(0.0);
-    m100_control_command.request.z      = float(0.0);
-    m100_control_command.request.yaw    = float(0.0);
-    if(get_local_position().z < 0.4)
-        return ( m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result && disarm() );
-    else
-    {
-        hover(0.1);
-        ros::Rate rate(loop_rate);
-        while(get_local_position().z > 0.2)
-        {
-            ros::spinOnce();
-            rate.sleep();
-        }
-        return ( m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result && disarm() );
-    }
+	m100_control_command.request.x      = 0.0;
+	m100_control_command.request.y      = 0.0;
+	m100_control_command.request.z      = 10.0;
+	m100_control_command.request.yaw    = 0.0;
+
+	if(get_local_position().z > 1.0)
+		hover(0.3);
+
+	while(fabs(get_local_position().z) > 0.2)
+	{
+		m100_attitude_control_service.call(m100_control_command);
+		ros::spinOnce();
+		rate.sleep();
+	}
+	land();
+	disarm();
+	return release_sdk_control();
+	
 }
 
 float droneuse_m100::distance_to_position(geometry_msgs::PointStamped position)

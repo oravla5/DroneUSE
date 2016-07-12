@@ -58,10 +58,12 @@ int main(int argc, char **argv)
 
 	// Hold until taking off 
     m100->wait_to_takeoff();
-    if(!m100->follow_waypoint(waypoint))
-        m100->hover(3.0);
-    if(!m100->perform_landing_maneuver())
-        m100->hover(3.0);
+//    if(!m100->follow_waypoint(waypoint))
+//        m100->hover(3.0);
+	m100->hover(2.0);
+	m100->custom_land();
+    //if(!m100->perform_landing_maneuver())
+    //    m100->hover(3.0);
 
     return 0;
 }
