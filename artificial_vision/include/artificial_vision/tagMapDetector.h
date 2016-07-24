@@ -24,35 +24,48 @@ struct trackedTag_{
 
 class tagMapDetector
 {
-	ros::NodeHandle					                nh_;
+	ros::NodeHandle					nh_;
 
-	image_transport::ImageTransport			        it_;
-	image_transport::CameraSubscriber		        imgSub_;
+	image_transport::ImageTransport			it_;
+	image_transport::CameraSubscriber		imgSub_;
 
-    ros::Publisher					                tagMapPub_;
-    image_transport::Publisher                      imgPub_;
+	ros::Publisher					tagMapPub_;
+	ros::Publisher					orig_tagMapPub_;
+	image_transport::Publisher                      imgPub_;
 
-	cv::Ptr<april::tag::TagDetector>		        tag_detector_;
+	cv::Ptr<april::tag::TagDetector>		tag_detector_;
 	std::vector< cv::Ptr<april::tag::TagFamily> > 	gTagFamilies_;
     
     // MarkerMap object stores the Tag Map configuration: Tag position, id and family name. 
-    aruco::MarkerMap                                markerMapCfg;
+	aruco::MarkerMap                                markerMapCfg;
 
     // The file name where the Tag Map configuration is stored
-    std::string                                     markerMapCfg_file; 
-    aruco::CameraParameters                         cam_parameters;
+	std::string                                     markerMapCfg_file; 
+	aruco::CameraParameters                         cam_parameters;
 	tf::TransformListener* 		tf_listener;
 	tf::TransformBroadcaster 	br;
 	tf::Quaternion			q;
 	tf::Transform 			tf_camera_apriltagMap;
     
     // Class Parameters
-	float					SCALE_FACTOR;
 
 	public:
 			tagMapDetector(char *imageTopic, string marker_map_cfg_file);
 			~tagMapDetector();
-    void    imgSub_callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
+	void    imgSub_callback(const sensor_msgs::ImageConstPtr& image_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);	
+
+private:
+	float				SCALE_FACTOR;
+	float 				SCALE_min;
+	float 				SCALE_max;
+	float 				DIST_min;
+	float 				DIST_max;
+
+	geometry_msgs::PointStamped	last_tagMap;
+	float 				LPF_beta_x;
+	float 				LPF_beta_y;
+	float 				LPF_beta_z;
+	bool 				first_detection = true;
 
 };
 

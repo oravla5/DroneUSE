@@ -137,51 +137,54 @@ include_directories(
 
 add_executable(apriltag_tracking_mission_node 
     src/apriltag_tracking_mission_node.cpp 
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(apriltag_tracking_hover_mission_node
     src/apriltag_tracking_hover_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(apriltag_tracking_follow_mission_node
     src/apriltag_tracking_follow_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(waypoint_mission_node
     src/waypoint_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(apriltag_landing_mission_node
     src/apriltag_landing_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(apriltag_mobile_node
     src/apriltag_mobile_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(moving_april_landing_mission_node
     src/moving_april_landing_mission_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
 
 add_executable(tag_position_generator_node
     src/tag_position_generator_node.cpp
+    src/droneuse_gimbal.cpp 
     src/droneuse_m100.cpp)
 
 add_executable(time_response_identification_mission_node
     src/time_response_identification_mission_node.cpp
+    src/droneuse_gimbal.cpp 
     src/droneuse_m100.cpp)
 
 add_executable(tagMap_tracking_node
     src/tagMap_tracking_node.cpp
-    src/droneuse_m100.cpp 
-    src/droneuse_gimbal.cpp)
+    src/droneuse_gimbal.cpp
+    src/droneuse_m100.cpp) 
+
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

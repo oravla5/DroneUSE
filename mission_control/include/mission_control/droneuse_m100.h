@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <ros/ros.h> 
+#include <mission_control/droneuse_gimbal.h>
 #include <dji_sdk/dji_sdk.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Point.h>
@@ -42,7 +43,10 @@ class droneuse_m100
         ros::Time land_init_time;
         ros::Time last_platform_detection_time;
         int loop_rate;
-
+	int apriltagMap_landing_flag;
+	double apriltagMap_landing_height;
+	double apriltagMap_approach_height;
+	double apriltagMap_chase_height;
     public:
         droneuse_m100(ros::NodeHandle& nh);
 
@@ -75,8 +79,8 @@ class droneuse_m100
         // Complex Landing Maneuver
         bool perform_landing_maneuver();
 
-	    bool hover();
-	    bool hover(float height);
+    	bool hover();
+	bool hover(float height);
 
         // M100 Status commands
         float distance_to_position(geometry_msgs::PointStamped position);
@@ -88,6 +92,7 @@ class droneuse_m100
 
         bool sendData(unsigned char data);
 
+	droneuse_gimbal *gimbal;
 
     private:
         // Subscribers Callbacks

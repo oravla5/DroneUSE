@@ -1,4 +1,5 @@
 #include "mission_control/droneuse_m100.h"
+#include "mission_control/droneuse_gimbal.h"
 #include <ros/ros.h>
 #include <math.h>
 #include <stdio.h>
@@ -31,9 +32,19 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
 
    sdk_control = false;
 
+   gimbal = new droneuse_gimbal(nh);
+
    // It's defined a loop rate of 20Hz
    loop_rate = 20;
 
+   apriltagMap_landing_flag = 0;	// 0: No landing, 1: Standard Landing, 2: Custom Landing
+   ros::param::get("mission_control/tagMap_tracking_node/land_flag", apriltagMap_landing_flag);
+   apriltagMap_chase_height = 2.0;
+   ros::param::get("mission_control/tagMap_tracking_node/chase_height", apriltagMap_chase_height);
+   apriltagMap_approach_height = 1.5;
+   ros::param::get("mission_control/tagMap_tracking_node/approach_height", apriltagMap_approach_height);
+   apriltagMap_landing_height = 0.3;
+   ros::param::get("mission_control/tagMap_tracking_node/landing_height", apriltagMap_landing_height);
 }
 
 void droneuse_m100::m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position)
@@ -50,6 +61,7 @@ void droneuse_m100::landing_platform_position_subscriber_callback(const geometry
 {
     this->landing_platform_position = landing_platform_position;
     last_platform_detection_time = landing_platform_position.header.stamp;
+    gimbal->set_target(landing_platform_position);
 }
 
 void droneuse_m100::set_target_position(const geometry_msgs::PointStamped target_position)
@@ -257,14 +269,11 @@ bool droneuse_m100::custom_land()
                                     DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
 
 	dji_sdk::AttitudeControl m100_control_command;
-	m100_control_command.request.flag       = land_ctrl_flag;
-	m100_control_command.request.x      = 0.0;
-	m100_control_command.request.y      = 0.0;
-	m100_control_command.request.z      = 10.0;
-	m100_control_command.request.yaw    = 0.0;
-
-	if(get_local_position().z > 1.0)
-		hover(0.3);
+	m100_control_command.request.flag	= land_ctrl_flag;
+	m100_control_command.request.x      	= 0.0;
+	m100_control_command.request.y      	= 0.0;
+	m100_control_command.request.z      	= 20.0;
+	m100_control_command.request.yaw    	= 0.0;
 
 	while(fabs(get_local_position().z) > 0.2)
 	{
@@ -351,6 +360,7 @@ float droneuse_m100::vertical_distance_to_position(geometry_msgs::PointStamped p
             return 0;
     }
 }
+
 dji_sdk::LocalPosition droneuse_m100::get_local_position()
 {
     return local_position;
@@ -366,6 +376,7 @@ bool droneuse_m100::follow_waypoint(std::vector<geometry_msgs::PointStamped> way
     if(!sdk_control)
         get_sdk_control();
     
+    ros::Rate rate(loop_rate);
     if(waypoint_list.size() > 0)
     {
         for(size_t k = 0; k < waypoint_list.size(); k++)
@@ -375,6 +386,8 @@ bool droneuse_m100::follow_waypoint(std::vector<geometry_msgs::PointStamped> way
             while(distance_to_position(waypoint_list[k]) > 0.4)
             {
                 // Loop until target is reached
+		ros::spinOnce();
+		rate.sleep();
             }
         }
     }
@@ -390,14 +403,36 @@ bool droneuse_m100::perform_landing_maneuver()
     
     bool land_flag = false;
     ros::Time init_time = ros::Time::now();
+    ros::Rate rate(loop_rate);
+    
     // Perform the maneuver until the drone has succesfully landed, it has elapsed more than 30 seconds or no landing_platform has been detected for a while
-    while( !land_flag && (ros::Time::now() - init_time) < ros::Duration(30) && (ros::Time::now() - last_platform_detection_time) < ros::Duration(5.0) )
+    while( !land_flag && (ros::Time::now() - init_time) < ros::Duration(100) )
     {
-        if(chase())
-        {
-            if(approach())
-                land_flag = landing();
-        }
+	if((ros::Time::now() - last_platform_detection_time) > ros::Duration(3.0) )
+	{
+		hover();
+		gimbal->set_pitch(45.0);
+	}
+	else
+	{
+		if(chase())
+		{
+			if(approach())
+			{
+				if(apriltagMap_landing_flag == 0)
+					land_flag = false;
+				else if (apriltagMap_landing_flag == 1)
+					land_flag = land();
+				else if(apriltagMap_landing_flag == 2)
+					land_flag = landing();
+				else
+					land_flag = true;
+			}
+		}
+	}
+
+	ros::spinOnce();
+	rate.sleep();
     }
     return land_flag;
 }
@@ -406,13 +441,20 @@ bool droneuse_m100::perform_landing_maneuver()
 bool droneuse_m100::chase()
 {
     bool chase_flag = false;
-    if( (horizontal_distance_to_position(landing_platform_position) < 1.0) && (vertical_distance_to_position(landing_platform_position) < 2.5) )
+    if( (horizontal_distance_to_position(landing_platform_position) < 3.0) && (vertical_distance_to_position(landing_platform_position) < apriltagMap_chase_height*1.25) )
         chase_flag = true;
     else
     {
-        geometry_msgs::PointStamped commanded_target = landing_platform_position;
-        commanded_target.point.z = commanded_target.point.z - 2.0;
-        set_target_position(landing_platform_position);
+	std::cout << "chasing..." << std::endl;
+
+        geometry_msgs::PointStamped commanded_target;
+	commanded_target.header.stamp = landing_platform_position.header.stamp;
+	commanded_target.header.frame_id = landing_platform_position.header.frame_id;
+        commanded_target.point.x = landing_platform_position.point.x;
+        commanded_target.point.y = landing_platform_position.point.y;
+        commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_chase_height);
+
+        set_target_position(commanded_target);
     }
     return chase_flag;
 }
@@ -421,12 +463,19 @@ bool droneuse_m100::chase()
 bool droneuse_m100::approach()
 {
     bool approach_flag = false;
-    if( (horizontal_distance_to_position(landing_platform_position) < 0.5) && (vertical_distance_to_position(landing_platform_position) < 0.7) )
+    if( (horizontal_distance_to_position(landing_platform_position) < 1.5) && (vertical_distance_to_position(landing_platform_position) < apriltagMap_approach_height*1.25) && (apriltagMap_landing_flag == 1 || apriltagMap_landing_flag == 2) )
         approach_flag = true; 
     else
     {
-        geometry_msgs::PointStamped commanded_target = landing_platform_position;
-        commanded_target.point.z = commanded_target.point.z - 0.5;
+	std::cout << "approaching..." << std::endl;
+
+        geometry_msgs::PointStamped commanded_target;
+	commanded_target.header.stamp = landing_platform_position.header.stamp;
+	commanded_target.header.frame_id = landing_platform_position.header.frame_id;
+        commanded_target.point.x = landing_platform_position.point.x;
+        commanded_target.point.y = landing_platform_position.point.y;
+        commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_approach_height);
+
         set_target_position(commanded_target);
     }
     return approach_flag;
@@ -436,15 +485,20 @@ bool droneuse_m100::approach()
 bool droneuse_m100::landing()
 {
     bool landing_flag = false;
-    geometry_msgs::PointStamped commanded_target = landing_platform_position;
-    commanded_target.point.z = commanded_target.point.z - 0.1;
+    geometry_msgs::PointStamped commanded_target;
+    commanded_target.header.stamp = landing_platform_position.header.stamp;
+    commanded_target.header.frame_id = landing_platform_position.header.frame_id;
+    commanded_target.point.x = landing_platform_position.point.x;
+    commanded_target.point.y = landing_platform_position.point.y;
+    commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_landing_height);
+
     set_target_position(commanded_target);
 
-    if( (horizontal_distance_to_position(landing_platform_position) < 0.2) && (vertical_distance_to_position(landing_platform_position) < 0.2) )
+    if( (horizontal_distance_to_position(landing_platform_position) < 0.3) && (vertical_distance_to_position(landing_platform_position) < apriltagMap_landing_height*1.5) )
     {
-        if( (ros::Time::now() - land_init_time) > ros::Duration(4.0) )
+        if( ros::Duration(ros::Time::now() - land_init_time) > ros::Duration(10.0) )
             land_init_time = ros::Time::now();
-        else if( (ros::Time::now() - land_init_time) > ros::Duration(2.0) )
+        else if( ros::Duration(ros::Time::now() - land_init_time) > ros::Duration(1.0) )
             landing_flag = custom_land();
     }
     return landing_flag;

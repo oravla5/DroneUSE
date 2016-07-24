@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 	// Default Gimbal Orientation
 
 	ros::Rate rate(control_rate);
-    m100    = new droneuse_m100(nh);
+	m100    = new droneuse_m100(nh);
 	tf_listener = new tf::TransformListener;	
 
 	waypoint = generateWP();
@@ -58,11 +58,14 @@ int main(int argc, char **argv)
 
 	// Hold until taking off 
     m100->wait_to_takeoff();
-//    if(!m100->follow_waypoint(waypoint))
-//        m100->hover(3.0);
-	m100->hover(2.0);
-	m100->custom_land();
-    //if(!m100->perform_landing_maneuver())
+    m100->gimbal->set_pitch(45.0);
+    if(!m100->follow_waypoint(waypoint))
+        m100->hover(3.0);
+//	m100->custom_land();
+    m100->perform_landing_maneuver();
+//    m100->land();
+
+    ros::spin();
     //    m100->hover(3.0);
 
     return 0;
@@ -78,27 +81,27 @@ std::vector<PointStamped> generateWP()
 	// wp 1
 	wp.point.x = 0.0;
 	wp.point.y = 0.0;
-	wp.point.z = -3.0;
+	wp.point.z = -4.0;
 	wp_list.push_back(wp);
 	// wp 2
 	wp.point.x = 3.0;
 	wp.point.y = 0.0;
-	wp.point.z = -3.0;
+	wp.point.z = -4.0;
 	wp_list.push_back(wp);
 	// wp 3
 	wp.point.x = 3.0;
 	wp.point.y = 3.0;
 	wp.point.z = -3.0;
-	wp_list.push_back(wp);
+//	wp_list.push_back(wp);
 	// wp 4
 	wp.point.x = 0.0;
 	wp.point.y = 3.0;
 	wp.point.z = -3.0;
-	wp_list.push_back(wp);
+//	wp_list.push_back(wp);
 	// wp 5
 	wp.point.x = 0.0;
 	wp.point.y = 0.0;
 	wp.point.z = -3.0;
-	wp_list.push_back(wp);
+//	wp_list.push_back(wp);
 	return wp_list;
 }

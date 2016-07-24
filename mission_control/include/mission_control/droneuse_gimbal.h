@@ -15,6 +15,7 @@ class droneuse_gimbal
         
         // Topic Publisher
         ros::Publisher gimbal_target_publisher;
+        ros::Publisher gimbal_control_type_publisher;
         ros::Publisher gimbal_control_state_publisher;
 
         // Subscriber Callback
@@ -26,6 +27,8 @@ class droneuse_gimbal
     public:
         droneuse_gimbal(ros::NodeHandle& nh);
         void set_target(geometry_msgs::PointStamped target_orientation);
+	bool set_pitch(float pitch);	// Angle given in degrees
+	bool set_yaw(float yaw);	// Angle given in degrees
         void disable_gimbal_controller();
 
         dji_sdk::Gimbal     get_gimbal();

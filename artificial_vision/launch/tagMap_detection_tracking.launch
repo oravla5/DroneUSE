@@ -1,21 +1,43 @@
 <launch>
 
-<arg name="board_folder" default="/home/ubuntu/droneUSE_ws/src/artificial_vision/apriltag_board/" />
-<arg name="board_file" default="landing_platform_board2.yml" />
 
 <!-- AprilTag Map Detector Node -->
-<arg name="scale_factor" 		default="0.7"/> 	# Image Scale Factor 
-<param name="artificial_vision/scale_factor" 	value="$(arg scale_factor)"/>
+<arg name="scale_min" 			default="0.32"/> 	# Minimum Image Scale Factor 
+<arg name="scale_max" 			default="1.0"/> 	# Maximum Image Scale Factor 
+<arg name="dist_min" 			default="0.8"/> 	# Minimum Detection Distance 
+<arg name="dist_max" 			default="10.0"/> 	# Maximum Detection Distance 
+<arg name="LPF_beta_x" 			default="0.5"/> 	# Low Pass Filter beta 
+<arg name="LPF_beta_y" 			default="0.5"/> 	# Low Pass Filter beta 
+<arg name="LPF_beta_z" 			default="0.5"/> 	# Low Pass Filter beta 
 
+<param name="artificial_vision/scale_min" 	value="$(arg scale_min)"/>
+<param name="artificial_vision/scale_max" 	value="$(arg scale_max)"/>
+<param name="artificial_vision/dist_min" 	value="$(arg dist_min)"/>
+<param name="artificial_vision/dist_max" 	value="$(arg dist_max)"/>
+<param name="artificial_vision/LPF_beta_x" 	value="$(arg LPF_beta_x)"/>
+<param name="artificial_vision/LPF_beta_y" 	value="$(arg LPF_beta_y)"/>
+<param name="artificial_vision/LPF_beta_z" 	value="$(arg LPF_beta_z)"/>
+
+<arg name="board_folder" default="/home/ubuntu/droneUSE_ws/src/artificial_vision/apriltag_board/" />
+<arg name="board_file" default="landing_platform_board2.yml" />
 <node pkg="artificial_vision" type="tagMap_detector_node" name="tagMap_detector_node" args="$(arg board_folder)$(arg board_file)" required="true" output="screen" />
 
 <!-- AprilTag Map Tracker Node -->
-<arg name="img_pos_cov" 		default="0.05"/> 	# Detected Position Covariance 
+<arg name="img_pos_cov_x" 		default="0.0021"/> 	# Detected Position X Covariance 
+<arg name="img_pos_cov_y"		default="0.0004"/>	# Detected Position Y Covariance
+<arg name="img_pos_cov_z"		default="0.00006"/>	# Detected Position Z Covariance
+
 <arg name="pred_velx_cov" 		default="0.05"/>	# Predicted x Velocity Covariance
 <arg name="pred_vely_cov" 		default="0.05"/>	# Predicted y Velocity Covariance
-<param name="artificial_vision/img_pos_cov" 	value="$(arg img_pos_cov)"/>
+<arg name="pred_velz_cov" 		default="0.05"/>	# Predicted z Velocity Covariance
+
+<param name="artificial_vision/img_pos_cov_x" 	value="$(arg img_pos_cov_x)"/>
+<param name="artificial_vision/img_pos_cov_y" 	value="$(arg img_pos_cov_y)"/>
+<param name="artificial_vision/img_pos_cov_z" 	value="$(arg img_pos_cov_z)"/>
+
 <param name="artificial_vision/pred_velx_cov" 	value="$(arg pred_velx_cov)"/>
 <param name="artificial_vision/pred_vely_cov" 	value="$(arg pred_vely_cov)"/>
+<param name="artificial_vision/pred_velz_cov" 	value="$(arg pred_velz_cov)"/>
 <node pkg="artificial_vision" type="landingPlatform_tracker_node" name="landingPlatform_tracker_node" required="true" output="screen" />
 
 <arg name="bag_folder" default="/home/ubuntu/bag_files/" />
@@ -26,4 +48,5 @@
 <arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" />
 <!-- node pkg="image_view" type="image_view" name="image_viewer" args="image:=/dji_sdk/image_raw"-->
 </launch>
+
 

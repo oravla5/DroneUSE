@@ -4,6 +4,7 @@
 #include <dji_sdk/dji_sdk.h>
 #include "pid.h"
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Bool.h>
 #include <geometry_msgs/PointStamped.h>
 #include <tf/transform_listener.h>
 
@@ -17,14 +18,18 @@ class gimbalController
 
         // Subscriber
         ros::Subscriber gimbal_target_subscriber;
+        ros::Subscriber gimbal_control_type_subscriber;
         ros::Subscriber gimbal_control_state_subscriber;
 
         void gimbal_target_subscriber_callback(geometry_msgs::PointStamped gimbal_target);
+        void gimbal_control_type_subscriber_callback(std_msgs::Bool control_type);
         void gimbal_control_state_subscriber_callback(std_msgs::UInt8 control_state);
 
         geometry_msgs::PointStamped gimbal_target;
 
         bool control_enable = false;
+	//control_type: orientation=true, target=false
+        bool control_type = true;
 
         // Gimbal Mechanical Specs: http://wiki.dji.com/en/index.php/Matrice_100-DJI_Zenmuse_X3_Gimbal_with_Camera
         double gimbal_yaw_maxRate       = 600.0;
@@ -43,7 +48,7 @@ class gimbalController
         PID* gimbal_pitch_rate_pid;
         PID* gimbal_yaw_rate_pid;
 
-        int control_rate;
+        int 	control_rate;
 
     public:
         gimbalController(ros::NodeHandle& nh, int control_rate);
