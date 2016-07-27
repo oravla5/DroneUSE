@@ -10,10 +10,10 @@
 
 class landingPlatformTracker
 {
-    ros::NodeHandle                                 nh_;
+    ros::NodeHandle                                 	nh_;
 
-    ros::Subscriber                                 tagMapPosSub_;
-    ros::Publisher					                positionPub_;
+    ros::Subscriber                                 	tagMapPosSub_;
+    ros::Publisher 					positionPub_;
 
     // TagMap position and Kalman Filter
     KalmanFilter                                    position_kf;

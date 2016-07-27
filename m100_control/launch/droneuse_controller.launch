@@ -2,7 +2,7 @@
 
 	<arg name="Kxy_p" 					default="0.25"/>
 	<arg name="Kxy_d" 					default="0.80"/>
-	<arg name="Kxy_i" 					default="0.7"/>
+	<arg name="Kxy_i" 					default="0.5"/>
 
 	<arg name="xy_maxVelocity" 				default="3.0"/> 
 	<arg name="xy_Velocity_Kp" 				default="1.92*$(arg Kxy_p)"/> 	<!--default="0.5" -->

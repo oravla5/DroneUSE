@@ -127,8 +127,8 @@ bool droneuse_m100::attitude_control(unsigned char ctrl_flag, float x, float y, 
 
 bool droneuse_m100::hover()
 {
-    if(!sdk_control)
-        get_sdk_control();
+	if(!sdk_control)
+		get_sdk_control();
 
     // Control Flag Structure: http://download.dji-innovations.com/downloads/dev/OnboardSDK/Onboard_API_introduction_version_1.0.1_en.pdfww
 	disable_m100_position_control();
@@ -139,12 +139,12 @@ bool droneuse_m100::hover()
                                     DJI::onboardSDK::Flight::SmoothMode::SMOOTH_ENABLE;
 
 	dji_sdk::AttitudeControl m100_control_command;
-	m100_control_command.request.flag       = hover_ctrl_flag;
-	    m100_control_command.request.x      = 0.0;
-	    m100_control_command.request.y      = 0.0;
-	    m100_control_command.request.z      = 0.0;
-	    m100_control_command.request.yaw    = 0.0;
-    return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
+	m100_control_command.request.flag	= hover_ctrl_flag;
+	m100_control_command.request.x      	= 0.0;
+	m100_control_command.request.y      	= 0.0;
+	m100_control_command.request.z      	= 0.0;
+	m100_control_command.request.yaw    	= 0.0;
+	return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
 }
 
 bool droneuse_m100::hover(float height)
@@ -154,7 +154,7 @@ bool droneuse_m100::hover(float height)
         get_sdk_control();
 	ros::Duration(2.0).sleep();
     }
-    // Control Flag Structure: http://download.dji-innovations.com/downloads/dev/OnboardSDK/Onboard_API_introduction_version_1.0.1_en.pdfww
+    // Control Flag Structure: http://download.dji-innovations.com/downloads/dev/OnboardSDK/Onboard_API_introduction_version_1.0.1_en.pdf
 	disable_m100_position_control();
 	unsigned char hover_ctrl_flag = DJI::onboardSDK::Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                                     DJI::onboardSDK::Flight::VerticalLogic::VERTICAL_POSITION |
@@ -182,7 +182,6 @@ bool droneuse_m100::hover(float height)
 
 bool droneuse_m100::get_sdk_control()
 {
-
     dji_sdk::SDKPermissionControl sdk_permission_control;
     sdk_permission_control.request.control_enable = 1;
 
@@ -272,10 +271,11 @@ bool droneuse_m100::custom_land()
 	m100_control_command.request.flag	= land_ctrl_flag;
 	m100_control_command.request.x      	= 0.0;
 	m100_control_command.request.y      	= 0.0;
-	m100_control_command.request.z      	= 20.0;
+	m100_control_command.request.z      	= 10.0;
 	m100_control_command.request.yaw    	= 0.0;
 
-	while(fabs(get_local_position().z) > 0.2)
+	ros::Time init_descent = ros::Time::now();
+	while(ros::Duration(ros::Time::now() - init_descent) < ros::Duration(2.0))
 	{
 		m100_attitude_control_service.call(m100_control_command);
 		ros::spinOnce();
