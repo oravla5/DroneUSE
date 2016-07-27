@@ -13,6 +13,7 @@ class PIDImpl
         PIDImpl( double max, double min, double Kp, double Kd, double Ki );
         ~PIDImpl();
         double calculate( double dt, double setpoint, double pv );
+	double calculate(double target_pos, double current_pos, double target_vel, double current_vel );
 
     private:
         double _max;
@@ -32,6 +33,10 @@ PID::PID( double max, double min, double Kp, double Kd, double Ki )
 double PID::calculate(double dt, double setpoint, double pv )
 {
     return pimpl->calculate(dt, setpoint, pv);
+}
+double PID::calculate(double target_pos, double current_pos, double target_vel, double current_vel )
+{
+    return pimpl->calculate(target_pos, current_pos, target_vel, current_vel);
 }
 PID::~PID() 
 {
@@ -81,6 +86,35 @@ double PIDImpl::calculate( double dt, double setpoint, double pv )
 
     // Save error to previous error
     _pre_error = error;
+
+    return output;
+}
+
+double PIDImpl::calculate(double target_pos, double current_pos, double target_vel, double current_vel )
+{
+    
+    // Calculate position error
+    double pos_error = target_pos - current_pos;
+
+    // Proportional term
+    double Pout = _Kp * pos_error;
+
+    // Integral term
+    double Iout = _Ki * target_vel;
+
+    // Calculate velocity error
+    double vel_error = target_vel - current_vel;
+    // Derivative term
+    double Dout = _Kd * vel_error;
+
+    // Calculate total output
+    double output = Pout + Iout + Dout;
+
+    // Restrict to max/min
+    if( output > _max )
+        output = _max;
+    else if( output < _min )
+        output = _min;
 
     return output;
 }

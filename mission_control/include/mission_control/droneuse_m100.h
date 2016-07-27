@@ -8,6 +8,7 @@
 #include <dji_sdk/dji_sdk.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Point.h>
+#include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/UInt8.h>
 #include <string>
@@ -30,14 +31,15 @@ class droneuse_m100
         // Publishers
         ros::Publisher m100_target_position_publisher;
         ros::Publisher m100_target_orientation_publisher;
+        ros::Publisher m100_target_state_publisher;
         ros::Publisher m100_position_control_state_publisher;
         ros::Publisher m100_orientation_control_state_publisher;
         
         
-        dji_sdk::LocalPosition      local_position;
-        uint8_t                     flight_status;
-        geometry_msgs::PointStamped landing_platform_position;
-        bool                        sdk_control;
+        dji_sdk::LocalPosition      	local_position;
+        uint8_t                     	flight_status;
+        nav_msgs::Odometry 		landing_platform_position;
+        bool                        	sdk_control;
 
         tf::TransformListener* tf_listener;
         ros::Time land_init_time;
@@ -56,6 +58,7 @@ class droneuse_m100
 
         // Direct Position and Orientation Control Commands
         void set_target_position(geometry_msgs::PointStamped target_position);
+        void set_target_state(nav_msgs::Odometry target_state);
         void set_target_orientation(geometry_msgs::PointStamped target_orientation);
         void disable_m100_position_control();
         void disable_m100_orientation_control();
@@ -84,9 +87,12 @@ class droneuse_m100
 
         // M100 Status commands
         float distance_to_position(geometry_msgs::PointStamped position);
+        float distance_to_position(nav_msgs::Odometry state);
         float distance_to_position(geometry_msgs::Point point, std::string frame_id);
         float horizontal_distance_to_position(geometry_msgs::PointStamped position);
+        float horizontal_distance_to_position(nav_msgs::Odometry state);
         float vertical_distance_to_position(geometry_msgs::PointStamped position);
+        float vertical_distance_to_position(nav_msgs::Odometry state);
         uint8_t get_flight_status();
         dji_sdk::LocalPosition  get_local_position();
 
@@ -98,7 +104,7 @@ class droneuse_m100
         // Subscribers Callbacks
         void m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position);
         void m100_flight_status_subscriber_callback(const std_msgs::UInt8 flight_status_msg);
-        void landing_platform_position_subscriber_callback(const geometry_msgs::PointStamped landing_platform_position);
+        void landing_platform_position_subscriber_callback(const nav_msgs::Odometry landing_platform_position);
 
         // Landing Maneuver Stages
         bool chase();       // Initial approaching maneuver to the landing platform once it has been detected

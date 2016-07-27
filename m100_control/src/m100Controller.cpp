@@ -14,6 +14,14 @@ void m100Controller::m100_target_position_subscriber_callback(const geometry_msg
 {
     this->m100_target_position = target_position;
     this->position_control_enable = true;
+    this->state_control_enable = false;
+}
+
+void m100Controller::m100_target_state_subscriber_callback(const nav_msgs::Odometry target_state)
+{
+    this->m100_target_state = target_state;
+    this->position_control_enable = false;
+    this->state_control_enable = true;
 }
 
 void m100Controller::m100_position_control_state_subscriber_callback(const std_msgs::UInt8 control_state)
@@ -32,6 +40,29 @@ void m100Controller::m100_target_orientation_subscriber_callback(const geometry_
     this->orientation_control_enable = true;
 }
 
+void m100Controller::m100_sdk_velocity_subscriber_callback(const dji_sdk::Velocity velocity)
+{
+	geometry_msgs::Vector3Stamped velocity_msg;
+	velocity_msg.header.stamp = velocity.header.stamp;
+	velocity_msg.header.frame_id = velocity.header.frame_id;
+	velocity_msg.vector.x = velocity.vx;
+	velocity_msg.vector.y = velocity.vy;
+	velocity_msg.vector.z = velocity.vz;
+
+	try
+	{
+		ros::Time time_now = ros::Time::now();
+		tf_listener->waitForTransform("/body_frame", "/world", velocity_msg.header.stamp , ros::Duration(2.0/control_rate));
+		tf_listener->transformVector("/body_frame", velocity_msg, velocity_msg);
+		this->m100_velocity = velocity_msg;
+
+	}
+	catch(tf::TransformException ex)
+	{
+		ROS_ERROR("%s", ex.what());
+	}
+}
+
 m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
 {
     this->control_rate = control_rate; // Hz
@@ -41,41 +72,58 @@ m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
     m100_attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 
     m100_target_position_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/m100_target_position", 10, &m100Controller::m100_target_position_subscriber_callback, this);
+    m100_target_state_subscriber = nh.subscribe<nav_msgs::Odometry>("droneuse/m100_target_state", 1, &m100Controller::m100_target_state_subscriber_callback, this);
     m100_target_orientation_subscriber = nh.subscribe<geometry_msgs::PointStamped>("droneuse/m100_target_orientation", 10, &m100Controller::m100_target_orientation_subscriber_callback, this);
     m100_position_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_position_control_state",10, &m100Controller::m100_position_control_state_subscriber_callback, this);
     m100_orientation_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_orientation_control_state",10, &m100Controller::m100_orientation_control_state_subscriber_callback, this);
+    m100_sdk_velocity_subscriber = nh.subscribe<dji_sdk::Velocity>("dji_sdk/velocity",1, &m100Controller::m100_sdk_velocity_subscriber_callback, this);
 
 
 	// Get Controller Parameters
-
-	// X Velocity Controller Parameters
+	// Controller Saturations 
 	ros::param::get("m100_controller/x_maxVelocity", x_maxVelocity);
+	ros::param::get("m100_controller/y_maxVelocity", y_maxVelocity);
+	ros::param::get("m100_controller/z_maxVelocity", z_maxVelocity);
+	ros::param::get("m100_controller/yaw_maxRate", yaw_maxRate);
+
+	// X Velocity Position Controller Parameters
 	ros::param::get("m100_controller/x_velocity_Kp", x_velocity_Kp);
 	ros::param::get("m100_controller/x_velocity_Kd", x_velocity_Kd);
 	ros::param::get("m100_controller/x_velocity_Ki", x_velocity_Ki);
 
-	// Y Velocity Controller Parameters
-	ros::param::get("m100_controller/y_maxVelocity", y_maxVelocity);
+	// Y Velocity Position Controller Parameters
 	ros::param::get("m100_controller/y_velocity_Kp", y_velocity_Kp);
 	ros::param::get("m100_controller/y_velocity_Kd", y_velocity_Kd);
 	ros::param::get("m100_controller/y_velocity_Ki", y_velocity_Ki);
 
-	// Z Velocity Controller Parameters
-	ros::param::get("m100_controller/z_maxVelocity", z_maxVelocity);
+	// Z Velocity Position Controller Parameters
 	ros::param::get("m100_controller/z_velocity_Kp", z_velocity_Kp);
 	ros::param::get("m100_controller/z_velocity_Kd", z_velocity_Kd);
 	ros::param::get("m100_controller/z_velocity_Ki", z_velocity_Ki);
 
-	// Yaw Rate Controller Parameters
-	ros::param::get("m100_controller/yaw_maxRate", yaw_maxRate);
+	// X Velocity State Controller Parameters
+	ros::param::get("m100_controller/x_state_Kp", x_state_Kp);
+	ros::param::get("m100_controller/x_state_Kd", x_state_Kd);
+	ros::param::get("m100_controller/x_state_Ki", x_state_Ki);
+
+	// Y Velocity State Controller Parameters
+	ros::param::get("m100_controller/y_state_Kp", y_state_Kp);
+	ros::param::get("m100_controller/y_state_Kd", y_state_Kd);
+	ros::param::get("m100_controller/y_state_Ki", y_state_Ki);
+
+	// Yaw Rate Position Controller Parameters
 	ros::param::get("m100_controller/yaw_rate_Kp", yaw_rate_Kp);
 	ros::param::get("m100_controller/yaw_rate_Kd", yaw_rate_Kd);
 	ros::param::get("m100_controller/yaw_rate_Ki", yaw_rate_Ki);
 
-    m100_velocity_x_pid     = new PID(x_maxVelocity, -x_maxVelocity, x_velocity_Kp, x_velocity_Kd, x_velocity_Ki);
-    m100_velocity_y_pid     = new PID(y_maxVelocity, -y_maxVelocity, y_velocity_Kp, y_velocity_Kd, y_velocity_Ki);
-    m100_velocity_z_pid     = new PID(z_maxVelocity, -z_maxVelocity, z_velocity_Kp, z_velocity_Kd, z_velocity_Ki);
-    m100_yaw_rate_pid       = new PID(yaw_maxRate, -yaw_maxRate, yaw_rate_Kp, yaw_rate_Kd, yaw_rate_Ki);
+    m100_velocity_x_pid     	= new PID(x_maxVelocity, -x_maxVelocity, x_velocity_Kp, x_velocity_Kd, x_velocity_Ki);
+    m100_velocity_y_pid     	= new PID(y_maxVelocity, -y_maxVelocity, y_velocity_Kp, y_velocity_Kd, y_velocity_Ki);
+    m100_velocity_z_pid     	= new PID(z_maxVelocity, -z_maxVelocity, z_velocity_Kp, z_velocity_Kd, z_velocity_Ki);
+
+    m100_state_x_pid     	= new PID(x_maxVelocity, -x_maxVelocity, x_state_Kp, x_state_Kd, x_state_Ki);
+    m100_state_y_pid     	= new PID(y_maxVelocity, -y_maxVelocity, y_state_Kp, y_state_Kd, y_state_Ki);
+
+    m100_yaw_rate_pid       	= new PID(yaw_maxRate, -yaw_maxRate, yaw_rate_Kp, yaw_rate_Kd, yaw_rate_Ki);
 
 }
 
@@ -104,6 +152,39 @@ bool m100Controller::m100_controller_update()
             return 0;
         }
     }                   
+    else if(state_control_enable)
+    {
+        try
+        {
+		geometry_msgs::PointStamped target_position;
+		target_position.header.stamp = m100_target_state.header.stamp;
+		target_position.header.frame_id = m100_target_state.header.frame_id;
+		target_position.point = m100_target_state.pose.pose.position;
+		geometry_msgs::Vector3Stamped target_velocity;
+		target_velocity.header.stamp = m100_target_state.header.stamp;
+		target_velocity.header.frame_id = m100_target_state.header.frame_id;
+		target_velocity.vector = m100_target_state.twist.twist.linear;
+
+		ros::Time time_now = ros::Time::now();
+		tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
+		tf_listener->transformPoint("/body_frame", time_now, target_position, "/world", target_position);
+		tf_listener->transformVector("/body_frame", time_now, target_velocity, "/world", target_velocity);
+		target_velocity.vector.x = target_velocity.vector.x + m100_velocity.vector.x;
+		target_velocity.vector.y = target_velocity.vector.y + m100_velocity.vector.y;
+		target_velocity.vector.z = target_velocity.vector.z + m100_velocity.vector.z;
+		
+		std::cout << "vel_x : " << target_velocity.vector.x << " vel_y : " << target_velocity.vector.y << " vel_z : " << target_velocity.vector.z << std::endl;
+		velocity_x   = m100_state_x_pid->calculate(target_position.point.x, 0.0, target_velocity.vector.x, m100_velocity.vector.x);
+		velocity_y   = m100_state_y_pid->calculate(target_position.point.y, 0.0, target_velocity.vector.y, m100_velocity.vector.y);
+		velocity_z   = -m100_velocity_z_pid->calculate(1.0/control_rate, target_position.point.z, 0.0);
+		
+        }
+        catch(tf::TransformException ex)
+        {
+            ROS_ERROR("%s", ex.what());
+            return 0;
+        }
+    }
     if(orientation_control_enable)
     {
         try
@@ -126,7 +207,7 @@ bool m100Controller::m100_controller_update()
 
     }
 
-    if(position_control_enable || orientation_control_enable)
+    if(position_control_enable || orientation_control_enable || state_control_enable)
     {
         m100_control_command.request.flag   = ctrl_flag;
         m100_control_command.request.x      = (float) velocity_x;

@@ -18,10 +18,11 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
 
     m100_local_position_subscriber          = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &droneuse_m100::m100_local_position_subscriber_callback, this);
     m100_flight_status_subscriber 	        = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &droneuse_m100::m100_flight_status_subscriber_callback, this);
-    landing_platform_position_subscriber    = nh.subscribe<geometry_msgs::PointStamped>("droneuse/landing_platform_position", 1, &droneuse_m100::landing_platform_position_subscriber_callback, this);
+    landing_platform_position_subscriber    = nh.subscribe<nav_msgs::Odometry>("droneuse/landing_platform_position", 1, &droneuse_m100::landing_platform_position_subscriber_callback, this);
 
    m100_target_position_publisher           = nh.advertise<geometry_msgs::PointStamped>("droneuse/m100_target_position", 10);
    m100_target_orientation_publisher        = nh.advertise<geometry_msgs::PointStamped>("droneuse/m100_target_orientation", 10);
+   m100_target_state_publisher        	    = nh.advertise<nav_msgs::Odometry>("droneuse/m100_target_state", 10); 	// Set target_position and velocity
    m100_position_control_state_publisher    = nh.advertise<std_msgs::UInt8>("droneuse/m100_position_control_state", 10);
    m100_orientation_control_state_publisher = nh.advertise<std_msgs::UInt8>("droneuse/m100_orientation_control_state", 10);
 
@@ -57,11 +58,14 @@ void droneuse_m100::m100_flight_status_subscriber_callback(const std_msgs::UInt8
     this->flight_status = flight_status_msg.data;
 }
 
-void droneuse_m100::landing_platform_position_subscriber_callback(const geometry_msgs::PointStamped landing_platform_position)
+void droneuse_m100::landing_platform_position_subscriber_callback(const nav_msgs::Odometry landing_platform_position)
 {
     this->landing_platform_position = landing_platform_position;
     last_platform_detection_time = landing_platform_position.header.stamp;
-    gimbal->set_target(landing_platform_position);
+    geometry_msgs::PointStamped gimbal_target;
+    gimbal_target.header = landing_platform_position.header;
+    gimbal_target.point = landing_platform_position.pose.pose.position;
+    gimbal->set_target(gimbal_target);
 }
 
 void droneuse_m100::set_target_position(const geometry_msgs::PointStamped target_position)
@@ -72,6 +76,13 @@ void droneuse_m100::set_target_position(const geometry_msgs::PointStamped target
     m100_target_position_publisher.publish(target_position);
 }
 
+void droneuse_m100::set_target_state(const nav_msgs::Odometry target_state)
+{
+    if(!sdk_control)
+        get_sdk_control();
+
+    m100_target_state_publisher.publish(target_state);
+}
 void droneuse_m100::set_target_orientation(const geometry_msgs::PointStamped target_orientation)
 {
     if(!sdk_control)
@@ -304,6 +315,17 @@ float droneuse_m100::distance_to_position(geometry_msgs::PointStamped position)
     }
 }
 
+float droneuse_m100::distance_to_position(nav_msgs::Odometry state)
+{
+	geometry_msgs::PointStamped position;
+	position.header.frame_id = state.header.frame_id;
+	position.header.stamp 	= state.header.stamp;
+	position.point.x 	= state.pose.pose.position.x;
+	position.point.y 	= state.pose.pose.position.y;
+	position.point.z 	= state.pose.pose.position.z;
+	return distance_to_position(position);
+}
+
 float droneuse_m100::distance_to_position(geometry_msgs::Point point, std::string frame_id)
 {
     //TODO Create unestamped data type
@@ -344,6 +366,17 @@ float droneuse_m100::horizontal_distance_to_position(geometry_msgs::PointStamped
     }
 }
 
+float droneuse_m100::horizontal_distance_to_position(nav_msgs::Odometry state)
+{
+	geometry_msgs::PointStamped position;
+	position.header.frame_id = state.header.frame_id;
+	position.header.stamp 	= state.header.stamp;
+	position.point.x 	= state.pose.pose.position.x;
+	position.point.y 	= state.pose.pose.position.y;
+	position.point.z 	= state.pose.pose.position.z;
+	return horizontal_distance_to_position(position);
+}
+
 float droneuse_m100::vertical_distance_to_position(geometry_msgs::PointStamped position)
 {
     ros::Time time_now = ros::Time::now();
@@ -359,6 +392,17 @@ float droneuse_m100::vertical_distance_to_position(geometry_msgs::PointStamped p
             ROS_ERROR("%s", ex.what());
             return 0;
     }
+}
+
+float droneuse_m100::vertical_distance_to_position(nav_msgs::Odometry state)
+{
+	geometry_msgs::PointStamped position;
+	position.header.frame_id = state.header.frame_id;
+	position.header.stamp 	= state.header.stamp;
+	position.point.x 	= state.pose.pose.position.x;
+	position.point.y 	= state.pose.pose.position.y;
+	position.point.z 	= state.pose.pose.position.z;
+	return vertical_distance_to_position(position);
 }
 
 dji_sdk::LocalPosition droneuse_m100::get_local_position()
@@ -406,7 +450,7 @@ bool droneuse_m100::perform_landing_maneuver()
     ros::Rate rate(loop_rate);
     
     // Perform the maneuver until the drone has succesfully landed, it has elapsed more than 30 seconds or no landing_platform has been detected for a while
-    while( !land_flag && (ros::Time::now() - init_time) < ros::Duration(100) )
+    while( !land_flag && (ros::Time::now() - init_time) < ros::Duration(900) )
     {
 	if((ros::Time::now() - last_platform_detection_time) > ros::Duration(3.0) )
 	{
@@ -447,14 +491,11 @@ bool droneuse_m100::chase()
     {
 	std::cout << "chasing..." << std::endl;
 
-        geometry_msgs::PointStamped commanded_target;
-	commanded_target.header.stamp = landing_platform_position.header.stamp;
-	commanded_target.header.frame_id = landing_platform_position.header.frame_id;
-        commanded_target.point.x = landing_platform_position.point.x;
-        commanded_target.point.y = landing_platform_position.point.y;
-        commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_chase_height);
+        nav_msgs::Odometry commanded_state;
+	commanded_state = landing_platform_position;
+	commanded_state.pose.pose.position.z = commanded_state.pose.pose.position.z - apriltagMap_chase_height; 
 
-        set_target_position(commanded_target);
+        set_target_state(commanded_state);
     }
     return chase_flag;
 }
@@ -469,14 +510,11 @@ bool droneuse_m100::approach()
     {
 	std::cout << "approaching..." << std::endl;
 
-        geometry_msgs::PointStamped commanded_target;
-	commanded_target.header.stamp = landing_platform_position.header.stamp;
-	commanded_target.header.frame_id = landing_platform_position.header.frame_id;
-        commanded_target.point.x = landing_platform_position.point.x;
-        commanded_target.point.y = landing_platform_position.point.y;
-        commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_approach_height);
+        nav_msgs::Odometry commanded_state;
+	commanded_state = landing_platform_position;
+	commanded_state.pose.pose.position.z = commanded_state.pose.pose.position.z - apriltagMap_approach_height; 
 
-        set_target_position(commanded_target);
+        set_target_state(commanded_state);
     }
     return approach_flag;
 }
@@ -485,14 +523,11 @@ bool droneuse_m100::approach()
 bool droneuse_m100::landing()
 {
     bool landing_flag = false;
-    geometry_msgs::PointStamped commanded_target;
-    commanded_target.header.stamp = landing_platform_position.header.stamp;
-    commanded_target.header.frame_id = landing_platform_position.header.frame_id;
-    commanded_target.point.x = landing_platform_position.point.x;
-    commanded_target.point.y = landing_platform_position.point.y;
-    commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_landing_height);
-
-    set_target_position(commanded_target);
+    nav_msgs::Odometry commanded_state;
+    commanded_state = landing_platform_position;
+    commanded_state.pose.pose.position.z = commanded_state.pose.pose.position.z - apriltagMap_landing_height; 
+    
+    set_target_state(commanded_state);
 
     if( (horizontal_distance_to_position(landing_platform_position) < 0.3) && (vertical_distance_to_position(landing_platform_position) < apriltagMap_landing_height*1.5) )
     {

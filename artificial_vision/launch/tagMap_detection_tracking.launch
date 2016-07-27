@@ -44,7 +44,7 @@
 <arg name="bag_file" default="tagMap_recording.bag" />
 <!-- node pkg="rosbag" type="play" name="rosbag_player" args="$(arg bag_folder)$(arg bag_file)" -->
 
-<node pkg="artificial_vision" type="landingPlatform_display_node" name="landingPlatform_display_node" required="true" output="screen" />
+<!-- node pkg="artificial_vision" type="landingPlatform_display_node" name="landingPlatform_display_node" required="true" output="screen" /-->
 <arg name="image_topic" default="/droneuse/landingPlatform_videoFootage" />
 <!-- node pkg="image_view" type="image_view" name="image_viewer" args="image:=/dji_sdk/image_raw"-->
 </launch>

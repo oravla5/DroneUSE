@@ -5,6 +5,7 @@
 #include <tf/transform_listener.h>
 
 #include <opencv2/opencv.hpp>
+#include <nav_msgs/Odometry.h>
 
 #include <kalman_filter.h>
 
@@ -20,7 +21,7 @@ class landingPlatformTracker
     bool                                            tracking_on;
     bool                                            newMeasure;
     cv::Point3f                                     detected_position;
-    cv::Point3f                                     estimated_position;
+    nav_msgs::Odometry                              estimated_state;
     ros::Time                                       last_detection_time;    // Time elapsed since the last detection
 
     const ros::Duration                             MAX_ELAPSED_TIME_;

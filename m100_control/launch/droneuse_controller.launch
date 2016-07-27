@@ -8,6 +8,9 @@
 	<arg name="xy_Velocity_Kp" 				default="1.92*$(arg Kxy_p)"/> 	<!--default="0.5" -->
 	<arg name="xy_Velocity_Kd" 				default="1.8*$(arg Kxy_d)"/> 	<!-- default="0.05"-->
 	<arg name="xy_Velocity_Ki" 				default="0.36*$(arg Kxy_i)"/> 	<!-- default="0.0"--> 
+	<arg name="xy_state_Kp" 				default="1.92*$(arg Kxy_p)"/> 	<!--default="0.5" -->
+	<arg name="xy_state_Kd" 				default="1.8*$(arg Kxy_d)"/> 	<!-- default="0.05"-->
+	<arg name="xy_state_Ki" 				default="1.0"/> 		<!-- default="0.0"--> 
 
 	<arg name="z_maxVelocity" 				default="0.5"/>
 	<arg name="z_Velocity_Kp" 				default="4.0"/>		<!-- "0.5" -->	 

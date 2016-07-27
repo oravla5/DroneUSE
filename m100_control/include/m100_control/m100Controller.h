@@ -5,7 +5,10 @@
 #include "pid.h"
 #include <std_msgs/UInt8.h>
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
+#include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
+#include <dji_sdk/dji_sdk.h>
 
 class m100Controller 
 { 
@@ -16,19 +19,26 @@ class m100Controller
 
         // Subscriber
         ros::Subscriber m100_target_position_subscriber; 
+        ros::Subscriber m100_target_state_subscriber; 
         ros::Subscriber m100_target_orientation_subscriber;
         ros::Subscriber m100_position_control_state_subscriber;
         ros::Subscriber m100_orientation_control_state_subscriber;
+        ros::Subscriber m100_sdk_velocity_subscriber;
         
         // Subscriber Callback
         void m100_target_position_subscriber_callback(const geometry_msgs::PointStamped m100_target_position);
+        void m100_target_state_subscriber_callback(const nav_msgs::Odometry m100_target_state);
         void m100_target_orientation_subscriber_callback(const geometry_msgs::PointStamped m100_target_orientation);
         void m100_position_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
         void m100_orientation_control_state_subscriber_callback(const std_msgs::UInt8 control_state);
+        void m100_sdk_velocity_subscriber_callback(const dji_sdk::Velocity velocity);
         
         geometry_msgs::PointStamped m100_target_position;
+        nav_msgs::Odometry m100_target_state;
         geometry_msgs::PointStamped m100_target_orientation;
+	geometry_msgs::Vector3Stamped m100_velocity;
         bool position_control_enable = false;
+        bool state_control_enable = false;
         bool orientation_control_enable = false;
 
         // M100 Specs http://wiki.dji.com/en/index.php/Matrice_100 
@@ -55,6 +65,14 @@ class m100Controller
         double z_velocity_Kp    = 0.5;
         double z_velocity_Kd    = 0.05;
         double z_velocity_Ki    = 0.0;
+        
+        double x_state_Kp    = 0.5;
+        double x_state_Kd    = 0.05;
+        double x_state_Ki    = 1.0;
+      
+        double y_state_Kp    = 0.5;
+        double y_state_Kd    = 0.05;
+        double y_state_Ki    = 1.0;
         
 	//double Kxy_p 		= 0.35;
 	//double Kxy_d 		= 0.6;
@@ -83,6 +101,11 @@ class m100Controller
         PID* m100_velocity_x_pid;
         PID* m100_velocity_y_pid;
         PID* m100_velocity_z_pid;
+
+        PID* m100_state_x_pid;
+        PID* m100_state_y_pid;
+        PID* m100_state_z_pid;
+
         PID* m100_yaw_rate_pid;
         
         int control_rate;

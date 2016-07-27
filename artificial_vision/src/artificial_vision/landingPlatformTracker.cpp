@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/PointStamped.h>
+#include <nav_msgs/Odometry.h>
 
 #include <math.h>
 #include <boost/timer.hpp>
@@ -10,12 +11,13 @@ using namespace ros;
 using namespace std;
 using namespace sensor_msgs;
 using namespace geometry_msgs;
+using namespace nav_msgs;
 using namespace boost;
 
 landingPlatformTracker::landingPlatformTracker(char *imageTopic) : newMeasure(false), tracking_on(false), MAX_ELAPSED_TIME_(3.0)
 {
     tagMapPosSub_ = nh_.subscribe("/droneuse/tagMap_position", 1, &landingPlatformTracker::tagMapPosSub_callback, this);
-    positionPub_    = nh_.advertise<PointStamped>("droneuse/landing_platform_position", 1);
+    positionPub_    = nh_.advertise<Odometry>("droneuse/landing_platform_position", 1);
 
     float imPosx_cov, imPosy_cov, imPosz_cov, predVelx_cov, predVely_cov, predVelz_cov;
     ros::param::get("artificial_vision/img_pos_cov_x", imPosx_cov);
@@ -120,20 +122,30 @@ void landingPlatformTracker::landingPlatformPosUpdate(double dt)
         position_kf.predict(dt);
         
         // Tag Map Position Publishing
-	estimated_position.x = 0.5*(position_kf.x(0,0) + estimated_position.x);
-	estimated_position.y = 0.5*(position_kf.x(1,0) + estimated_position.y);
-	estimated_position.z = 0.3*position_kf.x(2,0) + 0.7*estimated_position.z;
-        geometry_msgs::PointStamped tagMap_pos;
-        tagMap_pos.header.stamp = position_kf.tStamp;
-        tagMap_pos.header.frame_id = "/body_frame";
-        tagMap_pos.point.x = estimated_position.x;
-        tagMap_pos.point.y = estimated_position.y;
-        tagMap_pos.point.z = estimated_position.z;
-        positionPub_.publish(tagMap_pos);
+
+	estimated_state.header.stamp = position_kf.tStamp;
+	estimated_state.header.frame_id = "/body_frame";
+
+	estimated_state.pose.pose.position.x = 0.5*(position_kf.x(0,0) + estimated_state.pose.pose.position.x);
+	estimated_state.pose.pose.position.y = 0.5*(position_kf.x(1,0) + estimated_state.pose.pose.position.y);
+	estimated_state.pose.pose.position.z = 0.3*position_kf.x(2,0) + 0.7*estimated_state.pose.pose.position.z;
+
+	estimated_state.twist.twist.linear.x = 0.3*position_kf.x(3,0) + 0.7*estimated_state.twist.twist.linear.x;
+	estimated_state.twist.twist.linear.y = 0.3*position_kf.x(4,0) + 0.7*estimated_state.twist.twist.linear.y;
+	estimated_state.twist.twist.linear.z = 0.3*position_kf.x(5,0) + 0.7*estimated_state.twist.twist.linear.z;
+
+        positionPub_.publish(estimated_state);
     }
     else
     {
         //std::cout << "Tracking Deactivated!" << std::endl;
+	estimated_state.pose.pose.position.x = 0.0;
+	estimated_state.pose.pose.position.y = 0.0;
+	estimated_state.pose.pose.position.z = 0.0;
+
+	estimated_state.twist.twist.linear.x = 0.0;
+	estimated_state.twist.twist.linear.y = 0.0;
+	estimated_state.twist.twist.linear.z = 0.0;
         tracking_on = false;
     }
 }
