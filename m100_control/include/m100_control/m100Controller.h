@@ -19,6 +19,8 @@ class m100Controller
         ros::Subscriber m100_target_orientation_subscriber;
         ros::Subscriber m100_position_control_state_subscriber;
         ros::Subscriber m100_orientation_control_state_subscriber;
+	
+	ros::Publisher m100_commanded_velocity_publisher;
         
         // Subscriber Callback
         void m100_target_position_subscriber_callback(const geometry_msgs::PointStamped m100_target_position);
@@ -56,6 +58,9 @@ class m100Controller
         double z_velocity_Kd    = 0.05;
         double z_velocity_Ki    = 0.0;
         
+        double x_iSaturator    = 0.5;
+        double y_iSaturator    = 0.5;
+        double z_iSaturator    = 0.5;
 	//double Kxy_p 		= 0.35;
 	//double Kxy_d 		= 0.6;
 	//double Kxy_i 		= 0.6;

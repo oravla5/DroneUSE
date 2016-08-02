@@ -3,9 +3,9 @@
 
 <!-- AprilTag Map Detector Node -->
 <arg name="scale_min" 			default="0.32"/> 	# Minimum Image Scale Factor 
-<arg name="scale_max" 			default="1.0"/> 	# Maximum Image Scale Factor 
-<arg name="dist_min" 			default="0.8"/> 	# Minimum Detection Distance 
-<arg name="dist_max" 			default="10.0"/> 	# Maximum Detection Distance 
+<arg name="scale_max" 			default="0.7"/> 	# Maximum Image Scale Factor 
+<arg name="dist_min" 			default="1.0"/> 	# Minimum Detection Distance 
+<arg name="dist_max" 			default="8.0"/> 	# Maximum Detection Distance 
 <arg name="LPF_beta_x" 			default="0.5"/> 	# Low Pass Filter beta 
 <arg name="LPF_beta_y" 			default="0.5"/> 	# Low Pass Filter beta 
 <arg name="LPF_beta_z" 			default="0.5"/> 	# Low Pass Filter beta 

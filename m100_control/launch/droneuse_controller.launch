@@ -1,18 +1,26 @@
 <launch>
 
-	<arg name="Kxy_p" 					default="0.25"/>
-	<arg name="Kxy_d" 					default="0.80"/>
-	<arg name="Kxy_i" 					default="0.5"/>
+	<arg name="Kxy_p" 					default="0.2604"/>
+	<arg name="Kxy_d" 					default="0.0278"/>
+	<arg name="Kxy_i" 					default="0.1"/>
 
-	<arg name="xy_maxVelocity" 				default="3.0"/> 
-	<arg name="xy_Velocity_Kp" 				default="1.92*$(arg Kxy_p)"/> 	<!--default="0.5" -->
-	<arg name="xy_Velocity_Kd" 				default="1.8*$(arg Kxy_d)"/> 	<!-- default="0.05"-->
-	<arg name="xy_Velocity_Ki" 				default="0.36*$(arg Kxy_i)"/> 	<!-- default="0.0"--> 
+	<arg name="xy_maxVelocity" 				default="4.0"/> 
+	<arg name="xy_Velocity_Kp" 				default="0.35"/> 	<!-- default="1.92*$(arg Kxy_p)"-->
+	<arg name="xy_Velocity_Kd" 				default="0.1"/> 	<!-- default="1.8*$(arg Kxy_d)"-->
+	<arg name="xy_Velocity_Ki" 				default="0.025"/> 	<!-- default="0.0"--> 
+	<arg name="x_iSaturator"				default="3.5"/>
+
+	<arg name="y_maxVelocity" 				default="1.0"/> 
+	<arg name="y_Velocity_Kp" 				default="0.3"/> 	<!--default="0.5" -->
+	<arg name="y_Velocity_Kd" 				default="0.1"/> 	<!-- default="0.05"-->
+	<arg name="y_Velocity_Ki" 				default="0.01"/> 	<!-- default="0.0"--> 
+	<arg name="y_iSaturator"				default="0.5"/>
 
 	<arg name="z_maxVelocity" 				default="0.5"/>
-	<arg name="z_Velocity_Kp" 				default="4.0"/>		<!-- "0.5" -->	 
-	<arg name="z_Velocity_Kd" 				default="2.0"/>		<!-- "0.05" --> 
+	<arg name="z_Velocity_Kp" 				default="0.3"/>		<!-- "0.5" -->	 
+	<arg name="z_Velocity_Kd" 				default="0.05"/>		<!-- "0.05" --> 
 	<arg name="z_Velocity_Ki" 				default="0.0"/> 	<!-- "0.0" -->
+	<arg name="z_iSaturator"				default="0.25"/>
 
 	<arg name="yaw_maxRate" 					default="30.0"/>
 	<arg name="yaw_rate_Kp" 					default="1.0"/>
@@ -21,19 +29,23 @@
 
 
 	<param name="m100_controller/x_maxVelocity"		value="$(arg xy_maxVelocity)"/>
-	<param name="m100_controller/x_Velocity_Kp"		value="$(arg xy_Velocity_Kp)"/>
-	<param name="m100_controller/x_Velocity_Kd"		value="$(arg xy_Velocity_Kd)"/>
-	<param name="m100_controller/x_Velocity_Ki"		value="$(arg xy_Velocity_Ki)"/>
+	<param name="m100_controller/x_velocity_Kp"		value="$(arg xy_Velocity_Kp)"/>
+	<param name="m100_controller/x_velocity_Kd"		value="$(arg xy_Velocity_Kd)"/>
+	<param name="m100_controller/x_velocity_Ki"		value="$(arg xy_Velocity_Ki)"/>
 
-	<param name="m100_controller/y_maxVelocity"		value="$(arg xy_maxVelocity)"/>
-	<param name="m100_controller/y_Velocity_Kp"		value="$(arg xy_Velocity_Kp)"/>
-	<param name="m100_controller/y_Velocity_Kd"		value="$(arg xy_Velocity_Kd)"/>
-	<param name="m100_controller/y_Velocity_Ki"		value="$(arg xy_Velocity_Ki)"/>
+	<param name="m100_controller/y_maxVelocity"		value="$(arg y_maxVelocity)"/>
+	<param name="m100_controller/y_velocity_Kp"		value="$(arg y_Velocity_Kp)"/>
+	<param name="m100_controller/y_velocity_Kd"		value="$(arg y_Velocity_Kd)"/>
+	<param name="m100_controller/y_velocity_Ki"		value="$(arg y_Velocity_Ki)"/>
 
 	<param name="m100_controller/z_maxVelocity"		value="$(arg z_maxVelocity)"/>
-	<param name="m100_controller/z_Velocity_Kp"		value="$(arg z_Velocity_Kp)"/>
-	<param name="m100_controller/z_Velocity_Kd"		value="$(arg z_Velocity_Kd)"/>
-	<param name="m100_controller/z_Velocity_Ki"		value="$(arg z_Velocity_Ki)"/>
+	<param name="m100_controller/z_velocity_Kp"		value="$(arg z_Velocity_Kp)"/>
+	<param name="m100_controller/z_velocity_Kd"		value="$(arg z_Velocity_Kd)"/>
+	<param name="m100_controller/z_velocity_Ki"		value="$(arg z_Velocity_Ki)"/>
+
+	<param name="m100_controller/x_iSaturator" 		value="$(arg x_iSaturator)"/>
+	<param name="m100_controller/y_iSaturator" 		value="$(arg y_iSaturator)"/>
+	<param name="m100_controller/z_iSaturator" 		value="$(arg z_iSaturator)"/>
 
 	<param name="m100_controller/yaw_maxRate"		value="$(arg yaw_maxRate)"/>
 	<param name="m100_controller/yaw_rate_Kp"		value="$(arg yaw_rate_Kp)"/>

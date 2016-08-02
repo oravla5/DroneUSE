@@ -47,6 +47,7 @@ class droneuse_m100
 	double apriltagMap_landing_height;
 	double apriltagMap_approach_height;
 	double apriltagMap_chase_height;
+	double apriltagMap_xOffset;
     public:
         droneuse_m100(ros::NodeHandle& nh);
 

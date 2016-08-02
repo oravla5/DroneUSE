@@ -39,8 +39,9 @@ gimbalController::gimbalController(ros::NodeHandle& nh, int control_rate)
     gimbal_control_state_subscriber     = nh.subscribe<std_msgs::UInt8>("droneuse/gimbal_control_state", 3, &gimbalController::gimbal_control_state_subscriber_callback, this);
     gimbal_control_type_subscriber     = nh.subscribe<std_msgs::Bool>("droneuse/gimbal_control_type", 1, &gimbalController::gimbal_control_type_subscriber_callback, this);
 
-    gimbal_pitch_rate_pid = new PID(gimbal_pitch_maxRate, -gimbal_pitch_maxRate, gimbal_pitchRate_Kp, gimbal_pitchRate_Kd, gimbal_pitchRate_Ki);
-    gimbal_yaw_rate_pid = new PID(gimbal_yaw_maxRate, -gimbal_yaw_maxRate, gimbal_yawRate_Kp, gimbal_yawRate_Kd, gimbal_yawRate_Ki);
+    // Last parameter of PID constructor correspond to integral anti windup saturator
+    gimbal_pitch_rate_pid = new PID(gimbal_pitch_maxRate, -gimbal_pitch_maxRate, gimbal_pitchRate_Kp, gimbal_pitchRate_Kd, gimbal_pitchRate_Ki, 50000);
+    gimbal_yaw_rate_pid = new PID(gimbal_yaw_maxRate, -gimbal_yaw_maxRate, gimbal_yawRate_Kp, gimbal_yawRate_Kd, gimbal_yawRate_Ki, 50000);
 }
 
 bool gimbalController::gimbal_controller_update()

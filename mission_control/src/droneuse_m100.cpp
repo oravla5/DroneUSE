@@ -45,6 +45,8 @@ droneuse_m100::droneuse_m100(ros::NodeHandle& nh)
    ros::param::get("mission_control/tagMap_tracking_node/approach_height", apriltagMap_approach_height);
    apriltagMap_landing_height = 0.3;
    ros::param::get("mission_control/tagMap_tracking_node/landing_height", apriltagMap_landing_height);
+   apriltagMap_xOffset = -0.3;
+   ros::param::get("mission_control/tagMap_tracking_node/apriltagMap_xOffset", apriltagMap_xOffset);
 }
 
 void droneuse_m100::m100_local_position_subscriber_callback(const dji_sdk::LocalPosition m100_local_position)
@@ -472,7 +474,7 @@ bool droneuse_m100::approach()
         geometry_msgs::PointStamped commanded_target;
 	commanded_target.header.stamp = landing_platform_position.header.stamp;
 	commanded_target.header.frame_id = landing_platform_position.header.frame_id;
-        commanded_target.point.x = landing_platform_position.point.x;
+        commanded_target.point.x = landing_platform_position.point.x + apriltagMap_xOffset;
         commanded_target.point.y = landing_platform_position.point.y;
         commanded_target.point.z = (landing_platform_position.point.z - apriltagMap_approach_height);
 

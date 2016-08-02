@@ -62,6 +62,7 @@ private:
 	float 				DIST_max;
 
 	geometry_msgs::PointStamped	last_tagMap;
+	ros::Time			last_det_time;
 	float 				LPF_beta_x;
 	float 				LPF_beta_y;
 	float 				LPF_beta_z;

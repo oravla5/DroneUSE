@@ -53,7 +53,7 @@ tagMapDetector::tagMapDetector(char *imageTopic, string marker_map_cfg_file) : i
 	SCALE_max = 0.8;
 	ros::param::get("artificial_vision/scale_min", SCALE_min);
 	ros::param::get("artificial_vision/scale_max", SCALE_max);
-	SCALE_FACTOR = (SCALE_min + SCALE_max)/2;
+	SCALE_FACTOR = SCALE_max;
 	DIST_min = 0.1;
 	DIST_max = 10.0;
 	ros::param::get("artificial_vision/dist_max", DIST_max);
@@ -178,51 +178,74 @@ void tagMapDetector::imgSub_callback(const ImageConstPtr& image_msg, const Camer
 		tagMap_pos.point.y = pos_y;
 		tagMap_pos.point.z = pos_z;
 
-		//tf_camera_apriltagMap.setOrigin( tf::Vector3(tvec_pnp.at<float>(0,0), tvec_pnp.at<float>(0,1), tvec_pnp.at<float>(0,2)) );
-		//q.setRPY(rvec_pnp.at<float>(0,0), rvec_pnp.at<float>(0,2), rvec_pnp.at<float>(0,1));
-		//tf_camera_apriltagMap.setRotation(q);
-		//br.sendTransform(tf::StampedTransform(tf_camera_apriltagMap, image_msg->header.stamp, "camera", "apriltag_map"));
-
 
 		try
 		{
 			tf_listener->waitForTransform("/body_frame", "/camera",image_msg->header.stamp, ros::Duration(3.0/20));
 			tf_listener->transformPoint("/body_frame", tagMap_pos, tagMap_pos);
-			float gimbal_req_yaw = atan2(tagMap_pos.point.y, tagMap_pos.point.x)*180/C_PI;
-			float gimbal_req_roll = atan2(tagMap_pos.point.z, tagMap_pos.point.x)*180/C_PI;
+//			float gimbal_req_yaw = atan2(tagMap_pos.point.y, tagMap_pos.point.x)*180/C_PI;
+//			float gimbal_req_roll = atan2(tagMap_pos.point.z, tagMap_pos.point.x)*180/C_PI;
 			// Check if the point is on  a logic position
 			//if( (fabs(gimbal_req_yaw) < 90) && ( gimbal_req_roll > -20 ) && ( gimbal_req_roll < 120 ) )
-			if( ( gimbal_req_roll > -20 ) && ( gimbal_req_roll < 120 ) )
-			{
+//			if( ( gimbal_req_roll > -30 ) && ( gimbal_req_roll < 120 ) )
+//			{
 				
 				if(first_detection)		// Check if the Low Pass Filter is initialized
 				{	
 					last_tagMap = tagMap_pos;
 					first_detection = false;
+					tagMapPub_.publish(tagMap_pos);
+					float dist = sqrt(tagMap_pos.point.x*tagMap_pos.point.x + tagMap_pos.point.y*tagMap_pos.point.y + tagMap_pos.point.z*tagMap_pos.point.z);
+
+					SCALE_FACTOR = SCALE_min + (SCALE_max - SCALE_min)/(DIST_max - DIST_min)*(dist - DIST_min);
+					if(SCALE_FACTOR > SCALE_max)
+						SCALE_FACTOR = SCALE_max;
+					else if(SCALE_FACTOR < SCALE_min)
+						SCALE_FACTOR = SCALE_min;
+					std::cout << "scale factor = " << SCALE_FACTOR << " dist = " << dist << std::endl;
 				}
 				else if((tagMap_pos.header.stamp - last_tagMap.header.stamp) > ros::Duration(2.0)) 	// Check if the last detection is too old
 				{
 					last_tagMap = tagMap_pos;
+					tagMapPub_.publish(tagMap_pos);
+					float dist = sqrt(tagMap_pos.point.x*tagMap_pos.point.x + tagMap_pos.point.y*tagMap_pos.point.y + tagMap_pos.point.z*tagMap_pos.point.z);
+
+					SCALE_FACTOR = SCALE_min + (SCALE_max - SCALE_min)/(DIST_max - DIST_min)*(dist - DIST_min);
+					if(SCALE_FACTOR > SCALE_max)
+						SCALE_FACTOR = SCALE_max;
+					else if(SCALE_FACTOR < SCALE_min)
+						SCALE_FACTOR = SCALE_min;
+					std::cout << "scale factor = " << SCALE_FACTOR << " dist = " << dist << std::endl;
+				}
+				else
+				{
+					double dt = tagMap_pos.header.stamp.toSec() - last_tagMap.header.stamp.toSec();
+					double vx = (tagMap_pos.point.x - last_tagMap.point.x)/dt;
+					double vy = (tagMap_pos.point.y - last_tagMap.point.y)/dt;
+					double vz = (tagMap_pos.point.z - last_tagMap.point.z)/dt;
+					if(vx < 5.0 && vy < 5.0 && vz < 2.0)
+					{
+						tagMap_pos.point.x = LPF_beta_x*tagMap_pos.point.x + (1 - LPF_beta_x)*last_tagMap.point.x;
+						tagMap_pos.point.y = LPF_beta_y*tagMap_pos.point.y + (1 - LPF_beta_y)*last_tagMap.point.y;
+						tagMap_pos.point.z = LPF_beta_z*tagMap_pos.point.z + (1 - LPF_beta_z)*last_tagMap.point.z;
+						last_tagMap = tagMap_pos;
+						tagMapPub_.publish(tagMap_pos);
+
+						float dist = sqrt(tagMap_pos.point.x*tagMap_pos.point.x + tagMap_pos.point.y*tagMap_pos.point.y + tagMap_pos.point.z*tagMap_pos.point.z);
+
+						SCALE_FACTOR = SCALE_min + (SCALE_max - SCALE_min)/(DIST_max - DIST_min)*(dist - DIST_min);
+						if(SCALE_FACTOR > SCALE_max)
+							SCALE_FACTOR = SCALE_max;
+						else if(SCALE_FACTOR < SCALE_min)
+							SCALE_FACTOR = SCALE_min;
+						std::cout << "scale factor = " << SCALE_FACTOR << " dist = " << dist << std::endl;
+					}
 				}
 
-				tagMap_pos.point.x = LPF_beta_x*tagMap_pos.point.x + (1 - LPF_beta_x)*last_tagMap.point.x;
-				tagMap_pos.point.y = LPF_beta_y*tagMap_pos.point.y + (1 - LPF_beta_y)*last_tagMap.point.y;
-				tagMap_pos.point.z = LPF_beta_z*tagMap_pos.point.z + (1 - LPF_beta_z)*last_tagMap.point.z;
-				
-				last_tagMap = tagMap_pos;
-				tagMapPub_.publish(tagMap_pos);
-				float dist = sqrt(tagMap_pos.point.x*tagMap_pos.point.x + tagMap_pos.point.y*tagMap_pos.point.y + tagMap_pos.point.z*tagMap_pos.point.z);
-
-				SCALE_FACTOR = SCALE_min + (SCALE_max - SCALE_min)/(DIST_max - DIST_min)*(dist - DIST_min);
-				if(SCALE_FACTOR > SCALE_max)
-					SCALE_FACTOR = SCALE_max;
-				else if(SCALE_FACTOR < SCALE_min)
-					SCALE_FACTOR = SCALE_min;
-				std::cout << "scale factor = " << SCALE_FACTOR << " dist = " << dist << std::endl;
 	//				std::cout << "tagMap_pos_detector x " << tagMap_pos.point.x << std::endl;
 	//				std::cout << "tagMap_pos_detector y " << tagMap_pos.point.y << std::endl;
 	//				std::cout << "tagMap_pos_detector z " << tagMap_pos.point.z << std::endl;
-			}
+//			}
 		}
 		catch(tf::TransformException ex)
 		{

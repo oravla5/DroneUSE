@@ -46,7 +46,9 @@ m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
     m100_orientation_control_state_subscriber = nh.subscribe<std_msgs::UInt8>("droneuse/m100_orientation_control_state",10, &m100Controller::m100_orientation_control_state_subscriber_callback, this);
 
 
-	// Get Controller Parameters
+	
+	m100_commanded_velocity_publisher = nh.advertise<dji_sdk::Velocity>("droneuse/velocity_command",1);	
+// Get Controller Parameters
 
 	// X Velocity Controller Parameters
 	ros::param::get("m100_controller/x_maxVelocity", x_maxVelocity);
@@ -71,11 +73,22 @@ m100Controller::m100Controller(ros::NodeHandle& nh, int control_rate)
 	ros::param::get("m100_controller/yaw_rate_Kp", yaw_rate_Kp);
 	ros::param::get("m100_controller/yaw_rate_Kd", yaw_rate_Kd);
 	ros::param::get("m100_controller/yaw_rate_Ki", yaw_rate_Ki);
+	
+	// Integral Anti WindUp saturators
+	ros::param::get("m100_controller/x_iSaturator", x_iSaturator);
+	ros::param::get("m100_controller/y_iSaturator", y_iSaturator);
+	ros::param::get("m100_controller/z_iSaturator", z_iSaturator);
 
-    m100_velocity_x_pid     = new PID(x_maxVelocity, -x_maxVelocity, x_velocity_Kp, x_velocity_Kd, x_velocity_Ki);
-    m100_velocity_y_pid     = new PID(y_maxVelocity, -y_maxVelocity, y_velocity_Kp, y_velocity_Kd, y_velocity_Ki);
-    m100_velocity_z_pid     = new PID(z_maxVelocity, -z_maxVelocity, z_velocity_Kp, z_velocity_Kd, z_velocity_Ki);
-    m100_yaw_rate_pid       = new PID(yaw_maxRate, -yaw_maxRate, yaw_rate_Kp, yaw_rate_Kd, yaw_rate_Ki);
+	std::cout << "Kp_x = " << x_velocity_Kp << " Kd_x = " << x_velocity_Kd << " Ki_x = " << x_velocity_Ki << std::endl;
+	std::cout << "Kp_y = " << y_velocity_Kp << " Kd_y = " << y_velocity_Kd << " Ki_y = " << y_velocity_Ki << std::endl;
+	std::cout << "Kp_z = " << z_velocity_Kp << " Kd_z = " << z_velocity_Kd << " Ki_z = " << z_velocity_Ki << std::endl;
+	std::cout << "X max velocity = " << x_maxVelocity << " Y max velocity = " << y_maxVelocity << " Z max velocity = " << z_maxVelocity << std::endl;
+	std::cout << "X integral saturator = " << x_iSaturator << " Y integral saturator = " << y_iSaturator << " Z integral saturator = " << z_iSaturator << std::endl;
+
+	m100_velocity_x_pid     = new PID(x_maxVelocity, -x_maxVelocity, x_velocity_Kp, x_velocity_Kd, x_velocity_Ki, x_iSaturator);
+	m100_velocity_y_pid     = new PID(y_maxVelocity, -y_maxVelocity, y_velocity_Kp, y_velocity_Kd, y_velocity_Ki, y_iSaturator);
+	m100_velocity_z_pid     = new PID(z_maxVelocity, -z_maxVelocity, z_velocity_Kp, z_velocity_Kd, z_velocity_Ki, z_iSaturator);
+	m100_yaw_rate_pid       = new PID(yaw_maxRate, -yaw_maxRate, yaw_rate_Kp, yaw_rate_Kd, yaw_rate_Ki, 50000);
 
 }
 
@@ -94,9 +107,9 @@ bool m100Controller::m100_controller_update()
             tf_listener->waitForTransform("/body_frame", "/world", time_now , ros::Duration(2.0/control_rate));
             tf_listener->transformPoint("/body_frame", time_now, m100_target_position, "/world", m100_target_position);
 
-            velocity_x   = m100_velocity_x_pid->calculate(1.0/control_rate, m100_target_position.point.x, 0.0);
-            velocity_y   = m100_velocity_y_pid->calculate(1.0/control_rate, m100_target_position.point.y, 0.0);
-            velocity_z   = -m100_velocity_z_pid->calculate(1.0/control_rate, m100_target_position.point.z, 0.0);
+            velocity_x   = m100_velocity_x_pid->calculate(double(1.0/control_rate), m100_target_position.point.x, 0.0);
+            velocity_y   = m100_velocity_y_pid->calculate(double(1.0/control_rate), m100_target_position.point.y, 0.0);
+            velocity_z   = -m100_velocity_z_pid->calculate(double(1.0/control_rate), m100_target_position.point.z, 0.0);
         }
         catch(tf::TransformException ex)
         {
@@ -128,11 +141,20 @@ bool m100Controller::m100_controller_update()
 
     if(position_control_enable || orientation_control_enable)
     {
+	dji_sdk::Velocity velocity_command;
+	velocity_command.header.stamp = ros::Time::now();
+	velocity_command.header.frame_id = "/body_frame";
+	velocity_command.vx = velocity_x;
+	velocity_command.vy = velocity_y;
+	velocity_command.vz = velocity_z;
+	m100_commanded_velocity_publisher.publish(velocity_command);
+
         m100_control_command.request.flag   = ctrl_flag;
         m100_control_command.request.x      = (float) velocity_x;
         m100_control_command.request.y      = (float) velocity_y;
         m100_control_command.request.z      = (float) velocity_z;
         m100_control_command.request.yaw    = (float) yaw_rate;
+
         return m100_attitude_control_service.call(m100_control_command) && m100_control_command.response.result;
     }
     else
